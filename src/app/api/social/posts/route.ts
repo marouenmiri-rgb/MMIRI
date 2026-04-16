@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { getCurrentUserId } from "@/lib/auth";
 import { hasDb } from "@/lib/env";
 import { publishOne } from "@/social/publisher";
+import { createTrackingLink, injectLink } from "@/lib/tracking";
 import type { SocialPlatform } from "@/social/types";
 
 export const runtime = "nodejs";
@@ -12,6 +13,7 @@ export const maxDuration = 120;
 const Item = z.object({
   platform: z.enum(["TIKTOK", "INSTAGRAM", "YOUTUBE", "X"]),
   caption: z.string().min(1).max(2200),
+  variantId: z.string().optional(),
 });
 
 const Body = z.object({
@@ -32,6 +34,9 @@ export async function GET() {
     include: {
       ad: { select: { id: true, productTitle: true, thumbnailUrl: true } },
       connection: { select: { handle: true, demo: true } },
+      trackingLink: {
+        select: { code: true, clicks: true, conversions: true, revenueCents: true },
+      },
     },
   });
   return NextResponse.json({ posts });
@@ -75,26 +80,49 @@ export async function POST(req: Request) {
         { status: 400 },
       );
     }
+
+    // Create the post first with a placeholder caption, then mint a tracking
+    // link that references the post, then update the caption with the link.
+    // Doing it in two passes lets the short link include the socialPostId
+    // for per-post attribution.
     const post = await db.socialPost.create({
       data: {
         userId,
         connectionId: conn.id,
         adId: ad.id,
+        variantId: item.variantId ?? null,
         platform: item.platform,
-        caption: item.caption,
+        caption: item.caption, // temporary
         scheduledFor,
       },
     });
-    created.push(post);
+
+    const { link } = await createTrackingLink({
+      userId,
+      adId: ad.id,
+      socialPostId: post.id,
+      destinationUrl: ad.productUrl,
+      platform: item.platform,
+      campaign: `ad_${ad.id.slice(0, 8)}`,
+    });
+
+    const finalCaption = injectLink(item.caption, link);
+    const updated = await db.socialPost.update({
+      where: { id: post.id },
+      data: { caption: finalCaption },
+    });
+    created.push(updated);
   }
 
-  // "now" → publish inline. "scheduled" → cron picks them up at `scheduledFor`.
   if (parsed.data.deliver === "now") {
     await Promise.all(created.map((p) => publishOne(p.id)));
   }
 
   const refreshed = await db.socialPost.findMany({
     where: { id: { in: created.map((p) => p.id) } },
+    include: {
+      trackingLink: { select: { code: true } },
+    },
   });
   return NextResponse.json({ posts: refreshed });
 }

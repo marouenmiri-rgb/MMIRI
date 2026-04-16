@@ -52,6 +52,65 @@ export const fixtureCampaigns = [
 const inHours = (h: number) =>
   new Date(Date.now() + h * 60 * 60 * 1000).toISOString();
 
+// 30-day plausibly-growing revenue curve for the Revenue Pulse demo.
+const revenueSeries = Array.from({ length: 30 }, (_, i) => {
+  const d = new Date();
+  d.setUTCHours(0, 0, 0, 0);
+  d.setUTCDate(d.getUTCDate() - (29 - i));
+  const ramp = Math.round(4000 * Math.pow(i / 29, 1.7));
+  const noise = Math.round((Math.sin(i * 1.3) * 0.5 + 0.5) * 2500);
+  return { day: d.toISOString().slice(0, 10), cents: ramp + noise };
+});
+
+export const fixtureRevenue = {
+  totals: {
+    clicks: 14230,
+    conversions: 287,
+    revenueCents: revenueSeries.reduce((s, p) => s + p.cents, 0),
+  },
+  byPlatform: {
+    TIKTOK: { clicks: 7180, conversions: 141, revenueCents: 85400, posts: 18 },
+    INSTAGRAM: { clicks: 4100, conversions: 94, revenueCents: 56900, posts: 12 },
+    YOUTUBE: { clicks: 2110, conversions: 37, revenueCents: 22400, posts: 4 },
+    X: { clicks: 840, conversions: 15, revenueCents: 9200, posts: 6 },
+  },
+  topAds: [
+    {
+      adId: "demo-1",
+      title: "Ember Travel Mug 2",
+      thumbnailUrl:
+        "https://images.unsplash.com/photo-1511920170033-f8396924c348?w=200",
+      revenueCents: 62500,
+      clicks: 5200,
+      conversions: 103,
+    },
+    {
+      adId: "demo-2",
+      title: "Allbirds Wool Runner",
+      thumbnailUrl:
+        "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=200",
+      revenueCents: 48700,
+      clicks: 4100,
+      conversions: 86,
+    },
+    {
+      adId: "demo-3",
+      title: "Highland Candle Co.",
+      thumbnailUrl: null,
+      revenueCents: 31200,
+      clicks: 2800,
+      conversions: 54,
+    },
+  ],
+  series: revenueSeries,
+  recent: [
+    { id: "r1", revenueCents: 4900, currency: "USD", occurredAt: new Date(Date.now() - 1000 * 60 * 6).toISOString(), platform: "TIKTOK" as const, adTitle: "Ember Travel Mug 2" },
+    { id: "r2", revenueCents: 2900, currency: "USD", occurredAt: new Date(Date.now() - 1000 * 60 * 32).toISOString(), platform: "INSTAGRAM" as const, adTitle: "Allbirds Wool Runner" },
+    { id: "r3", revenueCents: 8800, currency: "USD", occurredAt: new Date(Date.now() - 1000 * 60 * 57).toISOString(), platform: "TIKTOK" as const, adTitle: "Highland Candle Co." },
+    { id: "r4", revenueCents: 1900, currency: "USD", occurredAt: new Date(Date.now() - 1000 * 60 * 104).toISOString(), platform: "YOUTUBE" as const, adTitle: "Ember Travel Mug 2" },
+  ],
+};
+
 export const fixtureDistribution = {
   connections: {
     TIKTOK: {

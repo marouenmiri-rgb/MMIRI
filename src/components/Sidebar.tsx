@@ -38,6 +38,17 @@ const NAV: { href: string; label: string; icon: React.ReactNode; hint?: string }
     ),
   },
   {
+    href: "/revenue",
+    label: "Revenue",
+    hint: "ROI",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4">
+        <path d="M4 18l5-5 4 4 7-9" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" strokeLinecap="round" />
+        <path d="M14 8h6v6" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" strokeLinecap="round" />
+      </svg>
+    ),
+  },
+  {
     href: "/leads",
     label: "Leads",
     hint: "Storefronts",
