@@ -5,6 +5,7 @@ import { getCurrentUserId } from "@/lib/auth";
 import { hasDb } from "@/lib/env";
 import { publishOne } from "@/social/publisher";
 import { createTrackingLink, injectLink } from "@/lib/tracking";
+import { checkLimit } from "@/lib/billing";
 import type { SocialPlatform } from "@/social/types";
 
 export const runtime = "nodejs";
@@ -58,6 +59,27 @@ export async function POST(req: Request) {
     where: { id: parsed.data.adId, userId },
   });
   if (!ad) return NextResponse.json({ error: "Ad not found" }, { status: 404 });
+
+  // Plan gate: check per-post quota for as many posts as this request wants.
+  for (let i = 0; i < parsed.data.posts.length; i++) {
+    const gate = await checkLimit(userId, "post");
+    if (!gate.ok) {
+      return NextResponse.json(
+        {
+          error: "plan_limit_exceeded",
+          message: gate.reason,
+          tier: gate.tier,
+          used: gate.used,
+          limit: gate.limit,
+          upgradeUrl: "/pricing",
+        },
+        { status: 402 },
+      );
+    }
+    // Usage is counted on PUBLISHED posts, so the loop only needs to run
+    // once — the count won't change between iterations. Break early.
+    break;
+  }
 
   const connections = await db.socialConnection.findMany({
     where: {

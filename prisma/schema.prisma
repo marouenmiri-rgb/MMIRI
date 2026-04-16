@@ -10,8 +10,17 @@ datasource db {
 enum Plan {
   FREE
   STARTER
-  PRO
+  STUDIO
+  SCALE
   AGENCY
+}
+
+enum SubscriptionStatus {
+  TRIALING
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  PAUSED
 }
 
 enum AdStatus {
@@ -78,6 +87,7 @@ model User {
   conversions       Conversion[]
   adVariants        AdVariant[]
   insights          Insight[]
+  subscription      Subscription?
 }
 
 model Ad {
@@ -322,4 +332,23 @@ model Insight {
   createdAt DateTime    @default(now())
 
   @@index([userId, createdAt])
+}
+
+model Subscription {
+  id                   String             @id @default(cuid())
+  userId               String             @unique
+  user                 User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tier                 Plan               @default(FREE)
+  status               SubscriptionStatus @default(ACTIVE)
+  stripeCustomerId     String?            @unique
+  stripeSubscriptionId String?            @unique
+  stripePriceId        String?
+  currentPeriodStart   DateTime?
+  currentPeriodEnd     DateTime?
+  cancelAtPeriodEnd    Boolean            @default(false)
+  revenueShareBps      Int?               // basis points (500 = 5%) for SCALE tier
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+
+  @@index([stripeCustomerId])
 }

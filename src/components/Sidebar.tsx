@@ -154,6 +154,20 @@ export function Sidebar() {
       </nav>
 
       <div className="mt-auto space-y-3">
+        <Link
+          href="/pricing"
+          className="group flex items-center justify-between rounded-xl2 border border-line-2 bg-gradient-to-br from-base-2 to-base-3 p-3 text-sm text-ink-hi transition hover:border-lime/50"
+        >
+          <div>
+            <div className="font-display text-[13px] tracking-tight">
+              Upgrade to Scale
+            </div>
+            <div className="mt-0.5 font-mono text-[10px] uppercase tracking-[0.22em] text-lime">
+              pay 5% · only when you earn
+            </div>
+          </div>
+          <span className="text-volt group-hover:text-lime">→</span>
+        </Link>
         <div className="surface overflow-hidden p-3">
           <div className="flex items-center justify-between">
             <span className="chip-live">

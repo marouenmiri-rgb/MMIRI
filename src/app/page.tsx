@@ -17,6 +17,9 @@ export default function LandingPage() {
           <a href="#manifesto" className="hover:text-ink-hi">
             Why it's different
           </a>
+          <Link href="/pricing" className="hover:text-ink-hi">
+            Pricing
+          </Link>
           <Link href="/dashboard" className="btn-ghost">
             Enter control room →
           </Link>

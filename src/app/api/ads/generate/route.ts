@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { getCurrentUserId } from "@/lib/auth";
 import { hasClaude, hasDb } from "@/lib/env";
 import { runAdPipeline } from "@/agents/orchestrator";
+import { checkLimit } from "@/lib/billing";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
@@ -33,6 +34,22 @@ export async function POST(req: Request) {
 
   const userId = await getCurrentUserId();
   if (!userId) return NextResponse.json({ error: "No user" }, { status: 401 });
+
+  // 402 Payment Required when over plan quota — surface the upgrade path.
+  const gate = await checkLimit(userId, "ad");
+  if (!gate.ok) {
+    return NextResponse.json(
+      {
+        error: "plan_limit_exceeded",
+        message: gate.reason,
+        tier: gate.tier,
+        used: gate.used,
+        limit: gate.limit,
+        upgradeUrl: "/pricing",
+      },
+      { status: 402 },
+    );
+  }
 
   const ad = await db.ad.create({
     data: {
