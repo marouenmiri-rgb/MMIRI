@@ -39,9 +39,10 @@ export async function runAdPipeline(args: {
 
   await db.ad.update({ where: { id: adId }, data: { status: "RENDERING" } });
   const media = await renderVideo({
+    adId,
+    product,
     script,
     breakdown,
-    productTitle: product.title,
   });
 
   await db.ad.update({

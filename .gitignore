@@ -12,3 +12,5 @@ coverage
 *.log
 
 prisma/migrations/dev.db*
+
+public/renders/

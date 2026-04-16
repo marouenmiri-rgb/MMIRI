@@ -1,16 +1,39 @@
-import type { AdScript, SceneBreakdown } from "./types";
+import path from "node:path";
+import { promises as fs } from "node:fs";
+import type { AdScript, ProductFacts, SceneBreakdown } from "./types";
+import { renderSlideshow } from "./ffmpeg-renderer";
 
 /**
- * MVP stub. Phase 2 wires this to:
- *   1. ElevenLabs TTS → voiceover.mp3
- *   2. FFmpeg worker → slideshow + Ken Burns + subtitles + voiceover → MP4
- * For now, returns null URLs so the dashboard renders the script/scenes preview
- * and the pipeline is end-to-end exercisable without media infra.
+ * Tries FFmpeg first. If ffmpeg isn't installed (common in serverless dev
+ * environments), returns null URLs and the dashboard renders the script +
+ * scene plan instead. Phase 2 swaps this for a dedicated render worker
+ * with ElevenLabs TTS.
  */
-export async function renderVideo(_input: {
+export async function renderVideo(args: {
+  adId: string;
+  product: ProductFacts;
   script: AdScript;
   breakdown: SceneBreakdown;
-  productTitle: string;
-}): Promise<{ voiceoverUrl: string | null; videoUrl: string | null; thumbnailUrl: string | null }> {
-  return { voiceoverUrl: null, videoUrl: null, thumbnailUrl: null };
+}): Promise<{
+  voiceoverUrl: string | null;
+  videoUrl: string | null;
+  thumbnailUrl: string | null;
+}> {
+  const publicDir = path.join(process.cwd(), "public", "renders", args.adId);
+  await fs.mkdir(publicDir, { recursive: true });
+
+  const res = await renderSlideshow({
+    product: args.product,
+    breakdown: args.breakdown,
+    outDir: publicDir,
+  });
+
+  const base = `/renders/${args.adId}`;
+  return {
+    voiceoverUrl: null,
+    videoUrl: res.videoPath ? `${base}/ad.mp4` : null,
+    thumbnailUrl: res.thumbnailPath
+      ? `${base}/ad.jpg`
+      : args.product.images[0] ?? null,
+  };
 }
