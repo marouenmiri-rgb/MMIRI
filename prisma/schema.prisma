@@ -1,0 +1,145 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Plan {
+  FREE
+  STARTER
+  PRO
+  AGENCY
+}
+
+enum AdStatus {
+  QUEUED
+  SCRAPING
+  WRITING
+  DIRECTING
+  RENDERING
+  READY
+  FAILED
+}
+
+enum JobKind {
+  AD_GENERATION
+  SHOPIFY_DISCOVERY
+  OUTREACH_SEND
+}
+
+enum JobStatus {
+  QUEUED
+  RUNNING
+  COMPLETED
+  FAILED
+}
+
+enum OutreachStatus {
+  DRAFT
+  QUEUED
+  SENT
+  OPENED
+  REPLIED
+  BOUNCED
+}
+
+model User {
+  id         String     @id @default(cuid())
+  email      String     @unique
+  name       String?
+  plan       Plan       @default(FREE)
+  createdAt  DateTime   @default(now())
+
+  ads        Ad[]
+  leads      Lead[]
+  campaigns  Campaign[]
+  jobs       Job[]
+}
+
+model Ad {
+  id            String    @id @default(cuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productUrl    String
+  productTitle  String?
+  status        AdStatus  @default(QUEUED)
+  scriptJson    Json?
+  scenesJson    Json?
+  voiceoverUrl  String?
+  videoUrl      String?
+  thumbnailUrl  String?
+  error         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  campaigns     Campaign[]
+
+  @@index([userId, createdAt])
+}
+
+model Lead {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  storeName   String
+  websiteUrl  String
+  email       String?
+  socialsJson Json?
+  source      String?
+  createdAt   DateTime @default(now())
+
+  outreach    Outreach[]
+
+  @@unique([userId, websiteUrl])
+  @@index([userId, createdAt])
+}
+
+model Campaign {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name       String
+  adId       String?
+  ad         Ad?      @relation(fields: [adId], references: [id])
+  status     String   @default("draft")
+  createdAt  DateTime @default(now())
+
+  outreach   Outreach[]
+
+  @@index([userId, createdAt])
+}
+
+model Outreach {
+  id          String         @id @default(cuid())
+  campaignId  String
+  campaign    Campaign       @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  leadId      String
+  lead        Lead           @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  subject     String
+  body        String
+  status      OutreachStatus @default(DRAFT)
+  sentAt      DateTime?
+  openedAt    DateTime?
+  repliedAt   DateTime?
+
+  @@index([campaignId])
+  @@index([leadId])
+}
+
+model Job {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  kind        JobKind
+  status      JobStatus @default(QUEUED)
+  payloadJson Json
+  resultJson  Json?
+  error       String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([userId, kind, status])
+}
