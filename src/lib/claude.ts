@@ -16,8 +16,13 @@ export function claude(): Anthropic {
 }
 
 /**
- * Ask Claude for a JSON object matching the given schema. Uses adaptive
- * thinking + high effort for quality reasoning in the ad pipeline.
+ * Ask Claude for a JSON object matching the given schema.
+ *
+ * - Adaptive thinking + high effort for quality reasoning.
+ * - Each agent's system prompt is marked with `cache_control: ephemeral`, so
+ *   repeated calls within ~5 minutes hit the cache (~90% cheaper for the
+ *   system block). Invariant: system text must be byte-stable per agent —
+ *   no timestamps, per-user context, or JSON.stringify of unsorted objects.
  */
 export async function askJSON<T>(opts: {
   system: string;
@@ -25,20 +30,27 @@ export async function askJSON<T>(opts: {
   schema: unknown;
   maxTokens?: number;
 }): Promise<T> {
-  const resp = await claude().messages.create({
+  const params = {
     model: CLAUDE_MODEL,
     max_tokens: opts.maxTokens ?? 4096,
-    thinking: { type: "adaptive" },
+    thinking: { type: "adaptive" as const },
     output_config: {
       effort: "high",
-      format: {
-        type: "json_schema",
-        schema: opts.schema,
+      format: { type: "json_schema", schema: opts.schema },
+    },
+    system: [
+      {
+        type: "text" as const,
+        text: opts.system,
+        cache_control: { type: "ephemeral" as const },
       },
-    } as unknown as Anthropic.Messages.MessageCreateParams["output_config"],
-    system: opts.system,
-    messages: [{ role: "user", content: opts.user }],
-  });
+    ],
+    messages: [{ role: "user" as const, content: opts.user }],
+  };
+
+  const resp = await claude().messages.create(
+    params as unknown as Anthropic.Messages.MessageCreateParamsNonStreaming,
+  );
 
   for (const block of resp.content) {
     if (block.type === "text") {
