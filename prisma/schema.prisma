@@ -46,6 +46,21 @@ enum OutreachStatus {
   BOUNCED
 }
 
+enum SocialPlatform {
+  TIKTOK
+  INSTAGRAM
+  YOUTUBE
+  X
+}
+
+enum SocialPostStatus {
+  DRAFT
+  SCHEDULED
+  PUBLISHING
+  PUBLISHED
+  FAILED
+}
+
 model User {
   id         String     @id @default(cuid())
   email      String     @unique
@@ -53,10 +68,12 @@ model User {
   plan       Plan       @default(FREE)
   createdAt  DateTime   @default(now())
 
-  ads        Ad[]
-  leads      Lead[]
-  campaigns  Campaign[]
-  jobs       Job[]
+  ads               Ad[]
+  leads             Lead[]
+  campaigns         Campaign[]
+  jobs              Job[]
+  socialConnections SocialConnection[]
+  socialPosts       SocialPost[]
 }
 
 model Ad {
@@ -76,6 +93,7 @@ model Ad {
   updatedAt     DateTime  @updatedAt
 
   campaigns     Campaign[]
+  socialPosts   SocialPost[]
 
   @@index([userId, createdAt])
 }
@@ -142,4 +160,52 @@ model Job {
   updatedAt   DateTime  @updatedAt
 
   @@index([userId, kind, status])
+}
+
+model SocialConnection {
+  id           String         @id @default(cuid())
+  userId       String
+  user         User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  platform     SocialPlatform
+  handle       String?
+  avatarUrl    String?
+  accessToken  String
+  refreshToken String?
+  expiresAt    DateTime?
+  scopes       String?
+  demo         Boolean        @default(false)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  posts        SocialPost[]
+
+  @@unique([userId, platform])
+  @@index([userId])
+}
+
+model SocialPost {
+  id           String           @id @default(cuid())
+  userId       String
+  user         User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  connectionId String
+  connection   SocialConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+  adId         String
+  ad           Ad               @relation(fields: [adId], references: [id], onDelete: Cascade)
+  platform     SocialPlatform
+  caption      String
+  scheduledFor DateTime
+  status       SocialPostStatus @default(SCHEDULED)
+  externalId   String?
+  externalUrl  String?
+  views        Int              @default(0)
+  likes        Int              @default(0)
+  comments     Int              @default(0)
+  error        String?
+  publishedAt  DateTime?
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  @@index([userId, scheduledFor])
+  @@index([status, scheduledFor])
+  @@index([adId])
 }
