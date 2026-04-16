@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { hasDb } from "@/lib/env";
 import { getCurrentUserId } from "@/lib/auth";
 import { fixtureLeads } from "@/lib/fixtures";
+import { DiscoverButton } from "./DiscoverButton";
 
 async function loadLeads() {
   if (!hasDb) return fixtureLeads;
@@ -23,7 +24,7 @@ export default async function LeadsPage() {
       <TopBar
         title="Leads"
         subtitle="Shopify stores you can pitch."
-        action={<button className="btn-primary">Discover stores</button>}
+        action={<DiscoverButton />}
       />
       <div className="p-8">
         <div className="card overflow-hidden">
@@ -42,7 +43,16 @@ export default async function LeadsPage() {
                   <td className="px-5 py-4 font-medium text-ink-900">
                     {l.storeName}
                   </td>
-                  <td className="px-5 py-4 text-ink-500">{l.websiteUrl}</td>
+                  <td className="px-5 py-4 text-ink-500">
+                    <a
+                      href={l.websiteUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="hover:text-accent"
+                    >
+                      {l.websiteUrl}
+                    </a>
+                  </td>
                   <td className="px-5 py-4 text-ink-500">
                     {l.email ?? <span className="text-ink-300">—</span>}
                   </td>
