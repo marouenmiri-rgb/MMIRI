@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { getCurrentUserId } from "@/lib/auth";
 import { hasDb, env } from "@/lib/env";
 import { writeOutreachEmail } from "@/agents/outreach";
+import { sendEmail } from "@/lib/email";
 
 export const runtime = "nodejs";
 
@@ -12,6 +13,8 @@ const Body = z.object({
   leadId: z.string(),
   adId: z.string(),
   senderName: z.string().default("The AdGen Team"),
+  fromEmail: z.string().email().default("outreach@adgen.ai"),
+  deliver: z.boolean().default(false),
 });
 
 export async function POST(req: Request) {
@@ -45,17 +48,48 @@ export async function POST(req: Request) {
     senderName: parsed.data.senderName,
   });
 
-  const outreach = await db.outreach.create({
+  // Draft path: save copy only, return for UI review.
+  if (!parsed.data.deliver || !lead.email) {
+    const draft = await db.outreach.create({
+      data: {
+        campaignId: parsed.data.campaignId,
+        leadId: lead.id,
+        subject: email.subject,
+        body: email.body,
+        status: "DRAFT",
+      },
+    });
+    return NextResponse.json({
+      id: draft.id,
+      status: "DRAFT",
+      email,
+      note: lead.email ? undefined : "Lead has no email on file",
+    });
+  }
+
+  // Deliver path: send via Resend, reflect status + sentAt.
+  const result = await sendEmail({
+    to: lead.email,
+    from: parsed.data.fromEmail,
+    subject: email.subject,
+    text: `${email.body}\n\nWatch the ad: ${adUrl}\n`,
+  });
+
+  const persisted = await db.outreach.create({
     data: {
       campaignId: parsed.data.campaignId,
       leadId: lead.id,
       subject: email.subject,
       body: email.body,
-      status: "DRAFT",
+      status: result.ok ? "SENT" : "DRAFT",
+      sentAt: result.ok ? new Date() : null,
     },
   });
 
-  // Phase 3 wires Resend/SendGrid here. MVP stops at DRAFT so the user can
-  // review copy in the dashboard before it ever leaves the box.
-  return NextResponse.json({ id: outreach.id, email });
+  return NextResponse.json({
+    id: persisted.id,
+    status: persisted.status,
+    email,
+    delivery: result,
+  });
 }
