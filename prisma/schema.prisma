@@ -1,81 +1,24 @@
+// AdGen AI — local-first Prisma schema (SQLite).
+//
+// Enums are stored as String columns (SQLite doesn't support native enums).
+// Allowed values live in src/lib/enums.ts; the application validates every
+// write path with Zod. Keep them in sync when changing this file.
+
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
-enum Plan {
-  FREE
-  STARTER
-  STUDIO
-  SCALE
-  AGENCY
-}
-
-enum SubscriptionStatus {
-  TRIALING
-  ACTIVE
-  PAST_DUE
-  CANCELED
-  PAUSED
-}
-
-enum AdStatus {
-  QUEUED
-  SCRAPING
-  WRITING
-  DIRECTING
-  RENDERING
-  READY
-  FAILED
-}
-
-enum JobKind {
-  AD_GENERATION
-  SHOPIFY_DISCOVERY
-  OUTREACH_SEND
-}
-
-enum JobStatus {
-  QUEUED
-  RUNNING
-  COMPLETED
-  FAILED
-}
-
-enum OutreachStatus {
-  DRAFT
-  QUEUED
-  SENT
-  OPENED
-  REPLIED
-  BOUNCED
-}
-
-enum SocialPlatform {
-  TIKTOK
-  INSTAGRAM
-  YOUTUBE
-  X
-}
-
-enum SocialPostStatus {
-  DRAFT
-  SCHEDULED
-  PUBLISHING
-  PUBLISHED
-  FAILED
-}
-
 model User {
-  id         String     @id @default(cuid())
-  email      String     @unique
+  id         String   @id @default(cuid())
+  email      String   @unique
   name       String?
-  plan       Plan       @default(FREE)
-  createdAt  DateTime   @default(now())
+  plan       String   @default("FREE")
+  createdAt  DateTime @default(now())
 
   ads               Ad[]
   leads             Lead[]
@@ -91,20 +34,20 @@ model User {
 }
 
 model Ad {
-  id            String    @id @default(cuid())
+  id            String   @id @default(cuid())
   userId        String
-  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   productUrl    String
   productTitle  String?
-  status        AdStatus  @default(QUEUED)
+  status        String   @default("QUEUED")
   scriptJson    Json?
   scenesJson    Json?
   voiceoverUrl  String?
   videoUrl      String?
   thumbnailUrl  String?
   error         String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   campaigns     Campaign[]
   socialPosts   SocialPost[]
@@ -132,66 +75,66 @@ model Lead {
 }
 
 model Campaign {
-  id         String   @id @default(cuid())
-  userId     String
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  name       String
-  adId       String?
-  ad         Ad?      @relation(fields: [adId], references: [id])
-  status     String   @default("draft")
-  createdAt  DateTime @default(now())
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  adId      String?
+  ad        Ad?      @relation(fields: [adId], references: [id])
+  status    String   @default("draft")
+  createdAt DateTime @default(now())
 
-  outreach   Outreach[]
+  outreach  Outreach[]
 
   @@index([userId, createdAt])
 }
 
 model Outreach {
-  id          String         @id @default(cuid())
-  campaignId  String
-  campaign    Campaign       @relation(fields: [campaignId], references: [id], onDelete: Cascade)
-  leadId      String
-  lead        Lead           @relation(fields: [leadId], references: [id], onDelete: Cascade)
-  subject     String
-  body        String
-  status      OutreachStatus @default(DRAFT)
-  sentAt      DateTime?
-  openedAt    DateTime?
-  repliedAt   DateTime?
+  id         String    @id @default(cuid())
+  campaignId String
+  campaign   Campaign  @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  leadId     String
+  lead       Lead      @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  subject    String
+  body       String
+  status     String    @default("DRAFT")
+  sentAt     DateTime?
+  openedAt   DateTime?
+  repliedAt  DateTime?
 
   @@index([campaignId])
   @@index([leadId])
 }
 
 model Job {
-  id          String    @id @default(cuid())
+  id          String   @id @default(cuid())
   userId      String
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  kind        JobKind
-  status      JobStatus @default(QUEUED)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  kind        String
+  status      String   @default("QUEUED")
   payloadJson Json
   resultJson  Json?
   error       String?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   @@index([userId, kind, status])
 }
 
 model SocialConnection {
-  id           String         @id @default(cuid())
+  id           String    @id @default(cuid())
   userId       String
-  user         User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  platform     SocialPlatform
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  platform     String
   handle       String?
   avatarUrl    String?
   accessToken  String
   refreshToken String?
   expiresAt    DateTime?
   scopes       String?
-  demo         Boolean        @default(false)
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
+  demo         Boolean   @default(false)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
   posts        SocialPost[]
 
@@ -209,10 +152,10 @@ model SocialPost {
   ad           Ad               @relation(fields: [adId], references: [id], onDelete: Cascade)
   variantId    String?
   variant      AdVariant?       @relation(fields: [variantId], references: [id], onDelete: SetNull)
-  platform     SocialPlatform
+  platform     String
   caption      String
   scheduledFor DateTime
-  status       SocialPostStatus @default(SCHEDULED)
+  status       String           @default("SCHEDULED")
   externalId   String?
   externalUrl  String?
   views        Int              @default(0)
@@ -231,25 +174,19 @@ model SocialPost {
   @@index([variantId])
 }
 
-enum VariantKind {
-  HOOK
-  ANGLE
-  CTA
-}
-
 model AdVariant {
-  id         String      @id @default(cuid())
+  id         String   @id @default(cuid())
   userId     String
-  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   adId       String
-  ad         Ad          @relation(fields: [adId], references: [id], onDelete: Cascade)
-  kind       VariantKind @default(HOOK)
+  ad         Ad       @relation(fields: [adId], references: [id], onDelete: Cascade)
+  kind       String   @default("HOOK")
   label      String
   angle      String?
   scriptJson Json
-  winner     Boolean     @default(false)
-  retired    Boolean     @default(false)
-  createdAt  DateTime    @default(now())
+  winner     Boolean  @default(false)
+  retired    Boolean  @default(false)
+  createdAt  DateTime @default(now())
 
   socialPosts SocialPost[]
 
@@ -257,25 +194,25 @@ model AdVariant {
 }
 
 model TrackingLink {
-  id             String       @id @default(cuid())
-  code           String       @unique
+  id             String      @id @default(cuid())
+  code           String      @unique
   userId         String
-  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user           User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   adId           String?
-  ad             Ad?          @relation(fields: [adId], references: [id], onDelete: SetNull)
-  socialPostId   String?      @unique
-  socialPost     SocialPost?  @relation(fields: [socialPostId], references: [id], onDelete: SetNull)
+  ad             Ad?         @relation(fields: [adId], references: [id], onDelete: SetNull)
+  socialPostId   String?     @unique
+  socialPost     SocialPost? @relation(fields: [socialPostId], references: [id], onDelete: SetNull)
   destinationUrl String
   utmSource      String?
   utmMedium      String?
   utmCampaign    String?
   utmContent     String?
-  clicks         Int          @default(0)
-  conversions    Int          @default(0)
-  revenueCents   Int          @default(0)
-  currency       String       @default("USD")
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
+  clicks         Int         @default(0)
+  conversions    Int         @default(0)
+  revenueCents   Int         @default(0)
+  currency       String      @default("USD")
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
 
   clickEvents  ClickEvent[]
   orderEvents  Conversion[]
@@ -313,42 +250,35 @@ model Conversion {
   @@index([userId, occurredAt])
 }
 
-enum InsightKind {
-  WEEKLY_BRIEF
-  WINNING_HOOK
-  LOSING_HOOK
-  BUDGET_SHIFT
-}
-
 model Insight {
-  id        String      @id @default(cuid())
-  userId    String
-  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  kind      InsightKind
-  title     String
-  body      String
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  kind         String
+  title        String
+  body         String
   evidenceJson Json?
-  actioned  Boolean     @default(false)
-  createdAt DateTime    @default(now())
+  actioned     Boolean  @default(false)
+  createdAt    DateTime @default(now())
 
   @@index([userId, createdAt])
 }
 
 model Subscription {
-  id                   String             @id @default(cuid())
-  userId               String             @unique
-  user                 User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  tier                 Plan               @default(FREE)
-  status               SubscriptionStatus @default(ACTIVE)
-  stripeCustomerId     String?            @unique
-  stripeSubscriptionId String?            @unique
+  id                   String    @id @default(cuid())
+  userId               String    @unique
+  user                 User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tier                 String    @default("FREE")
+  status               String    @default("ACTIVE")
+  stripeCustomerId     String?   @unique
+  stripeSubscriptionId String?   @unique
   stripePriceId        String?
   currentPeriodStart   DateTime?
   currentPeriodEnd     DateTime?
-  cancelAtPeriodEnd    Boolean            @default(false)
-  revenueShareBps      Int?               // basis points (500 = 5%) for SCALE tier
-  createdAt            DateTime           @default(now())
-  updatedAt            DateTime           @updatedAt
+  cancelAtPeriodEnd    Boolean   @default(false)
+  revenueShareBps      Int?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
 
   @@index([stripeCustomerId])
 }

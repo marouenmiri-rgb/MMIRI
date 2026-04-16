@@ -1,73 +1,90 @@
-# AdGen AI — Build Plan
+# AdGen AI — Run locally
 
-A pragmatic, week-by-week plan to take AdGen AI from this scaffold to paying customers.
-Each phase ends with something a user can actually try.
-
----
-
-## Phase 0 — Scaffold (this commit)
-
-- [x] Next.js 14 + TypeScript + Tailwind set up
-- [x] Prisma schema for users, ads, leads, campaigns, outreach, jobs
-- [x] Claude client + env validation
-- [x] Agent modules (scraper, copywriter, creative director, video, outreach)
-- [x] Orchestrator that chains agents into one job
-- [x] API routes: `/api/ads/generate`, `/api/ads/:id`, `/api/leads`, `/api/outreach/send`
-- [x] Dashboard shell + 5 pages with Stripe/Apple-style UI
-
-## Phase 1 — Working MVP (week 1)
-
-- [ ] Hook `.env` to a real Postgres (Neon / Supabase) and run `prisma migrate dev`
-- [ ] Add `ANTHROPIC_API_KEY` and run `/generator` end-to-end on a real product URL
-- [ ] Replace scraper stub with Playwright running on a serverless-friendly runtime
-      (Browserless, Bright Data, or a small Fly.io worker)
-- [ ] Persist scraped images to S3 / R2
-- [ ] Basic auth (NextAuth email magic link)
-- [ ] Ship to Vercel, share a demo link
-
-## Phase 2 — Real video output (week 2)
-
-- [ ] Voiceover via ElevenLabs; store MP3 in object storage
-- [ ] FFmpeg render worker (Fly.io machine or Railway):
-      image slideshow + Ken Burns + subtitles + voiceover → MP4
-- [ ] Job queue with BullMQ + Redis; dashboard polls job status
-- [ ] Add "regenerate script" and "swap scene" controls
-
-## Phase 3 — Leads + Outreach (week 3)
-
-- [ ] Shopify finder: keyword → Google / Bing SERP → filter `cdn.shopify.com` +
-      `powered by Shopify` footer → extract email/socials from contact pages
-- [ ] Lead dedup + enrichment (domain, country, traffic estimate)
-- [ ] Campaign builder: pick ad + lead segment → generate personalized emails
-- [ ] Resend integration + open/reply webhooks
-- [ ] Follow-up sequencer (day 3, day 7) with reply detection
-
-## Phase 4 — Monetization (week 4)
-
-- [ ] Stripe billing (Starter / Pro / Agency tiers)
-- [ ] Usage metering per ad generated / email sent
-- [ ] Team seats, invite flow
-- [ ] Admin dashboard (support, impersonation)
-
-## Phase 5 — Moat (ongoing)
-
-- [ ] Learn from winning ads (which hooks convert) → better copywriter prompts
-- [ ] Style presets (TikTok UGC, premium brand, meme-core, etc.)
-- [ ] Multi-language output
-- [ ] Public API + Zapier integration
-
----
-
-## Local run (this scaffold)
+Zero cloud. One command.
 
 ```bash
-cp .env.example .env          # fill ANTHROPIC_API_KEY + DATABASE_URL
+git clone <this-repo> && cd MMIRI
+git checkout claude/adgen-ai-platform-design-J370m
 npm install
-npx prisma generate
-npx prisma migrate dev --name init
 npm run dev
 ```
 
-Open http://localhost:3000 → `/generator` → paste any product URL.
+That's it. Open http://localhost:3000.
 
-Without a DB or API key the UI still renders with fixtures so you can explore the design.
+## What that command actually does
+
+1. Runs `scripts/local-setup.ts` which:
+   - Creates `prisma/dev.db` (SQLite) if it doesn't exist
+   - Applies the schema via `prisma db push`
+   - Generates the Prisma client
+   - Seeds a demo user + sample ads, leads, social connections, and a
+     tracking link with attributed revenue so every page is lived-in
+     on first load
+2. Starts `next dev` on port 3000
+3. Boots the in-process publisher scheduler (via
+   `instrumentation.ts`) that polls every 60 seconds for scheduled
+   posts and publishes any whose `scheduledFor` has passed — no
+   external cron needed
+
+## What works out of the box
+
+Everything that doesn't require a third-party API key runs on fixtures
+or demo-mode:
+
+- Landing · Dashboard · Generator · Autopilot · Revenue · Pricing · Settings
+- Scraper (HTTP-based; any public product page)
+- Shopify finder (DuckDuckGo search; no key)
+- Social connections (demo mode; "Connect" flips a flag)
+- Social publish (demo mode; returns `?demo=1` URLs)
+- Revenue Pulse (seeded conversions)
+- Variant Lab (needs Claude to generate; see below)
+- Pricing + upgrade flow (demo mode flips your subscription directly)
+
+## Unlocking the real stack
+
+Everything below is optional — each feature graceful-degrades without
+its key.
+
+```bash
+cp .env.example .env
+# then edit .env with whichever keys you want to enable
+```
+
+| Feature           | Env var(s)                                                                                   |
+| ----------------- | -------------------------------------------------------------------------------------------- |
+| AI agents         | `ANTHROPIC_API_KEY`                                                                          |
+| Voiceover         | `ELEVENLABS_API_KEY`                                                                         |
+| Video (MP4)       | `ffmpeg` on PATH (system install — `brew install ffmpeg` / `apt-get install ffmpeg`)         |
+| Outreach delivery | `RESEND_API_KEY`                                                                             |
+| Real billing      | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_STARTER` …                       |
+| Real TikTok       | `TIKTOK_CLIENT_KEY`, `TIKTOK_CLIENT_SECRET`                                                  |
+| Real Instagram    | `FACEBOOK_APP_ID`, `FACEBOOK_APP_SECRET`                                                     |
+| Real YouTube      | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`                                                   |
+| Real X            | `X_CLIENT_ID`, `X_CLIENT_SECRET`                                                             |
+| Shopify webhook   | `SHOPIFY_WEBHOOK_SECRET` (configure a webhook in Shopify admin → `POST /api/webhooks/shopify/orders`) |
+
+## Useful commands
+
+```bash
+npm run dev          # setup + dev server
+npm run setup        # migrate + seed (safe to re-run)
+npm run db:studio    # GUI over the SQLite file
+npm run db:reset     # wipe DB + reseed
+npm test             # vitest
+npm run typecheck    # tsc --noEmit
+npm run build        # production build
+```
+
+## Upgrading to Postgres later
+
+When you're ready to go multi-user, just change the Prisma datasource
+back to `provider = "postgresql"` and set `DATABASE_URL` to your
+Postgres URL. The schema was designed to port cleanly.
+
+## Roadmap
+
+- Phase 1 ✓  Local-first MVP (this repo)
+- Phase 2 →  Real-time agent event stream (SSE replaces job polling)
+- Phase 3 →  Multi-workspace (agency mode)
+- Phase 4 →  Meta Ads direct uploader
+- Phase 5 →  Trending-hook radar (auto-generate ads from what's winning in your niche)
