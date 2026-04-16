@@ -6,6 +6,7 @@ import { hasDb } from "@/lib/env";
 import { getCurrentUserId } from "@/lib/auth";
 import { fixtureRevenue } from "@/lib/fixtures";
 import { RevenueFeed } from "./RevenueFeed";
+import { InsightsPanel } from "./InsightsPanel";
 
 type Summary = Awaited<ReturnType<typeof loadSummary>>;
 
@@ -152,6 +153,8 @@ export default async function RevenuePage() {
           series={data.series}
           totalCents={data.totals.revenueCents}
         />
+
+        <InsightsPanel />
 
         {/* Tiles */}
         <section className="grid grid-cols-2 gap-4 md:grid-cols-4">

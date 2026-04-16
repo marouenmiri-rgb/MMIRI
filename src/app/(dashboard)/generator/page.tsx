@@ -5,6 +5,7 @@ import { TopBar } from "@/components/TopBar";
 import { StatusPill } from "@/components/StatusPill";
 import { AgentPipeline, PIPELINE } from "@/components/AgentPipeline";
 import { ShipPanel } from "./ShipPanel";
+import { VariantLab } from "./VariantLab";
 
 type AdResult = {
   id: string;
@@ -286,6 +287,9 @@ export default function GeneratorPage() {
 
               {/* Ship to socials */}
               <ShipPanel adId={ad.id} isReady={ad.status === "READY"} />
+
+              {/* Variant Lab */}
+              {ad.status === "READY" && <VariantLab adId={ad.id} />}
 
               {/* Console */}
               <section className="card overflow-hidden">
