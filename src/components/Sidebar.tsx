@@ -28,6 +28,16 @@ const NAV: { href: string; label: string; icon: React.ReactNode; hint?: string }
     ),
   },
   {
+    href: "/distribution",
+    label: "Autopilot",
+    hint: "Ship",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4">
+        <path d="M5 19l7-14 7 14-7-4-7 4z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+      </svg>
+    ),
+  },
+  {
     href: "/leads",
     label: "Leads",
     hint: "Storefronts",

@@ -48,3 +48,78 @@ export const fixtureCampaigns = [
     replied: 9,
   },
 ];
+
+const inHours = (h: number) =>
+  new Date(Date.now() + h * 60 * 60 * 1000).toISOString();
+
+export const fixtureDistribution = {
+  connections: {
+    TIKTOK: {
+      id: "conn-tt",
+      platform: "TIKTOK" as const,
+      handle: "adgen.lab",
+      demo: true,
+      queued: 2,
+      published: 5,
+    },
+    INSTAGRAM: {
+      id: "conn-ig",
+      platform: "INSTAGRAM" as const,
+      handle: "adgen.lab",
+      demo: true,
+      queued: 1,
+      published: 3,
+    },
+    YOUTUBE: null,
+    X: {
+      id: "conn-x",
+      platform: "X" as const,
+      handle: "adgenlab",
+      demo: true,
+      queued: 1,
+      published: 2,
+    },
+  },
+  posts: [
+    {
+      id: "p1",
+      platform: "TIKTOK" as const,
+      scheduledFor: inHours(3),
+      status: "SCHEDULED" as const,
+      externalUrl: null,
+      ad: { productTitle: "Ember Travel Mug 2", thumbnailUrl: null },
+    },
+    {
+      id: "p2",
+      platform: "INSTAGRAM" as const,
+      scheduledFor: inHours(6),
+      status: "SCHEDULED" as const,
+      externalUrl: null,
+      ad: { productTitle: "Ember Travel Mug 2", thumbnailUrl: null },
+    },
+    {
+      id: "p3",
+      platform: "X" as const,
+      scheduledFor: inHours(26),
+      status: "SCHEDULED" as const,
+      externalUrl: null,
+      ad: { productTitle: "Allbirds Wool Runner", thumbnailUrl: null },
+    },
+    {
+      id: "p4",
+      platform: "TIKTOK" as const,
+      scheduledFor: inHours(-18),
+      status: "PUBLISHED" as const,
+      externalUrl: "https://www.tiktok.com/@demo/video/demo_x?demo=1",
+      ad: { productTitle: "Highland Candle Co.", thumbnailUrl: null },
+    },
+    {
+      id: "p5",
+      platform: "INSTAGRAM" as const,
+      scheduledFor: inHours(-42),
+      status: "PUBLISHED" as const,
+      externalUrl: "https://www.instagram.com/reel/demo_y?demo=1",
+      ad: { productTitle: "Dune Goods Tote", thumbnailUrl: null },
+    },
+  ],
+};

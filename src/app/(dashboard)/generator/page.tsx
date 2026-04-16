@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { TopBar } from "@/components/TopBar";
 import { StatusPill } from "@/components/StatusPill";
 import { AgentPipeline, PIPELINE } from "@/components/AgentPipeline";
+import { ShipPanel } from "./ShipPanel";
 
 type AdResult = {
   id: string;
@@ -282,6 +283,9 @@ export default function GeneratorPage() {
                   )}
                 </div>
               </section>
+
+              {/* Ship to socials */}
+              <ShipPanel adId={ad.id} isReady={ad.status === "READY"} />
 
               {/* Console */}
               <section className="card overflow-hidden">
