@@ -23,9 +23,7 @@ export function DiscoverButton() {
       const body = await r.json();
       if (!r.ok) throw new Error(body.error ?? `HTTP ${r.status}`);
       setMsg(
-        `Found ${body.stores?.length ?? 0} store${
-          body.stores?.length === 1 ? "" : "s"
-        } · saved ${body.saved ?? 0}`,
+        `Found ${body.stores?.length ?? 0} · saved ${body.saved ?? 0}`,
       );
       router.refresh();
     } catch (err) {
@@ -37,7 +35,7 @@ export function DiscoverButton() {
 
   if (!open) {
     return (
-      <button className="btn-primary" onClick={() => setOpen(true)}>
+      <button className="btn-lime" onClick={() => setOpen(true)}>
         Discover stores
       </button>
     );
@@ -46,8 +44,8 @@ export function DiscoverButton() {
   return (
     <form onSubmit={run} className="flex items-center gap-2">
       <input
-        className="input w-64"
-        placeholder="niche, e.g. “outdoor cookware”"
+        className="input w-64 font-mono"
+        placeholder='niche, e.g. "outdoor cookware"'
         value={keyword}
         onChange={(e) => setKeyword(e.target.value)}
         autoFocus
@@ -58,7 +56,7 @@ export function DiscoverButton() {
       </button>
       <button
         type="button"
-        className="btn-secondary"
+        className="btn-ghost"
         onClick={() => {
           setOpen(false);
           setMsg(null);
@@ -66,7 +64,7 @@ export function DiscoverButton() {
       >
         Cancel
       </button>
-      {msg ? <span className="ml-2 text-xs text-ink-500">{msg}</span> : null}
+      {msg ? <span className="ml-2 text-xs text-ink-mid">{msg}</span> : null}
     </form>
   );
 }

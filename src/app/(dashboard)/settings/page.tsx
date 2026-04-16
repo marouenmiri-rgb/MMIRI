@@ -1,75 +1,140 @@
 import { TopBar } from "@/components/TopBar";
 import { hasClaude, hasDb } from "@/lib/env";
 
+type Check = { label: string; ok: boolean; hint: string; critical?: boolean };
+
 export default function SettingsPage() {
-  const checks = [
-    { label: "Database connected", ok: hasDb, hint: "Set DATABASE_URL" },
-    { label: "Claude API key", ok: hasClaude, hint: "Set ANTHROPIC_API_KEY" },
+  const checks: Check[] = [
     {
-      label: "Voiceover (ElevenLabs)",
-      ok: Boolean(process.env.ELEVENLABS_API_KEY),
-      hint: "Optional · enables voice generation",
+      label: "Database",
+      ok: hasDb,
+      hint: "Postgres via Prisma · DATABASE_URL",
+      critical: true,
     },
     {
-      label: "Outreach (Resend)",
+      label: "Claude Opus 4.7",
+      ok: hasClaude,
+      hint: "Reasoning for all 5 agents · ANTHROPIC_API_KEY",
+      critical: true,
+    },
+    {
+      label: "Voiceover engine",
+      ok: Boolean(process.env.ELEVENLABS_API_KEY),
+      hint: "ElevenLabs TTS · optional (silent video without)",
+    },
+    {
+      label: "Outreach courier",
       ok: Boolean(process.env.RESEND_API_KEY),
-      hint: "Optional · sends emails",
+      hint: "Resend delivery · optional (drafts only without)",
+    },
+    {
+      label: "Video renderer",
+      ok: true,
+      hint: "FFmpeg slideshow · detected at runtime",
     },
   ];
 
+  const ready = checks.filter((c) => c.ok).length;
+  const required = checks.filter((c) => c.critical).length;
+  const criticalReady = checks.filter((c) => c.critical && c.ok).length;
+
   return (
     <>
-      <TopBar title="Settings" subtitle="Workspace · billing · integrations." />
-      <div className="space-y-6 p-8">
-        <div className="card p-6">
-          <h3 className="text-sm font-semibold">Workspace</h3>
-          <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
-            <Field label="Workspace name" value="AdGen Demo" />
-            <Field label="Plan" value="Free (MVP)" />
+      <TopBar
+        eyebrow="Workspace"
+        title="Settings"
+        subtitle="Keys, integrations, and what the lab has to work with."
+        action={
+          <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-ink-mid">
+            {ready}/{checks.length} wired · {criticalReady}/{required} required
           </div>
-        </div>
+        }
+      />
 
-        <div className="card p-6">
-          <h3 className="text-sm font-semibold">System health</h3>
-          <ul className="mt-4 divide-y divide-ink-100">
+      <div className="space-y-6 p-8">
+        <section className="grid gap-4 md:grid-cols-2">
+          <Field label="Workspace" value="AdGen Demo" />
+          <Field label="Plan" value="Free · MVP" />
+        </section>
+
+        {/* System status */}
+        <section className="card overflow-hidden">
+          <header className="flex items-center justify-between border-b border-line-1 px-5 py-4">
+            <div>
+              <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-volt">
+                System status
+              </div>
+              <h3 className="mt-1 font-display text-xl tracking-tight">Integrations</h3>
+            </div>
+            <span className={criticalReady === required ? "chip-live" : "pill border border-warn/30 bg-warn/10 text-warn"}>
+              <span className={criticalReady === required ? "dot-live" : "inline-block h-1.5 w-1.5 rounded-full bg-warn"} />
+              {criticalReady === required ? "All systems go" : "Action required"}
+            </span>
+          </header>
+
+          <ul>
             {checks.map((c) => (
-              <li key={c.label} className="flex items-center justify-between py-3">
-                <div>
-                  <div className="text-sm font-medium text-ink-800">
-                    {c.label}
+              <li
+                key={c.label}
+                className="flex items-center justify-between gap-4 border-t border-line-1 px-5 py-4 first:border-t-0"
+              >
+                <div className="flex items-center gap-3">
+                  <HealthDot ok={c.ok} />
+                  <div>
+                    <div className="text-sm font-medium text-ink-hi">{c.label}</div>
+                    <div className="font-mono text-[11px] text-ink-mid">{c.hint}</div>
                   </div>
-                  <div className="text-xs text-ink-400">{c.hint}</div>
                 </div>
                 <span
                   className={
                     c.ok
-                      ? "pill bg-emerald-50 text-emerald-700"
-                      : "pill bg-ink-100 text-ink-500"
+                      ? "chip-live"
+                      : "pill border border-line-2 bg-base-3 text-ink-mid"
                   }
                 >
-                  {c.ok ? "Connected" : "Not configured"}
+                  {c.ok ? <span className="dot-live" /> : <span className="inline-block h-1.5 w-1.5 rounded-full bg-ink-lo" />}
+                  {c.ok ? "connected" : "missing"}
                 </span>
               </li>
             ))}
           </ul>
-        </div>
+        </section>
 
-        <div className="card p-6">
-          <h3 className="text-sm font-semibold">Billing</h3>
-          <p className="mt-2 text-sm text-ink-500">
-            Stripe billing ships in Phase 4 (see <code>BUILDPLAN.md</code>).
+        <section className="card p-6">
+          <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-volt">
+            Billing
+          </div>
+          <p className="mt-2 text-sm text-ink-mid">
+            Stripe billing is scheduled for Phase 4 — see{" "}
+            <code className="font-mono text-volt">BUILDPLAN.md</code>.
           </p>
-        </div>
+        </section>
       </div>
     </>
   );
 }
 
+function HealthDot({ ok }: { ok: boolean }) {
+  if (ok) {
+    return (
+      <span className="relative inline-flex h-2.5 w-2.5">
+        <span className="absolute inset-0 rounded-full bg-lime animate-pulseRing" />
+        <span className="relative inline-block h-2.5 w-2.5 rounded-full bg-lime" />
+      </span>
+    );
+  }
+  return <span className="inline-block h-2.5 w-2.5 rounded-full border border-line-3 bg-base-3" />;
+}
+
 function Field({ label, value }: { label: string; value: string }) {
   return (
-    <div>
-      <div className="text-xs uppercase tracking-wider text-ink-400">{label}</div>
-      <div className="mt-1 text-sm font-medium text-ink-800">{value}</div>
+    <div className="card p-5">
+      <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-ink-dim">
+        {label}
+      </div>
+      <div className="mt-2 font-display text-xl tracking-tight text-ink-hi">
+        {value}
+      </div>
     </div>
   );
 }

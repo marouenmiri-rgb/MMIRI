@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "AdGen AI — AI-generated video ads for Shopify stores",
+  title: "AdGen — The AI ad lab for Shopify",
   description:
-    "Turn any product URL into a high-converting short-form video ad. Find Shopify stores. Run personalized outreach. All from one clean dashboard.",
+    "Paste a product URL. Watch a five-agent pipeline turn it into a short-form video ad. Find stores that need it. Ship outreach. All from one control room.",
 };
 
 export default function RootLayout({
@@ -13,7 +13,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" className="dark">
       <body>{children}</body>
     </html>
   );

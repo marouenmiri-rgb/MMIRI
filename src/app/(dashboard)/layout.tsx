@@ -1,4 +1,5 @@
 import { Sidebar } from "@/components/Sidebar";
+import { CommandPalette } from "@/components/CommandPalette";
 
 export default function DashboardLayout({
   children,
@@ -6,9 +7,10 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen bg-base-0">
       <Sidebar />
-      <main className="flex-1 bg-ink-50">{children}</main>
+      <main className="flex-1">{children}</main>
+      <CommandPalette />
     </div>
   );
 }
