@@ -12,7 +12,11 @@ Rules:
 - Speak directly to the viewer ("you"). No passive voice. No marketing fluff.
 - Problem is relatable and specific. Solution ties back to the product's actual feature.
 - CTA is concrete and urgent.
-- Total fullScript should be ~80–110 words, spoken at a natural pace.`;
+- Total fullScript should be ~80–110 words, spoken at a natural pace.
+
+If the user provides a hook hint, treat it as a required pattern: instantiate
+the formula with the actual product facts, keep it tight (≤14 words), and
+make sure the rest of the script flows out of that hook naturally.`;
 
 const SCHEMA = {
   type: "object",
@@ -27,12 +31,16 @@ const SCHEMA = {
   },
 };
 
-export async function writeAdScript(product: ProductFacts): Promise<AdScript> {
+export async function writeAdScript(
+  product: ProductFacts,
+  opts: { hookHint?: string } = {},
+): Promise<AdScript> {
   const user = `Write a short-form video ad script for this product.
 
 Title: ${product.title}
 ${product.price ? `Price: ${product.price}\n` : ""}Description: ${product.description}
 URL: ${product.url}
+${opts.hookHint ? `\nHook pattern to use (instantiate with the product's facts): "${opts.hookHint}"` : ""}
 
 Return JSON only, matching the schema.`;
 

@@ -13,8 +13,9 @@ import type { GeneratedAd } from "./types";
 export async function runAdPipeline(args: {
   adId: string;
   productUrl: string;
+  hookHint?: string;
 }): Promise<GeneratedAd> {
-  const { adId, productUrl } = args;
+  const { adId, productUrl, hookHint } = args;
 
   await db.ad.update({ where: { id: adId }, data: { status: "SCRAPING" } });
   const product = await scrapeProduct(productUrl);
@@ -24,7 +25,7 @@ export async function runAdPipeline(args: {
   });
 
   await db.ad.update({ where: { id: adId }, data: { status: "WRITING" } });
-  const script = await writeAdScript(product);
+  const script = await writeAdScript(product, { hookHint });
   await db.ad.update({
     where: { id: adId },
     data: { scriptJson: script as object },

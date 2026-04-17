@@ -11,6 +11,7 @@ export const maxDuration = 300;
 
 const Body = z.object({
   productUrl: z.string().url(),
+  hookHint: z.string().min(2).max(280).optional(),
 });
 
 export async function POST(req: Request) {
@@ -59,17 +60,19 @@ export async function POST(req: Request) {
     },
   });
 
-  runAdPipeline({ adId: ad.id, productUrl: parsed.data.productUrl }).catch(
-    async (err) => {
-      await db.ad.update({
-        where: { id: ad.id },
-        data: {
-          status: "FAILED",
-          error: err instanceof Error ? err.message : String(err),
-        },
-      });
-    },
-  );
+  runAdPipeline({
+    adId: ad.id,
+    productUrl: parsed.data.productUrl,
+    hookHint: parsed.data.hookHint,
+  }).catch(async (err) => {
+    await db.ad.update({
+      where: { id: ad.id },
+      data: {
+        status: "FAILED",
+        error: err instanceof Error ? err.message : String(err),
+      },
+    });
+  });
 
   return NextResponse.json({ id: ad.id, status: ad.status }, { status: 202 });
 }
