@@ -49,8 +49,44 @@ async function main() {
     } else {
       console.log(`[adgen] found ${count} user(s); skipping seed.`);
     }
+    // 3PL partner roster is idempotent — run every boot to pick up edits to the
+    // default list without needing a full DB reset.
+    await seedThreePLPartners(db);
   } finally {
     await db.$disconnect();
+  }
+}
+
+async function seedThreePLPartners(db: DB) {
+  const { DEFAULT_THREEPL_PARTNERS } = await import(
+    "../src/data/threepl-partners"
+  );
+  for (const p of DEFAULT_THREEPL_PARTNERS) {
+    await db.threePLPartner.upsert({
+      where: { name: p.name },
+      update: {
+        websiteUrl: p.websiteUrl,
+        affiliateUrl: p.affiliateUrl,
+        commissionBps: p.commissionBps,
+        vertical: p.vertical,
+        geo: p.geo,
+        minOrdersPerMonth: p.minOrdersPerMonth,
+        maxOrdersPerMonth: p.maxOrdersPerMonth,
+        blurb: p.blurb,
+        active: true,
+      },
+      create: {
+        name: p.name,
+        websiteUrl: p.websiteUrl,
+        affiliateUrl: p.affiliateUrl,
+        commissionBps: p.commissionBps,
+        vertical: p.vertical,
+        geo: p.geo,
+        minOrdersPerMonth: p.minOrdersPerMonth,
+        maxOrdersPerMonth: p.maxOrdersPerMonth,
+        blurb: p.blurb,
+      },
+    });
   }
 }
 

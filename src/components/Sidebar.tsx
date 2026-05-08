@@ -72,6 +72,17 @@ const NAV: { href: string; label: string; icon: React.ReactNode; hint?: string }
     ),
   },
   {
+    href: "/threepl",
+    label: "3PL Finder",
+    hint: "Affiliate",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4">
+        <path d="M3 7l9-4 9 4-9 4-9-4z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+        <path d="M3 12l9 4 9-4M3 17l9 4 9-4" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+      </svg>
+    ),
+  },
+  {
     href: "/campaigns",
     label: "Campaigns",
     hint: "Outreach",

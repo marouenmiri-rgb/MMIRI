@@ -6,6 +6,8 @@ const schema = z.object({
   ELEVENLABS_API_KEY: z.string().optional(),
   RESEND_API_KEY: z.string().optional(),
   NEXT_PUBLIC_APP_URL: z.string().default("http://localhost:3000"),
+  THREEPL_AFFILIATE_REF: z.string().optional(),
+  THREEPL_SENDER_NAME: z.string().optional(),
 });
 
 export const env = schema.parse({
@@ -14,6 +16,8 @@ export const env = schema.parse({
   ELEVENLABS_API_KEY: process.env.ELEVENLABS_API_KEY,
   RESEND_API_KEY: process.env.RESEND_API_KEY,
   NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
+  THREEPL_AFFILIATE_REF: process.env.THREEPL_AFFILIATE_REF,
+  THREEPL_SENDER_NAME: process.env.THREEPL_SENDER_NAME,
 });
 
 export const hasClaude = Boolean(env.ANTHROPIC_API_KEY);

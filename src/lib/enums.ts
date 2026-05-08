@@ -31,8 +31,20 @@ export const JOB_KINDS = [
   "AD_GENERATION",
   "SHOPIFY_DISCOVERY",
   "OUTREACH_SEND",
+  "THREEPL_DISCOVERY",
 ] as const;
 export type JobKind = (typeof JOB_KINDS)[number];
+
+export const THREEPL_LEAD_STATUSES = [
+  "DISCOVERED",
+  "SCORED",
+  "MATCHED",
+  "PITCHED",
+  "REPLIED",
+  "WON",
+  "ARCHIVED",
+] as const;
+export type ThreePLLeadStatus = (typeof THREEPL_LEAD_STATUSES)[number];
 
 export const JOB_STATUSES = [
   "QUEUED",
