@@ -31,6 +31,8 @@ model User {
   adVariants        AdVariant[]
   insights          Insight[]
   subscription      Subscription?
+  brandVoice        BrandVoice?
+  autoPilotRules    AutoPilotRule[]
 }
 
 model Ad {
@@ -281,4 +283,41 @@ model Subscription {
   updatedAt            DateTime  @updatedAt
 
   @@index([stripeCustomerId])
+}
+
+model BrandVoice {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name         String?
+  tone         String?
+  audience     String?
+  dosJson      Json?
+  dontsJson    Json?
+  examplesJson Json?
+  sourceUrl    String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model AutoPilotRule {
+  id             String    @id @default(cuid())
+  userId         String
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name           String
+  enabled        Boolean   @default(true)
+  productUrls    Json
+  hookCategories Json?
+  platforms      Json
+  cadenceHours   Int       @default(24)
+  budgetAdsTotal Int?
+  adsRun         Int       @default(0)
+  lastRunAt      DateTime?
+  nextRunAt      DateTime?
+  lastError      String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([enabled, nextRunAt])
+  @@index([userId])
 }

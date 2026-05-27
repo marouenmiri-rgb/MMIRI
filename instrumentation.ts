@@ -1,26 +1,26 @@
 /**
  * Next.js instrumentation hook — runs once per server boot.
  *
- * We use it to start the in-process publisher scheduler. Every 60s it
- * picks up any SocialPost whose `scheduledFor` has passed and calls
- * publishOne() on it. This removes the need for an external cron or
- * Vercel Cron when self-hosting.
+ * Starts two in-process loops:
+ *   1. Publisher: every 60s, ships any SocialPost whose scheduledFor has passed.
+ *   2. AutoPilot: every 60s, runs any AutoPilotRule whose nextRunAt has passed.
  *
- * Dev-mode hot reloads re-run this module; the global guard keeps us
- * from stacking intervals on every save.
+ * Both replace the need for an external cron when self-hosting. Hot-reload
+ * guards prevent intervals from stacking across dev rebuilds.
  */
 export async function register() {
   if (process.env.NEXT_RUNTIME !== "nodejs") return;
 
   const g = globalThis as unknown as {
     __adgenPublisherInterval?: NodeJS.Timeout;
+    __adgenAutopilotInterval?: NodeJS.Timeout;
   };
-  if (g.__adgenPublisherInterval) return;
 
   const { db } = await import("./src/lib/db");
   const { publishOne } = await import("./src/social/publisher");
+  const { runAutoPilotRule } = await import("./src/autopilot/runner");
 
-  async function tick() {
+  async function tickPublisher() {
     if (!process.env.DATABASE_URL) return;
     try {
       const due = await db.socialPost.findMany({
@@ -29,19 +29,38 @@ export async function register() {
         orderBy: { scheduledFor: "asc" },
         select: { id: true },
       });
-      if (due.length === 0) return;
-      for (const p of due) {
-        await publishOne(p.id);
-      }
+      for (const p of due) await publishOne(p.id);
     } catch (e) {
-      // Keep the scheduler alive across transient errors.
-      console.error("[scheduler]", e instanceof Error ? e.message : e);
+      console.error("[publisher]", e instanceof Error ? e.message : e);
     }
   }
 
-  g.__adgenPublisherInterval = setInterval(tick, 60_000);
-  // Run once on boot so posts scheduled in the past publish immediately.
-  setTimeout(tick, 2_000);
+  async function tickAutoPilot() {
+    if (!process.env.DATABASE_URL) return;
+    try {
+      const due = await db.autoPilotRule.findMany({
+        where: {
+          enabled: true,
+          nextRunAt: { lte: new Date() },
+        },
+        take: 5,
+        orderBy: { nextRunAt: "asc" },
+        select: { id: true },
+      });
+      for (const r of due) await runAutoPilotRule(r.id);
+    } catch (e) {
+      console.error("[autopilot]", e instanceof Error ? e.message : e);
+    }
+  }
 
-  console.log("[adgen] in-process publisher scheduler started (60s interval)");
+  if (!g.__adgenPublisherInterval) {
+    g.__adgenPublisherInterval = setInterval(tickPublisher, 60_000);
+    setTimeout(tickPublisher, 2_000);
+    console.log("[adgen] publisher scheduler started (60s)");
+  }
+  if (!g.__adgenAutopilotInterval) {
+    g.__adgenAutopilotInterval = setInterval(tickAutoPilot, 60_000);
+    setTimeout(tickAutoPilot, 5_000);
+    console.log("[adgen] autopilot scheduler started (60s)");
+  }
 }

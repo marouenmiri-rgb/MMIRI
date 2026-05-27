@@ -41,12 +41,37 @@ const NAV: { href: string; label: string; icon: React.ReactNode; hint?: string }
     ),
   },
   {
-    href: "/distribution",
-    label: "Autopilot",
-    hint: "Ship",
+    href: "/autopilot",
+    label: "Auto-pilot",
+    hint: "Hands-off",
     icon: (
       <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4">
         <path d="M5 19l7-14 7 14-7-4-7 4z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+        <circle cx="12" cy="13" r="1.6" fill="currentColor" />
+      </svg>
+    ),
+  },
+  {
+    href: "/distribution",
+    label: "Channels",
+    hint: "Connect",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4">
+        <circle cx="6" cy="12" r="2.5" stroke="currentColor" strokeWidth="1.6" />
+        <circle cx="18" cy="6" r="2.5" stroke="currentColor" strokeWidth="1.6" />
+        <circle cx="18" cy="18" r="2.5" stroke="currentColor" strokeWidth="1.6" />
+        <path d="M8 11l8-4M8 13l8 4" stroke="currentColor" strokeWidth="1.6" />
+      </svg>
+    ),
+  },
+  {
+    href: "/brand",
+    label: "Brand voice",
+    hint: "Tone",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4">
+        <path d="M5 19l4-4 6-6 4 4-4 4-6 6H5v-4z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+        <path d="M13 7l4 4" stroke="currentColor" strokeWidth="1.6" />
       </svg>
     ),
   },

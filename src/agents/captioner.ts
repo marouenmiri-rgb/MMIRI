@@ -1,4 +1,5 @@
 import { askJSON } from "@/lib/claude";
+import { brandVoiceBlock, type BrandVoice } from "./brand-voice";
 import type { AdScript, ProductFacts } from "./types";
 
 export type PlatformCaptions = {
@@ -43,7 +44,9 @@ const SCHEMA = {
 export async function writeCaptions(args: {
   product: Pick<ProductFacts, "title" | "url">;
   script: AdScript;
+  brandVoice?: BrandVoice | null;
 }): Promise<PlatformCaptions> {
+  const voiceBlock = brandVoiceBlock(args.brandVoice);
   const user = `Product: ${args.product.title}
 URL: ${args.product.url}
 
@@ -53,7 +56,7 @@ Script:
 - Solution: ${args.script.solution}
 - CTA: ${args.script.cta}
 
-Full narration: ${args.script.fullScript}
+Full narration: ${args.script.fullScript}${voiceBlock}
 
 Return JSON only with the four captions, matching the schema.`;
 

@@ -64,6 +64,7 @@ export async function POST(req: Request) {
     adId: ad.id,
     productUrl: parsed.data.productUrl,
     hookHint: parsed.data.hookHint,
+    userId,
   }).catch(async (err) => {
     await db.ad.update({
       where: { id: ad.id },

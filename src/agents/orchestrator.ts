@@ -3,6 +3,7 @@ import { scrapeProduct } from "./scraper";
 import { writeAdScript } from "./copywriter";
 import { directScenes } from "./creative-director";
 import { renderVideo } from "./video-generator";
+import type { BrandVoice } from "./brand-voice";
 import type { GeneratedAd } from "./types";
 
 /**
@@ -14,8 +15,28 @@ export async function runAdPipeline(args: {
   adId: string;
   productUrl: string;
   hookHint?: string;
+  userId?: string;
 }): Promise<GeneratedAd> {
-  const { adId, productUrl, hookHint } = args;
+  const { adId, productUrl, hookHint, userId } = args;
+
+  // Brand voice (if the user has one) gets pulled once and threaded through
+  // every text-producing agent in this pipeline run.
+  let brandVoice: BrandVoice | null = null;
+  if (userId) {
+    const row = await db.brandVoice.findUnique({ where: { userId } });
+    if (row && row.tone && row.audience) {
+      brandVoice = {
+        name: row.name ?? undefined,
+        tone: row.tone,
+        audience: row.audience,
+        dos: (row.dosJson as string[] | null) ?? [],
+        donts: (row.dontsJson as string[] | null) ?? [],
+        examples:
+          (row.examplesJson as { context: string; copy: string }[] | null) ??
+          [],
+      };
+    }
+  }
 
   await db.ad.update({ where: { id: adId }, data: { status: "SCRAPING" } });
   const product = await scrapeProduct(productUrl);
@@ -25,7 +46,7 @@ export async function runAdPipeline(args: {
   });
 
   await db.ad.update({ where: { id: adId }, data: { status: "WRITING" } });
-  const script = await writeAdScript(product, { hookHint });
+  const script = await writeAdScript(product, { hookHint, brandVoice });
   await db.ad.update({
     where: { id: adId },
     data: { scriptJson: script as object },

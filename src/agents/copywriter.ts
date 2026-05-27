@@ -1,4 +1,5 @@
 import { askJSON } from "@/lib/claude";
+import { brandVoiceBlock, type BrandVoice } from "./brand-voice";
 import type { AdScript, ProductFacts } from "./types";
 
 const SYSTEM = `You are a direct-response copywriter who has written TikTok,
@@ -16,7 +17,11 @@ Rules:
 
 If the user provides a hook hint, treat it as a required pattern: instantiate
 the formula with the actual product facts, keep it tight (≤14 words), and
-make sure the rest of the script flows out of that hook naturally.`;
+make sure the rest of the script flows out of that hook naturally.
+
+If the user provides a brand voice playbook (Tone / Audience / Do / Don't),
+treat it as the most-important constraint: word choice, rhythm, and stance
+must match. The voice playbook overrides generic copywriting instincts.`;
 
 const SCHEMA = {
   type: "object",
@@ -33,14 +38,15 @@ const SCHEMA = {
 
 export async function writeAdScript(
   product: ProductFacts,
-  opts: { hookHint?: string } = {},
+  opts: { hookHint?: string; brandVoice?: BrandVoice | null } = {},
 ): Promise<AdScript> {
+  const voiceBlock = brandVoiceBlock(opts.brandVoice);
   const user = `Write a short-form video ad script for this product.
 
 Title: ${product.title}
 ${product.price ? `Price: ${product.price}\n` : ""}Description: ${product.description}
 URL: ${product.url}
-${opts.hookHint ? `\nHook pattern to use (instantiate with the product's facts): "${opts.hookHint}"` : ""}
+${opts.hookHint ? `\nHook pattern to use (instantiate with the product's facts): "${opts.hookHint}"` : ""}${voiceBlock}
 
 Return JSON only, matching the schema.`;
 
