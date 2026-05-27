@@ -126,9 +126,9 @@ const NAV: { href: string; label: string; icon: React.ReactNode; hint?: string }
 export function Sidebar() {
   const pathname = usePathname();
   return (
-    <aside className="relative flex h-screen w-64 flex-col border-r border-line-1 bg-base-1 px-3 py-5">
+    <aside className="relative flex h-screen w-[252px] flex-col border-r border-white/[0.06] bg-base-1/60 backdrop-blur-xl px-4 py-6">
       <div className="noise absolute inset-0 pointer-events-none" />
-      <Link href="/" className="mb-7 flex items-center gap-2 px-2">
+      <Link href="/" className="mb-8 flex items-center gap-2 px-2">
         <Logo size={22} />
       </Link>
 
@@ -140,7 +140,7 @@ export function Sidebar() {
             new KeyboardEvent("keydown", { key: "k", metaKey: true, bubbles: true }),
           );
         }}
-        className="group mb-5 flex w-full items-center gap-2 rounded-xl2 border border-dashed border-line-3 bg-base-2/70 px-3 py-2.5 text-left text-sm text-ink-mid transition hover:border-volt/50 hover:text-ink-hi"
+        className="group mb-6 flex w-full items-center gap-2.5 rounded-xl border border-white/[0.06] bg-white/[0.03] px-3 py-2.5 text-left text-[13px] text-ink-mid backdrop-blur transition-all duration-300 ease-ios hover:border-white/[0.12] hover:bg-white/[0.05] hover:text-ink-hi"
       >
         <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4 text-ink-lo group-hover:text-volt">
           <circle cx="11" cy="11" r="6" stroke="currentColor" strokeWidth="1.6" />
@@ -153,7 +153,7 @@ export function Sidebar() {
         </span>
       </button>
 
-      <nav className="flex flex-col gap-1 text-sm">
+      <nav className="flex flex-col gap-0.5 text-[13px]">
         {NAV.map((item) => {
           const active =
             item.href === "/dashboard"
@@ -164,18 +164,24 @@ export function Sidebar() {
               key={item.href}
               href={item.href}
               className={clsx(
-                "group flex items-center gap-3 rounded-xl2 px-3 py-2 transition-colors",
+                "group relative flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all duration-200 ease-ios",
                 active
-                  ? "bg-base-3 text-ink-hi"
-                  : "text-ink-mid hover:bg-base-2 hover:text-ink-hi",
+                  ? "bg-white/[0.06] text-ink-hi"
+                  : "text-ink-mid hover:bg-white/[0.03] hover:text-ink-hi",
               )}
             >
+              {active && (
+                <span
+                  className="absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-volt"
+                  aria-hidden
+                />
+              )}
               <span
                 className={clsx(
                   "flex h-7 w-7 items-center justify-center rounded-lg border transition",
                   active
-                    ? "border-volt/40 bg-volt/10 text-volt"
-                    : "border-line-2 bg-base-2 text-ink-mid group-hover:text-ink-hi",
+                    ? "border-volt/40 bg-volt/15 text-volt"
+                    : "border-white/[0.06] bg-white/[0.03] text-ink-mid group-hover:text-ink-hi",
                 )}
               >
                 {item.icon}
@@ -194,19 +200,30 @@ export function Sidebar() {
       <div className="mt-auto space-y-3">
         <Link
           href="/pricing"
-          className="group flex items-center justify-between rounded-xl2 border border-line-2 bg-gradient-to-br from-base-2 to-base-3 p-3 text-sm text-ink-hi transition hover:border-lime/50"
+          className="group relative block overflow-hidden rounded-xl border border-white/[0.08] p-3.5 text-[13px] text-ink-hi transition-all duration-300 ease-ios hover:border-lime/40 hover:translate-y-[-1px]"
         >
-          <div>
-            <div className="font-display text-[13px] tracking-tight">
-              Upgrade to Scale
+          <div
+            className="absolute inset-0 opacity-50 transition-opacity group-hover:opacity-75"
+            style={{
+              background:
+                "linear-gradient(135deg, rgba(124,77,255,0.18) 0%, rgba(195,255,62,0.15) 100%)",
+            }}
+          />
+          <div className="relative flex items-center justify-between">
+            <div>
+              <div className="font-display text-[13px] font-semibold tracking-tight">
+                Upgrade to Scale
+              </div>
+              <div className="mt-0.5 font-mono text-[10px] uppercase tracking-[0.22em] text-lime">
+                pay 5% · only when you earn
+              </div>
             </div>
-            <div className="mt-0.5 font-mono text-[10px] uppercase tracking-[0.22em] text-lime">
-              pay 5% · only when you earn
-            </div>
+            <span className="text-volt transition-transform duration-300 group-hover:translate-x-1 group-hover:text-lime">
+              →
+            </span>
           </div>
-          <span className="text-volt group-hover:text-lime">→</span>
         </Link>
-        <div className="surface overflow-hidden p-3">
+        <div className="glass overflow-hidden p-3">
           <div className="flex items-center justify-between">
             <span className="chip-live">
               <span className="dot-live" /> Lab live

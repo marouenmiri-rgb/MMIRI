@@ -95,7 +95,7 @@ export default async function DashboardPage() {
         </section>
 
         {/* Live pipeline strip */}
-        <section className="surface-elevated relative overflow-hidden p-6">
+        <section className="glass relative overflow-hidden p-7">
           <div className="mb-4 flex items-center justify-between">
             <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-volt">
               Active pipeline
@@ -117,17 +117,20 @@ export default async function DashboardPage() {
         {/* Stats */}
         <section className="grid grid-cols-2 gap-4 md:grid-cols-4">
           {stats.map((s) => (
-            <div key={s.label} className="card relative overflow-hidden p-5">
-              <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-ink-dim">
+            <div
+              key={s.label}
+              className="glass relative overflow-hidden p-6 transition duration-500 ease-ios hover:-translate-y-0.5"
+            >
+              <div className="font-mono text-[10px] uppercase tracking-[0.28em] text-ink-dim">
                 {s.label}
               </div>
-              <div className="mt-3 flex items-baseline justify-between gap-3">
-                <div className="font-display text-4xl tracking-tightest text-ink-hi">
+              <div className="mt-4 flex items-baseline justify-between gap-3">
+                <div className="font-display text-5xl font-semibold tracking-ultratight text-ink-hi">
                   {s.value}
                 </div>
                 <div className="text-[11px] text-ink-mid">{s.delta}</div>
               </div>
-              <div className="mt-3 -mx-1">
+              <div className="mt-4 -mx-1">
                 <Sparkline values={s.trend} stroke={s.color} fill={s.fill} />
               </div>
             </div>
@@ -136,24 +139,24 @@ export default async function DashboardPage() {
 
         {/* Reel wall */}
         <section>
-          <div className="mb-4 flex items-end justify-between">
+          <div className="mb-6 flex items-end justify-between">
             <div>
-              <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-volt">
+              <div className="font-mono text-[11px] uppercase tracking-[0.28em] text-volt">
                 Reel wall
               </div>
-              <h2 className="mt-1 font-display text-2xl tracking-tight">
+              <h2 className="mt-2 font-display text-3xl font-semibold tracking-tightest">
                 Your last {ads.length} cuts
               </h2>
             </div>
           </div>
           {ads.length === 0 ? (
-            <div className="card grid place-items-center p-16 text-center">
+            <div className="glass grid place-items-center p-16 text-center">
               <div className="font-display text-xl text-ink-mid">
                 No ads yet — paste a URL above to make one.
               </div>
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
+            <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
               {ads.map((ad) => (
                 <AdReelCard key={ad.id} ad={ad} />
               ))}

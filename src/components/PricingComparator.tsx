@@ -88,29 +88,32 @@ export function PricingComparator({ plans, hasStripe }: Props) {
   return (
     <section className="relative">
       {/* Revenue slider hero */}
-      <div className="relative overflow-hidden rounded-xl2 border border-line-2 bg-base-1 p-8">
-        <div className="grid-bg absolute inset-0 opacity-40 animate-gridShift" />
-        <div className="spot absolute inset-0 opacity-60" />
+      <div className="glass relative overflow-hidden p-10">
+        <div className="grid-bg absolute inset-0 opacity-30" />
+        <div
+          aria-hidden
+          className="conic-glow absolute -right-32 -top-32 h-[400px] w-[400px] opacity-30"
+        />
         <div className="relative">
-          <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-volt">
+          <div className="font-mono text-[11px] uppercase tracking-[0.28em] text-volt">
             Cost calculator
           </div>
-          <h2 className="mt-2 max-w-2xl font-display text-4xl leading-[1.05] tracking-tightest text-ink-hi md:text-5xl">
+          <h2 className="mt-3 max-w-2xl font-display text-4xl font-semibold leading-[1.05] tracking-ultratight text-ink-hi md:text-5xl">
             Pay nothing until you make money.
           </h2>
-          <p className="mt-4 max-w-xl text-ink-mid">
+          <p className="mt-4 max-w-xl text-[15px] leading-relaxed text-ink-mid">
             Drag the slider. See what each plan costs at your expected monthly
             AdGen-attributed revenue.
           </p>
 
           {/* Slider */}
-          <div className="mt-8">
+          <div className="mt-10">
             <div className="flex items-baseline justify-between gap-4">
               <div>
                 <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-ink-dim">
                   Expected monthly revenue
                 </div>
-                <div className="mt-1 font-display text-5xl tracking-tightest text-lime">
+                <div className="mt-2 font-display text-6xl font-semibold tracking-ultratight text-aurora">
                   {currency(revenueUsd)}
                 </div>
               </div>
@@ -125,15 +128,17 @@ export function PricingComparator({ plans, hasStripe }: Props) {
               step={500}
               value={revenueUsd}
               onChange={(e) => setRevenueUsd(Number(e.target.value))}
-              className="mt-4 w-full accent-volt"
+              className="mt-6 w-full"
               style={{
-                background: `linear-gradient(90deg, #a78bfa 0%, #c3ff3e ${(revenueUsd / 100000) * 100}%, #222230 ${(revenueUsd / 100000) * 100}%)`,
-                height: 4,
+                background: `linear-gradient(90deg, #a78bfa 0%, #c3ff3e ${(revenueUsd / 100000) * 100}%, rgba(255,255,255,0.06) ${(revenueUsd / 100000) * 100}%)`,
+                height: 6,
                 borderRadius: 999,
                 WebkitAppearance: "none",
+                appearance: "none",
+                accentColor: "#a78bfa",
               }}
             />
-            <div className="mt-1 flex justify-between font-mono text-[10px] uppercase tracking-[0.22em] text-ink-dim">
+            <div className="mt-2 flex justify-between font-mono text-[10px] uppercase tracking-[0.22em] text-ink-dim">
               <span>$0</span>
               <span>$25k</span>
               <span>$50k</span>
@@ -159,39 +164,37 @@ export function PricingComparator({ plans, hasStripe }: Props) {
             <article
               key={p.tier}
               className={clsx(
-                "relative flex flex-col overflow-hidden rounded-xl2 border p-6 transition",
-                isBest
-                  ? "border-lime/60 bg-base-1 shadow-glow-lime"
-                  : "border-line-2 bg-base-1",
+                "glass relative flex flex-col overflow-hidden p-8 transition-all duration-500 ease-ios hover:-translate-y-1",
+                isBest ? "shadow-glow-lime" : "",
               )}
             >
               {isBest && (
-                <div className="absolute right-4 top-4">
+                <div className="absolute right-5 top-5">
                   <span className="chip-live">
                     <span className="dot-live" /> best fit
                   </span>
                 </div>
               )}
 
-              <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-volt">
+              <div className="font-mono text-[11px] uppercase tracking-[0.28em] text-volt">
                 {headline}
               </div>
-              <h3 className="mt-1 font-display text-2xl tracking-tight text-ink-hi">
+              <h3 className="mt-2 font-display text-3xl font-semibold tracking-tight text-ink-hi">
                 {p.label}
               </h3>
 
-              <div className="mt-4">
+              <div className="mt-6">
                 {p.priceUsd === "revenue_share" ? (
                   <>
                     <div className="flex items-baseline gap-2">
-                      <span className="font-display text-4xl tracking-tightest text-lime">
+                      <span className="font-display text-6xl font-semibold tracking-ultratight text-lime">
                         5%
                       </span>
-                      <span className="text-sm text-ink-mid">
+                      <span className="text-[13px] text-ink-mid">
                         of attributed revenue
                       </span>
                     </div>
-                    <div className="mt-1 font-mono text-[11px] text-ink-dim">
+                    <div className="mt-2 font-mono text-[11px] text-ink-dim">
                       At {currency(revenueUsd)}/mo →{" "}
                       <span className="text-lime">{currency(cost)}/mo</span>
                     </div>
@@ -199,12 +202,12 @@ export function PricingComparator({ plans, hasStripe }: Props) {
                 ) : (
                   <>
                     <div className="flex items-baseline gap-2">
-                      <span className="font-display text-4xl tracking-tightest text-ink-hi">
+                      <span className="font-display text-6xl font-semibold tracking-ultratight text-ink-hi">
                         ${p.priceUsd}
                       </span>
-                      <span className="text-sm text-ink-mid">/ month</span>
+                      <span className="text-[13px] text-ink-mid">/ month</span>
                     </div>
-                    <div className="mt-1 font-mono text-[11px] text-ink-dim">
+                    <div className="mt-2 font-mono text-[11px] text-ink-dim">
                       At {currency(revenueUsd)}/mo →{" "}
                       <span className="text-ink-hi">
                         {takeRatePct.toFixed(2)}% take rate
@@ -214,23 +217,33 @@ export function PricingComparator({ plans, hasStripe }: Props) {
                 )}
               </div>
 
-              <p className="mt-4 text-sm leading-relaxed text-ink-mid">
+              <p className="mt-5 text-[14px] leading-relaxed text-ink-mid">
                 {p.blurb}
               </p>
 
-              <ul className="mt-5 space-y-1.5 text-sm text-ink-mid">
+              <ul className="mt-6 space-y-2 text-[14px] text-ink-mid">
                 {p.highlights.map((h) => (
-                  <li key={h} className="flex items-start gap-2">
-                    <span
+                  <li key={h} className="flex items-start gap-2.5">
+                    <svg
                       className={clsx(
-                        "mt-1 inline-block h-1.5 w-1.5 rounded-full shrink-0",
+                        "mt-0.5 h-4 w-4 shrink-0",
                         p.color === "lime"
-                          ? "bg-lime"
+                          ? "text-lime"
                           : p.color === "volt"
-                            ? "bg-volt"
-                            : "bg-ink-mid",
+                            ? "text-volt"
+                            : "text-ink-mid",
                       )}
-                    />
+                      viewBox="0 0 16 16"
+                      fill="none"
+                    >
+                      <path
+                        d="M3 8l3.5 3.5L13 4.5"
+                        stroke="currentColor"
+                        strokeWidth="1.6"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
                     <span>{h}</span>
                   </li>
                 ))}
@@ -240,7 +253,7 @@ export function PricingComparator({ plans, hasStripe }: Props) {
                 onClick={() => upgrade(p.tier)}
                 disabled={busyTier === p.tier}
                 className={clsx(
-                  "mt-6 w-full",
+                  "mt-8 w-full",
                   p.color === "lime" ? "btn-lime" : "btn-primary",
                 )}
               >

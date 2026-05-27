@@ -25,7 +25,7 @@ export function AdReelCard({ ad }: { ad: Ad }) {
   return (
     <Link
       href={`/generator?id=${ad.id}`}
-      className="group relative block aspect-[9/16] overflow-hidden rounded-xl2 border border-line-1 bg-base-2 transition-all hover:-translate-y-1 hover:border-volt/50 hover:shadow-glow"
+      className="group relative block aspect-[9/16] overflow-hidden rounded-2xl border border-white/[0.08] bg-base-2 transition-all duration-500 ease-ios hover:-translate-y-1 hover:border-volt/40 hover:shadow-glow"
     >
       {ad.thumbnailUrl ? (
         <img

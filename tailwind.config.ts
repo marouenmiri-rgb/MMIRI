@@ -7,15 +7,24 @@ const config: Config = {
     extend: {
       fontFamily: {
         sans: [
+          "SF Pro Display",
+          "SF Pro Text",
+          "Inter",
           "ui-sans-serif",
           "system-ui",
           "-apple-system",
-          "Inter",
           "Segoe UI",
           "sans-serif",
         ],
-        display: ["Inter", "ui-sans-serif", "system-ui", "sans-serif"],
+        display: [
+          "SF Pro Display",
+          "Inter",
+          "ui-sans-serif",
+          "system-ui",
+          "sans-serif",
+        ],
         mono: [
+          "SF Mono",
           "ui-monospace",
           "SFMono-Regular",
           "Menlo",
@@ -25,53 +34,73 @@ const config: Config = {
       },
       letterSpacing: {
         tightest: "-0.04em",
+        ultratight: "-0.055em",
       },
       colors: {
-        // Control-room base — near-black with a blue cast, never pure #000.
         base: {
-          0: "#08080c",
-          1: "#0d0d12",
-          2: "#13131a",
-          3: "#1a1a24",
-          4: "#222230",
+          0: "#06060a",
+          1: "#0a0a10",
+          2: "#0f0f17",
+          3: "#16161f",
+          4: "#1d1d28",
         },
         line: {
-          1: "#1d1d28",
-          2: "#2a2a38",
-          3: "#3a3a4c",
+          1: "#1c1c26",
+          2: "#262633",
+          3: "#363645",
         },
         ink: {
-          hi: "#f4f4f7",
-          mid: "#a7a7b8",
-          lo: "#6e6e80",
-          dim: "#4a4a5a",
+          hi: "#fafafa",
+          mid: "#a8a8b8",
+          lo: "#6c6c7c",
+          dim: "#48485a",
         },
-        // Electric violet — primary action / brand
         volt: {
           DEFAULT: "#a78bfa",
-          400: "#b8a1fb",
+          400: "#bca5ff",
           500: "#a78bfa",
           600: "#8b5cf6",
           700: "#6d3fe8",
         },
-        // Lime highlight — success, live, "on air"
         lime: {
           DEFAULT: "#c3ff3e",
           400: "#d4ff66",
           500: "#c3ff3e",
           600: "#a3e019",
         },
+        // Stripe-style accent stops for mesh gradients.
+        ribbon: {
+          violet: "#7c4dff",
+          indigo: "#5b8def",
+          cyan: "#22d3ee",
+          rose: "#ff6691",
+          amber: "#ffb454",
+          lime: "#c3ff3e",
+        },
         warn: "#f59e0b",
         danger: "#ef4444",
       },
       boxShadow: {
-        glow: "0 0 0 1px rgba(167,139,250,0.35), 0 8px 40px -8px rgba(167,139,250,0.35)",
+        // Apple-style multi-layer soft shadows.
+        soft: "0 1px 1px rgba(0,0,0,0.04), 0 2px 4px rgba(0,0,0,0.06), 0 8px 24px -8px rgba(0,0,0,0.4)",
+        lift: "0 1px 0 rgba(255,255,255,0.05) inset, 0 1px 2px rgba(0,0,0,0.4), 0 12px 36px -12px rgba(0,0,0,0.6)",
+        glow: "0 0 0 1px rgba(167,139,250,0.35), 0 8px 40px -8px rgba(167,139,250,0.45)",
         "glow-lime":
-          "0 0 0 1px rgba(195,255,62,0.35), 0 8px 40px -8px rgba(195,255,62,0.35)",
-        card: "0 1px 0 0 rgba(255,255,255,0.03), 0 8px 24px -12px rgba(0,0,0,0.6)",
+          "0 0 0 1px rgba(195,255,62,0.4), 0 8px 40px -8px rgba(195,255,62,0.45)",
+        card: "0 1px 0 0 rgba(255,255,255,0.04) inset, 0 1px 2px rgba(0,0,0,0.3), 0 10px 30px -12px rgba(0,0,0,0.5)",
+        // Stripe-style focus ring.
+        focus: "0 0 0 4px rgba(167,139,250,0.18)",
       },
       borderRadius: {
         xl2: "1.125rem",
+        "2xl": "1.25rem",
+        "3xl": "1.75rem",
+      },
+      transitionTimingFunction: {
+        // iOS standard easing.
+        ios: "cubic-bezier(0.22, 1, 0.36, 1)",
+        // Apple emphasis curve.
+        emphatic: "cubic-bezier(0.16, 1, 0.3, 1)",
       },
       keyframes: {
         pulseRing: {
@@ -95,6 +124,15 @@ const config: Config = {
           "0%": { backgroundPosition: "0 0" },
           "100%": { backgroundPosition: "40px 40px" },
         },
+        // New Apple-style entrance.
+        riseIn: {
+          "0%": { opacity: "0", transform: "translateY(8px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
+        },
+        auroraFlow: {
+          "0%,100%": { transform: "translate3d(0,0,0) rotate(0deg)" },
+          "50%": { transform: "translate3d(0,-2%,0) rotate(180deg)" },
+        },
       },
       animation: {
         pulseRing: "pulseRing 1.8s ease-out infinite",
@@ -102,14 +140,8 @@ const config: Config = {
         caret: "caret 1.1s steps(1) infinite",
         float: "float 4s ease-in-out infinite",
         gridShift: "gridShift 30s linear infinite",
-      },
-      backgroundImage: {
-        "grid-lines":
-          "linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px)",
-        "spot-volt":
-          "radial-gradient(circle at 20% 0%, rgba(167,139,250,0.18), transparent 40%), radial-gradient(circle at 80% 100%, rgba(195,255,62,0.10), transparent 40%)",
-        "stripe-shimmer":
-          "linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent)",
+        riseIn: "riseIn 0.6s cubic-bezier(0.22,1,0.36,1) both",
+        auroraFlow: "auroraFlow 28s ease-in-out infinite",
       },
       backgroundSize: {
         "grid-40": "40px 40px",

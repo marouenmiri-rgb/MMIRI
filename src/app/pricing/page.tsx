@@ -13,42 +13,40 @@ export default function PricingPage() {
   const plans = [PLANS.STARTER, PLANS.STUDIO, PLANS.SCALE, PLANS.AGENCY];
 
   return (
-    <main className="relative min-h-screen bg-base-0">
-      <div className="grid-bg pointer-events-none fixed inset-0 opacity-40" />
-      <div className="spot pointer-events-none fixed inset-0" />
+    <main className="relative min-h-screen overflow-hidden bg-base-0">
+      <div className="aurora-hero pointer-events-none fixed inset-0 -z-10" />
+      <div className="grid-bg pointer-events-none fixed inset-0 -z-10 opacity-40" />
 
-      <header className="relative mx-auto flex max-w-6xl items-center justify-between px-6 py-6">
+      <header className="relative mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
         <Link href="/">
           <Logo />
         </Link>
-        <nav className="flex items-center gap-6 text-sm text-ink-mid">
+        <nav className="flex items-center gap-8 text-[13px] text-ink-mid">
           <Link href="/#pipeline" className="hover:text-ink-hi">
             How it works
           </Link>
           <Link href="/dashboard" className="btn-ghost">
-            Enter control room →
+            Enter the lab →
           </Link>
         </nav>
       </header>
 
-      <section className="relative mx-auto max-w-6xl px-6 pt-12 pb-4">
-        <div className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.28em] text-volt">
+      <section className="relative mx-auto max-w-6xl px-6 pt-24 pb-8 text-center sm:pt-32">
+        <div className="rise mx-auto inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.04] px-3 py-1 font-mono text-[11px] uppercase tracking-[0.28em] text-volt backdrop-blur">
           <span className="dot-live" /> New · revenue-share tier
         </div>
-        <h1 className="mt-6 max-w-3xl font-display text-5xl font-semibold leading-[1.02] tracking-tightest text-ink-hi md:text-6xl">
+        <h1 className="rise mx-auto mt-8 max-w-4xl font-display text-6xl font-semibold leading-[0.95] tracking-ultratight text-ink-hi sm:text-7xl md:text-[88px] md:leading-[0.92]">
           Priced like we're on the{" "}
-          <span className="bg-gradient-to-r from-volt to-lime bg-clip-text text-transparent">
-            same side.
-          </span>
+          <span className="text-aurora">same side.</span>
         </h1>
-        <p className="mt-6 max-w-xl text-lg leading-relaxed text-ink-mid">
+        <p className="rise mx-auto mt-10 max-w-2xl text-lg leading-relaxed text-ink-mid sm:text-xl">
           Every post ships with a UTM-tagged short link. Every Shopify order
-          that reads that link is attributed to the exact ad that earned it.
-          Pick flat pricing — or the Scale plan, where we only earn when you do.
+          that reads it is attributed to the ad that earned it. Pick flat
+          pricing — or Scale, where we only earn when you do.
         </p>
       </section>
 
-      <section className="relative mx-auto max-w-6xl px-6 pb-24 pt-8">
+      <section className="relative mx-auto max-w-7xl px-6 pb-24 pt-12">
         <PricingComparator
           plans={plans as Parameters<typeof PricingComparator>[0]["plans"]}
           hasStripe={hasStripe}

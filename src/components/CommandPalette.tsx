@@ -73,11 +73,11 @@ export function CommandPalette() {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center bg-base-0/70 px-4 pt-[12vh] backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-start justify-center bg-base-0/80 px-4 pt-[14vh] backdrop-blur-md"
       onClick={() => setOpen(false)}
     >
       <div
-        className="w-full max-w-xl overflow-hidden rounded-xl2 border border-line-2 bg-base-1 shadow-glow"
+        className="glass w-full max-w-xl overflow-hidden shadow-glow"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center gap-3 border-b border-line-1 px-4 py-3">
@@ -110,13 +110,13 @@ export function CommandPalette() {
           <button
             onClick={generate}
             disabled={busy}
-            className="flex w-full items-center justify-between border-b border-line-1 px-4 py-4 text-left hover:bg-base-2 disabled:opacity-60"
+            className="flex w-full items-center justify-between border-b border-white/[0.06] px-5 py-5 text-left transition hover:bg-white/[0.04] disabled:opacity-60"
           >
             <div>
-              <div className="font-display text-base text-ink-hi">
+              <div className="font-display text-[15px] text-ink-hi">
                 {busy ? "Starting pipeline…" : "Generate ad from URL"}
               </div>
-              <div className="mt-0.5 truncate font-mono text-xs text-ink-mid">{url}</div>
+              <div className="mt-1 truncate font-mono text-[12px] text-ink-mid">{url}</div>
             </div>
             <span className="kbd">↵</span>
           </button>
@@ -129,11 +129,11 @@ export function CommandPalette() {
                     c.run(router);
                     setOpen(false);
                   }}
-                  className="flex w-full items-center justify-between rounded-xl2 px-3 py-2.5 text-left hover:bg-base-2"
+                  className="flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-left transition hover:bg-white/[0.05]"
                 >
                   <div>
-                    <div className="text-sm text-ink-hi">{c.label}</div>
-                    <div className="text-xs text-ink-mid">{c.hint}</div>
+                    <div className="text-[14px] text-ink-hi">{c.label}</div>
+                    <div className="text-[12px] text-ink-mid">{c.hint}</div>
                   </div>
                   <span className="kbd">↵</span>
                 </button>

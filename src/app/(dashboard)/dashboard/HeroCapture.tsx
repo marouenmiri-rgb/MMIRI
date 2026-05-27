@@ -40,30 +40,31 @@ export function HeroCapture() {
 
   return (
     <form onSubmit={go} className="relative">
-      <div className="absolute -inset-px -z-10 rounded-xl2 bg-gradient-to-r from-volt/40 via-transparent to-lime/30 opacity-60 blur" />
-      <div className="relative flex items-center gap-2 rounded-xl2 border border-line-2 bg-base-1/80 p-2 backdrop-blur">
-        <span className="flex h-10 items-center px-3 font-mono text-[11px] uppercase tracking-[0.22em] text-volt">
+      <div
+        aria-hidden
+        className="absolute -inset-2 -z-10 rounded-3xl opacity-50 blur-xl"
+        style={{
+          background:
+            "linear-gradient(90deg, rgba(124,77,255,0.4) 0%, rgba(34,211,238,0.25) 50%, rgba(195,255,62,0.3) 100%)",
+        }}
+      />
+      <div className="glass relative flex items-center gap-2 p-2.5">
+        <span className="flex h-11 items-center px-4 font-mono text-[11px] uppercase tracking-[0.28em] text-volt">
           URL ▸
         </span>
         <input
-          className="flex-1 bg-transparent px-1 py-2.5 font-mono text-[15px] text-ink-hi placeholder:text-ink-dim outline-none"
+          className="flex-1 bg-transparent px-1 py-3 font-mono text-[16px] text-ink-hi placeholder:text-ink-dim outline-none"
           placeholder="https://yourstore.com/products/hero-mug"
           value={url}
           onChange={(e) => setUrl(e.target.value)}
           required
         />
-        <button
-          type="submit"
-          disabled={busy || !url}
-          className="btn-primary h-10"
-        >
+        <button type="submit" disabled={busy || !url} className="btn-primary h-11">
           {busy ? "Starting pipeline…" : "Generate"}
           <span className="kbd !border-base-0/20 !bg-base-0/20 !text-base-0/70">↵</span>
         </button>
       </div>
-      {err && (
-        <p className="mt-2 text-xs text-danger">{err}</p>
-      )}
+      {err && <p className="mt-3 text-xs text-danger">{err}</p>}
     </form>
   );
 }
