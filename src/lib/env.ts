@@ -27,5 +27,10 @@ export const hasClaude = Boolean(env.ANTHROPIC_API_KEY);
  * the fallback is a file on disk — but stays a boolean so code paths
  * that expect a DB check (fixtures vs live) still work if someone
  * explicitly sets DATABASE_URL="" to force fixture-mode.
+ *
+ * Set DEMO_MODE=1 to force fixtures everywhere — useful when the Prisma
+ * client hasn't been generated yet (e.g. fresh checkout / preview deploy)
+ * so dashboard pages render demo data instead of crashing.
  */
-export const hasDb = Boolean(env.DATABASE_URL);
+export const hasDb =
+  Boolean(env.DATABASE_URL) && process.env.DEMO_MODE !== "1";

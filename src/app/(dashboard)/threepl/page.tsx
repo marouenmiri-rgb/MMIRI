@@ -24,41 +24,42 @@ type AggregateView = {
 
 async function loadView(): Promise<AggregateView> {
   if (!hasDb) return fromFixtures();
-  const userId = await getCurrentUserId();
-  if (!userId) return fromFixtures();
-
-  const [leadsRaw, partnersRaw] = await Promise.all([
-    db.threePLLead.findMany({
-      where: { userId },
-      orderBy: [{ fitScore: "desc" }, { createdAt: "desc" }],
-      take: 60,
-      include: { matchedPartner: true },
-    }),
-    db.threePLPartner.findMany({
-      where: { active: true },
-      orderBy: { commissionBps: "desc" },
-    }),
-  ]);
+  let userId: string | null = null;
+  let leadsRaw: unknown = null;
+  let partnersRaw: unknown = null;
+  try {
+    userId = await getCurrentUserId();
+    if (!userId) return fromFixtures();
+    [leadsRaw, partnersRaw] = await Promise.all([
+      db.threePLLead.findMany({
+        where: { userId },
+        orderBy: [{ fitScore: "desc" }, { createdAt: "desc" }],
+        take: 60,
+        include: { matchedPartner: true },
+      }),
+      db.threePLPartner.findMany({
+        where: { active: true },
+        orderBy: { commissionBps: "desc" },
+      }),
+    ]);
+  } catch {
+    return fromFixtures();
+  }
 
   if (!Array.isArray(leadsRaw) || leadsRaw.length === 0) return fromFixtures();
 
+  const leadsArr = leadsRaw as Array<Record<string, unknown>>;
+  const partnersArr = (partnersRaw ?? []) as Array<Record<string, unknown>>;
+
   const partnerLeadCount = new Map<string, number>();
-  for (const l of leadsRaw as Array<{ matchedPartnerId: string | null }>) {
-    if (l.matchedPartnerId) {
-      partnerLeadCount.set(
-        l.matchedPartnerId,
-        (partnerLeadCount.get(l.matchedPartnerId) ?? 0) + 1,
-      );
-    }
+  for (const l of leadsArr) {
+    const mid = l.matchedPartnerId as string | null;
+    if (mid) partnerLeadCount.set(mid, (partnerLeadCount.get(mid) ?? 0) + 1);
   }
 
-  const leads: LeadCardData[] = (leadsRaw as Array<Record<string, unknown>>).map(
-    (l) => leadToCard(l),
-  );
+  const leads: LeadCardData[] = leadsArr.map((l) => leadToCard(l));
 
-  const partners: PartnerStripItem[] = (
-    partnersRaw as Array<Record<string, unknown>>
-  ).map((p) => ({
+  const partners: PartnerStripItem[] = partnersArr.map((p) => ({
     id: p.id as string,
     name: p.name as string,
     vertical: (p.vertical as string | null) ?? null,
