@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<meta charSet="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>3PL Finder — Demo</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    background: #08080c;
+    color: #f4f4f7;
+    -webkit-font-smoothing: antialiased;
+    background-image:
+      radial-gradient(circle at 15% -10%, rgba(167, 139, 250, 0.10), transparent 40%),
+      radial-gradient(circle at 85% 110%, rgba(195, 255, 62, 0.06), transparent 45%);
+  }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 80px 32px 48px; }
+  .eyebrow {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase;
+    color: #a78bfa;
+  }
+  h1 {
+    font-size: 48px; line-height: 1.05; letter-spacing: -0.04em;
+    margin: 12px 0 16px; font-weight: 600;
+  }
+  .lede { color: #a7a7b8; font-size: 17px; max-width: 640px; margin: 0 0 40px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 720px) { .grid { grid-template-columns: 1fr; } }
+  .card {
+    display: block; text-decoration: none; color: inherit;
+    background: #0d0d12; border: 1px solid #1d1d28; border-radius: 18px;
+    padding: 24px; transition: all 0.18s ease;
+    position: relative; overflow: hidden;
+  }
+  .card:hover {
+    border-color: rgba(167, 139, 250, 0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 0 0 1px rgba(167, 139, 250, 0.35), 0 8px 40px -8px rgba(167, 139, 250, 0.35);
+  }
+  .card .badge {
+    display: inline-block; padding: 2px 8px; border-radius: 6px;
+    background: rgba(195, 255, 62, 0.10); color: #c3ff3e;
+    border: 1px solid rgba(195, 255, 62, 0.30);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase;
+  }
+  .card h2 { font-size: 22px; letter-spacing: -0.025em; margin: 12px 0 6px; }
+  .card p { color: #a7a7b8; font-size: 14px; line-height: 1.55; margin: 0; }
+  .card .arrow { color: #a78bfa; margin-top: 16px; font-size: 14px; }
+  .meta {
+    margin-top: 40px; padding-top: 32px; border-top: 1px solid #1d1d28;
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+  }
+  @media (max-width: 720px) { .meta { grid-template-columns: 1fr; } }
+  .meta-cell .label {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase;
+    color: #6e6e80;
+  }
+  .meta-cell .value { margin-top: 6px; font-size: 14px; color: #f4f4f7; }
+  .meta-cell a { color: #a78bfa; text-decoration: none; }
+  .meta-cell a:hover { color: #c3ff3e; }
+  .note {
+    margin-top: 24px; padding: 14px 16px; border-radius: 14px;
+    background: rgba(167, 139, 250, 0.05);
+    border: 1px solid rgba(167, 139, 250, 0.20);
+    font-size: 13px; color: #a7a7b8;
+  }
+  .note code {
+    background: #13131a; border: 1px solid #2a2a38; border-radius: 6px;
+    padding: 1px 6px; font-size: 12px; color: #c3ff3e;
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="eyebrow">3PL Finder · Demo</div>
+    <h1>Find DTC brands ready to outsource fulfillment — earn affiliate commission for every match.</h1>
+    <p class="lede">
+      A 6-agent pipeline that turns a niche keyword into qualified leads, scores
+      each brand for 3PL-fit, matches them to a partner from your affiliate
+      roster, and drafts a personalized pitch — all rendered with demo data
+      below so you can browse without setup.
+    </p>
+
+    <div class="grid">
+      <a class="card" href="threepl.html">
+        <span class="badge">Main view</span>
+        <h2>3PL Finder pipeline &rarr;</h2>
+        <p>
+          Hero KPIs (qualified leads, avg fit, projected annual commission),
+          score-distribution chart, partner strip, and detailed lead cards
+          with animated fit-score rings, signals grid, and draft pitches.
+        </p>
+        <div class="arrow">Open the demo &rarr;</div>
+      </a>
+      <a class="card" href="partners.html">
+        <span class="badge">Roster</span>
+        <h2>Affiliate partners &rarr;</h2>
+        <p>
+          Full table of 3PL programs in your roster — commission %, vertical
+          specialty, volume range, geo coverage, current match count.
+          ShipBob, ShipMonk, ShipHero, Easyship, Red Stag pre-seeded.
+        </p>
+        <div class="arrow">View the roster &rarr;</div>
+      </a>
+    </div>
+
+    <div class="note">
+      Snapshots are static — animations / score-ring count-ups / discover-panel
+      sliders need the live dev server. To run interactively:
+      <code>git checkout claude/3pl-customer-finder-tool-kmVcJ &amp;&amp; DEMO_MODE=1 npx next dev</code>
+    </div>
+
+    <div class="meta">
+      <div class="meta-cell">
+        <div class="label">Branch</div>
+        <div class="value">
+          <a href="https://github.com/marouenmiri-rgb/MMIRI/tree/claude/3pl-customer-finder-tool-kmVcJ">
+            claude/3pl-customer-finder-tool-kmVcJ
+          </a>
+        </div>
+      </div>
+      <div class="meta-cell">
+        <div class="label">Tech</div>
+        <div class="value">Next.js 14 · Claude Opus 4.7 · Prisma · Tailwind</div>
+      </div>
+      <div class="meta-cell">
+        <div class="label">Pipeline</div>
+        <div class="value">expand &rarr; search &rarr; inspect &rarr; score &rarr; match &rarr; draft</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
