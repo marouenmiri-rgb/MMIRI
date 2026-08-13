@@ -1,139 +1,1110 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
-<meta charSet="utf-8" />
+<meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>3PL Finder — Demo</title>
+<title>Miri — Find brands ready to outsource fulfillment.</title>
+<meta name="description" content="Miri surfaces DTC brands that outgrew their garage, matches each to a 3PL from your affiliate roster, and drafts a pitch that gets replies. Earn commission on every signup." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;450;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
 <style>
-  :root { color-scheme: dark; }
-  * { box-sizing: border-box; }
-  html, body { height: 100%; margin: 0; }
+  :root {
+    --bg: #FBFAF6;
+    --bg-elev: #FFFFFF;
+    --bg-muted: #F5F3EC;
+    --ink: #0B0C0A;
+    --ink-2: #454842;
+    --ink-3: #8A8D85;
+    --ink-4: #B7B9B1;
+    --line: #E9E6DC;
+    --line-2: #DCD8CB;
+    --brand: #0E5A3C;
+    --brand-2: #0A7C55;
+    --brand-soft: #E7F1EB;
+    --brand-ink: #0B3D2A;
+    --sun: #E7C46A;
+    --danger: #B4442E;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
   body {
-    font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-    background: #08080c;
-    color: #f4f4f7;
+    font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
     -webkit-font-smoothing: antialiased;
-    background-image:
-      radial-gradient(circle at 15% -10%, rgba(167, 139, 250, 0.10), transparent 40%),
-      radial-gradient(circle at 85% 110%, rgba(195, 255, 62, 0.06), transparent 45%);
+    text-rendering: optimizeLegibility;
+    font-feature-settings: "ss01", "cv11", "tnum";
+    line-height: 1.5;
   }
-  .wrap { max-width: 980px; margin: 0 auto; padding: 80px 32px 48px; }
+  a { color: inherit; text-decoration: none; }
+  img { max-width: 100%; display: block; }
+  .container { max-width: 1200px; margin: 0 auto; padding: 0 28px; }
+  .serif { font-family: 'Fraunces', ui-serif, Georgia, serif; letter-spacing: -0.02em; }
+  .mono { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; }
   .eyebrow {
-    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase;
-    color: #a78bfa;
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 11px; border-radius: 999px;
+    background: var(--brand-soft); color: var(--brand-ink);
+    font-size: 12px; font-weight: 500; letter-spacing: 0.01em;
   }
-  h1 {
-    font-size: 48px; line-height: 1.05; letter-spacing: -0.04em;
-    margin: 12px 0 16px; font-weight: 600;
+  .eyebrow .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--brand); }
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 12px 20px; border-radius: 10px; font-weight: 500; font-size: 15px;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+    border: 1px solid transparent; cursor: pointer;
   }
-  .lede { color: #a7a7b8; font-size: 17px; max-width: 640px; margin: 0 0 40px; }
-  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-  @media (max-width: 720px) { .grid { grid-template-columns: 1fr; } }
-  .card {
-    display: block; text-decoration: none; color: inherit;
-    background: #0d0d12; border: 1px solid #1d1d28; border-radius: 18px;
-    padding: 24px; transition: all 0.18s ease;
+  .btn-primary {
+    background: var(--ink); color: var(--bg);
+    box-shadow: 0 1px 0 rgba(0,0,0,0.05), 0 6px 16px -8px rgba(11,12,10,0.35);
+  }
+  .btn-primary:hover { transform: translateY(-1px); background: var(--brand-ink); }
+  .btn-ghost {
+    background: transparent; color: var(--ink); border-color: var(--line-2);
+  }
+  .btn-ghost:hover { background: var(--bg-muted); border-color: var(--ink-4); }
+  .btn-brand {
+    background: var(--brand); color: white;
+    box-shadow: 0 1px 0 rgba(255,255,255,0.15) inset, 0 6px 20px -6px rgba(14,90,60,0.4);
+  }
+  .btn-brand:hover { transform: translateY(-1px); background: var(--brand-2); }
+  .btn-arrow { width: 14px; height: 14px; transition: transform 0.15s ease; }
+  .btn:hover .btn-arrow { transform: translateX(2px); }
+
+  /* Nav */
+  nav {
+    position: sticky; top: 0; z-index: 40;
+    background: rgba(251,250,246,0.75);
+    backdrop-filter: saturate(160%) blur(14px);
+    -webkit-backdrop-filter: saturate(160%) blur(14px);
+    border-bottom: 1px solid transparent;
+  }
+  nav.scrolled { border-bottom-color: var(--line); }
+  .nav-inner {
+    display: flex; align-items: center; justify-content: space-between;
+    height: 68px;
+  }
+  .logo {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-family: 'Fraunces', serif; font-weight: 600; font-size: 22px;
+    letter-spacing: -0.02em;
+  }
+  .logo-mark {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 28px; height: 28px; border-radius: 8px;
+    background: linear-gradient(135deg, var(--brand) 0%, var(--brand-2) 100%);
+    color: white;
+  }
+  .nav-links {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 14px; color: var(--ink-2);
+  }
+  .nav-links a {
+    padding: 8px 12px; border-radius: 8px; transition: background 0.15s ease;
+  }
+  .nav-links a:hover { background: var(--bg-muted); color: var(--ink); }
+  .nav-cta { display: flex; align-items: center; gap: 8px; }
+  .nav-cta .btn { padding: 8px 14px; font-size: 14px; }
+  @media (max-width: 780px) {
+    .nav-links { display: none; }
+  }
+
+  /* Hero */
+  section.hero {
+    padding: 72px 0 96px; position: relative; overflow: hidden;
+  }
+  .hero-inner {
+    display: grid; grid-template-columns: 1.05fr 1fr; gap: 64px; align-items: center;
+  }
+  @media (max-width: 960px) {
+    .hero-inner { grid-template-columns: 1fr; gap: 48px; }
+  }
+  .hero h1 {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: clamp(44px, 6vw, 68px);
+    line-height: 1.02;
+    letter-spacing: -0.035em;
+    margin: 24px 0 20px;
+    color: var(--ink);
+  }
+  .hero h1 em {
+    font-style: italic; font-weight: 400;
+    background: linear-gradient(120deg, var(--brand) 0%, var(--brand-2) 60%);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .hero p.lede {
+    font-size: 19px; line-height: 1.55; color: var(--ink-2);
+    max-width: 540px; margin-bottom: 32px;
+  }
+  .hero-ctas { display: flex; gap: 12px; flex-wrap: wrap; }
+  .hero-meta {
+    margin-top: 28px; display: flex; align-items: center; gap: 16px;
+    font-size: 13px; color: var(--ink-3);
+  }
+  .hero-meta .avatars {
+    display: inline-flex;
+  }
+  .hero-meta .avatar {
+    width: 26px; height: 26px; border-radius: 50%;
+    border: 2px solid var(--bg);
+    margin-left: -8px;
+    background: linear-gradient(135deg, #E9C7B8, #B4A08A);
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 600; color: white;
+  }
+  .hero-meta .avatar:first-child { margin-left: 0; }
+  .hero-meta .avatar.a2 { background: linear-gradient(135deg, #C9DEC7, #8AB398); }
+  .hero-meta .avatar.a3 { background: linear-gradient(135deg, #E7C46A, #B08D3F); }
+  .hero-meta .avatar.a4 { background: linear-gradient(135deg, #A5B8D5, #6E85AA); }
+
+  /* Hero card visual */
+  .hero-card-stack { position: relative; height: 480px; }
+  .lead-card {
+    position: absolute;
+    background: var(--bg-elev);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    padding: 22px 22px 20px;
+    box-shadow:
+      0 2px 4px rgba(11,12,10,0.03),
+      0 12px 32px -12px rgba(11,12,10,0.12);
+    transition: transform 0.3s ease;
+  }
+  .lead-card.lc-1 {
+    top: 0; left: 6%; right: 6%;
+    z-index: 3;
+  }
+  .lead-card.lc-2 {
+    top: 168px; left: 0; right: 14%;
+    z-index: 2;
+    transform: scale(0.965);
+    opacity: 0.85;
+  }
+  .lead-card.lc-3 {
+    top: 316px; left: 14%; right: 0;
+    z-index: 1;
+    transform: scale(0.93);
+    opacity: 0.65;
+  }
+  .lc-head {
+    display: flex; align-items: flex-start; justify-content: space-between; gap: 14px;
+    margin-bottom: 18px;
+  }
+  .lc-title {
+    font-family: 'Fraunces', serif; font-weight: 500;
+    font-size: 22px; letter-spacing: -0.02em;
+  }
+  .lc-sub {
+    color: var(--ink-3); font-size: 13px; margin-top: 2px;
+  }
+  .lc-score {
+    position: relative; width: 68px; height: 68px; flex-shrink: 0;
+  }
+  .lc-score-track {
+    stroke: var(--line-2);
+  }
+  .lc-score-arc {
+    stroke: var(--brand);
+    stroke-linecap: round;
+    transition: stroke-dashoffset 0.8s ease;
+  }
+  .lc-score-num {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Fraunces', serif; font-weight: 500;
+    font-size: 22px; letter-spacing: -0.02em;
+  }
+  .lc-signals {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+    padding: 14px 0; border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 16px;
+  }
+  .lc-sig .label {
+    font-size: 11px; color: var(--ink-3); text-transform: uppercase;
+    letter-spacing: 0.06em; margin-bottom: 3px;
+  }
+  .lc-sig .val {
+    font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--ink);
+    font-weight: 500;
+  }
+  .lc-match {
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .lc-match .label {
+    font-size: 12px; color: var(--ink-3);
+    letter-spacing: 0.02em;
+  }
+  .lc-match .partner {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 5px 10px 5px 8px; border-radius: 999px;
+    background: var(--brand-soft); color: var(--brand-ink);
+    font-size: 13px; font-weight: 500;
+  }
+  .lc-match .partner .p-dot {
+    width: 6px; height: 6px; border-radius: 50%; background: var(--brand);
+  }
+  .lc-commission {
+    margin-top: 14px; padding: 12px 14px;
+    background: var(--bg-muted);
+    border-radius: 12px;
+    display: flex; align-items: baseline; justify-content: space-between;
+    gap: 8px;
+  }
+  .lc-commission .lbl {
+    font-size: 12px; color: var(--ink-3);
+    letter-spacing: 0.02em;
+  }
+  .lc-commission .amount {
+    font-family: 'Fraunces', serif; font-weight: 500;
+    font-size: 24px; letter-spacing: -0.02em; color: var(--brand);
+  }
+  .lc-commission .amount .per {
+    font-size: 12px; color: var(--ink-3); font-family: 'Inter', sans-serif;
+    font-weight: 400; letter-spacing: 0;
+  }
+
+  /* Logo strip */
+  .logos {
+    padding: 44px 0; border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    background: var(--bg-muted);
+  }
+  .logos-label {
+    text-align: center; font-size: 12px; color: var(--ink-3);
+    letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 22px;
+  }
+  .logo-row {
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 32px 44px;
+  }
+  .logo-row .lg-item {
+    font-family: 'Fraunces', serif; font-weight: 500;
+    font-size: 20px; color: var(--ink-3);
+    letter-spacing: -0.01em;
+    opacity: 0.85;
+    transition: color 0.2s ease, opacity 0.2s ease;
+  }
+  .logo-row .lg-item:hover { color: var(--ink); opacity: 1; }
+  .logo-row .lg-item .badge {
+    display: inline-block; margin-left: 6px;
+    padding: 2px 6px; border-radius: 5px;
+    background: var(--bg); color: var(--brand);
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    font-weight: 500; vertical-align: 3px;
+    border: 1px solid var(--line);
+  }
+
+  /* Section shell */
+  section.block { padding: 96px 0; }
+  .section-head { text-align: center; max-width: 640px; margin: 0 auto 56px; }
+  .section-head h2 {
+    font-family: 'Fraunces', serif; font-weight: 500;
+    font-size: clamp(32px, 3.5vw, 44px); letter-spacing: -0.03em;
+    line-height: 1.1;
+    margin: 12px 0 14px;
+  }
+  .section-head p {
+    font-size: 17px; color: var(--ink-2); line-height: 1.55;
+  }
+
+  /* Steps */
+  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  @media (max-width: 860px) { .steps { grid-template-columns: 1fr; } }
+  .step {
+    background: var(--bg-elev);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    padding: 28px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    position: relative;
+  }
+  .step:hover {
+    transform: translateY(-2px);
+    border-color: var(--line-2);
+    box-shadow: 0 12px 32px -18px rgba(11,12,10,0.15);
+  }
+  .step .step-num {
+    position: absolute; top: 22px; right: 22px;
+    font-family: 'JetBrains Mono', monospace; font-size: 12px;
+    color: var(--ink-4);
+  }
+  .step-icon {
+    width: 44px; height: 44px; border-radius: 12px;
+    background: var(--brand-soft); color: var(--brand);
+    display: inline-flex; align-items: center; justify-content: center;
+    margin-bottom: 20px;
+  }
+  .step h3 {
+    font-family: 'Fraunces', serif; font-weight: 500;
+    font-size: 22px; letter-spacing: -0.02em; line-height: 1.2;
+    margin-bottom: 8px;
+  }
+  .step p { font-size: 15px; color: var(--ink-2); line-height: 1.55; }
+  .step .step-tag {
+    display: inline-block; margin-top: 14px;
+    padding: 4px 10px; border-radius: 6px;
+    background: var(--bg-muted); color: var(--ink-3);
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  }
+
+  /* Product tour */
+  .tour-block {
+    display: grid; grid-template-columns: 1fr 1.2fr; gap: 56px; align-items: center;
+    margin-bottom: 96px;
+  }
+  .tour-block:last-child { margin-bottom: 0; }
+  .tour-block.reverse { grid-template-columns: 1.2fr 1fr; }
+  .tour-block.reverse .tour-copy { order: 2; }
+  .tour-block.reverse .tour-visual { order: 1; }
+  @media (max-width: 900px) {
+    .tour-block, .tour-block.reverse { grid-template-columns: 1fr; gap: 32px; }
+    .tour-block.reverse .tour-copy { order: 1; }
+    .tour-block.reverse .tour-visual { order: 2; }
+  }
+  .tour-copy .kicker {
+    font-family: 'JetBrains Mono', monospace; font-size: 12px;
+    color: var(--brand); text-transform: uppercase; letter-spacing: 0.1em;
+    margin-bottom: 14px;
+  }
+  .tour-copy h3 {
+    font-family: 'Fraunces', serif; font-weight: 500;
+    font-size: clamp(28px, 3vw, 36px); letter-spacing: -0.02em;
+    line-height: 1.15; margin-bottom: 16px;
+  }
+  .tour-copy p {
+    font-size: 16px; color: var(--ink-2); line-height: 1.6;
+    margin-bottom: 16px;
+  }
+  .tour-copy ul {
+    list-style: none; padding: 0; margin-top: 16px;
+  }
+  .tour-copy li {
+    display: flex; gap: 12px; padding: 8px 0;
+    font-size: 15px; color: var(--ink-2);
+    border-bottom: 1px solid var(--line);
+  }
+  .tour-copy li:last-child { border-bottom: none; }
+  .tour-copy li .check {
+    color: var(--brand); flex-shrink: 0; margin-top: 3px;
+  }
+  .tour-visual {
+    position: relative; border-radius: 20px; overflow: hidden;
+    background: var(--bg-elev);
+    border: 1px solid var(--line);
+    box-shadow: 0 20px 60px -30px rgba(11,12,10,0.15);
+  }
+  .visual-frame {
+    padding: 14px 14px 0;
+    background: var(--bg-muted);
+    border-bottom: 1px solid var(--line);
+  }
+  .visual-dots {
+    display: flex; gap: 6px; padding-bottom: 12px;
+  }
+  .visual-dots span {
+    width: 10px; height: 10px; border-radius: 50%;
+    background: var(--line-2);
+  }
+  .visual-body { padding: 24px; }
+
+  /* Distribution mock */
+  .dist-mock {
+    display: grid; grid-template-columns: repeat(10, 1fr); gap: 6px; align-items: end;
+    height: 110px; margin-top: 16px;
+  }
+  .dist-mock .bar {
+    background: var(--line-2); border-radius: 4px 4px 0 0;
+    transition: opacity 0.2s ease;
+  }
+  .dist-mock .bar.b1 { height: 15%; }
+  .dist-mock .bar.b2 { height: 22%; }
+  .dist-mock .bar.b3 { height: 35%; }
+  .dist-mock .bar.b4 { height: 42%; }
+  .dist-mock .bar.b5 { height: 58%; background: var(--sun); }
+  .dist-mock .bar.b6 { height: 72%; background: var(--sun); }
+  .dist-mock .bar.b7 { height: 90%; background: var(--brand); }
+  .dist-mock .bar.b8 { height: 100%; background: var(--brand); }
+  .dist-mock .bar.b9 { height: 78%; background: var(--brand); }
+  .dist-mock .bar.b10 { height: 45%; background: var(--brand-2); }
+  .dist-axis {
+    display: flex; justify-content: space-between;
+    font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--ink-4);
+    margin-top: 6px;
+  }
+  .kpi-row {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+    padding: 20px 0 0;
+  }
+  .kpi-cell {
+    padding: 14px; background: var(--bg-muted); border-radius: 12px;
+  }
+  .kpi-cell .k-label {
+    font-size: 11px; color: var(--ink-3);
+    text-transform: uppercase; letter-spacing: 0.06em;
+  }
+  .kpi-cell .k-val {
+    font-family: 'Fraunces', serif; font-weight: 500;
+    font-size: 26px; letter-spacing: -0.02em; margin-top: 4px;
+  }
+  .kpi-cell .k-val.brand { color: var(--brand); }
+
+  /* Email mock */
+  .email-mock {
+    background: var(--bg-elev); border: 1px solid var(--line);
+    border-radius: 14px; padding: 20px; margin-top: 8px;
+    font-size: 14px; line-height: 1.6; color: var(--ink);
+  }
+  .email-mock .em-head {
+    padding-bottom: 12px; margin-bottom: 12px;
+    border-bottom: 1px solid var(--line);
+    display: grid; grid-template-columns: auto 1fr; gap: 8px 12px;
+    font-size: 13px;
+  }
+  .email-mock .em-head .lbl {
+    color: var(--ink-3);
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    text-transform: uppercase; letter-spacing: 0.06em;
+    padding-top: 3px;
+  }
+  .email-mock .em-body p {
+    margin-bottom: 12px; color: var(--ink-2);
+  }
+  .email-mock .em-link {
+    color: var(--brand); text-decoration: underline; text-underline-offset: 3px;
+    word-break: break-all;
+  }
+
+  /* Metrics band */
+  section.metrics {
+    background: var(--ink); color: var(--bg);
+    padding: 88px 0;
     position: relative; overflow: hidden;
   }
-  .card:hover {
-    border-color: rgba(167, 139, 250, 0.4);
-    transform: translateY(-2px);
-    box-shadow: 0 0 0 1px rgba(167, 139, 250, 0.35), 0 8px 40px -8px rgba(167, 139, 250, 0.35);
+  section.metrics::before {
+    content: ''; position: absolute; inset: 0;
+    background:
+      radial-gradient(circle at 15% 30%, rgba(14,90,60,0.35), transparent 45%),
+      radial-gradient(circle at 85% 70%, rgba(10,124,85,0.25), transparent 45%);
+    pointer-events: none;
   }
-  .card .badge {
-    display: inline-block; padding: 2px 8px; border-radius: 6px;
-    background: rgba(195, 255, 62, 0.10); color: #c3ff3e;
-    border: 1px solid rgba(195, 255, 62, 0.30);
-    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase;
+  .metrics-inner {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px;
+    position: relative;
   }
-  .card h2 { font-size: 22px; letter-spacing: -0.025em; margin: 12px 0 6px; }
-  .card p { color: #a7a7b8; font-size: 14px; line-height: 1.55; margin: 0; }
-  .card .arrow { color: #a78bfa; margin-top: 16px; font-size: 14px; }
-  .meta {
-    margin-top: 40px; padding-top: 32px; border-top: 1px solid #1d1d28;
-    display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+  @media (max-width: 780px) {
+    .metrics-inner { grid-template-columns: 1fr; gap: 32px; }
   }
-  @media (max-width: 720px) { .meta { grid-template-columns: 1fr; } }
-  .meta-cell .label {
-    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase;
-    color: #6e6e80;
+  .metric .m-val {
+    font-family: 'Fraunces', serif; font-weight: 500;
+    font-size: clamp(48px, 5vw, 64px); letter-spacing: -0.03em;
+    line-height: 1.05;
+    background: linear-gradient(120deg, #FBFAF6 0%, #C9E5D6 100%);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
   }
-  .meta-cell .value { margin-top: 6px; font-size: 14px; color: #f4f4f7; }
-  .meta-cell a { color: #a78bfa; text-decoration: none; }
-  .meta-cell a:hover { color: #c3ff3e; }
-  .note {
-    margin-top: 24px; padding: 14px 16px; border-radius: 14px;
-    background: rgba(167, 139, 250, 0.05);
-    border: 1px solid rgba(167, 139, 250, 0.20);
-    font-size: 13px; color: #a7a7b8;
+  .metric .m-label {
+    font-size: 15px; color: rgba(251,250,246,0.7);
+    margin-top: 8px; max-width: 260px;
   }
-  .note code {
-    background: #13131a; border: 1px solid #2a2a38; border-radius: 6px;
-    padding: 1px 6px; font-size: 12px; color: #c3ff3e;
+
+  /* Pricing */
+  .pricing { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  @media (max-width: 900px) { .pricing { grid-template-columns: 1fr; } }
+  .price-card {
+    background: var(--bg-elev); border: 1px solid var(--line);
+    border-radius: 20px; padding: 32px; position: relative;
+    display: flex; flex-direction: column;
   }
+  .price-card.featured {
+    border: 1px solid var(--brand); background: linear-gradient(180deg, #FDFCF9 0%, #FFFFFF 100%);
+    box-shadow: 0 20px 50px -30px rgba(14,90,60,0.25);
+  }
+  .price-card .plan-name {
+    font-family: 'Fraunces', serif; font-weight: 500;
+    font-size: 22px; letter-spacing: -0.02em; margin-bottom: 4px;
+  }
+  .price-card .plan-sub {
+    color: var(--ink-3); font-size: 14px; margin-bottom: 24px;
+  }
+  .price-card .price {
+    display: flex; align-items: baseline; gap: 6px; margin-bottom: 24px;
+  }
+  .price-card .price .amount {
+    font-family: 'Fraunces', serif; font-weight: 500;
+    font-size: 48px; letter-spacing: -0.03em; line-height: 1;
+  }
+  .price-card .price .cycle {
+    color: var(--ink-3); font-size: 14px;
+  }
+  .price-card .features {
+    list-style: none; padding: 0; margin: 0 0 32px; flex-grow: 1;
+  }
+  .price-card .features li {
+    padding: 8px 0; font-size: 14px; color: var(--ink-2);
+    display: flex; gap: 10px; align-items: flex-start;
+  }
+  .price-card .features li .check {
+    color: var(--brand); flex-shrink: 0; margin-top: 3px;
+  }
+  .price-card .btn { width: 100%; }
+  .price-card .featured-tag {
+    position: absolute; top: -12px; left: 32px;
+    padding: 4px 10px; border-radius: 6px;
+    background: var(--brand); color: white;
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    text-transform: uppercase; letter-spacing: 0.06em;
+  }
+
+  /* FAQ */
+  .faq-list { max-width: 780px; margin: 0 auto; }
+  .faq-item {
+    border-bottom: 1px solid var(--line);
+    padding: 24px 0;
+  }
+  .faq-item:first-child { border-top: 1px solid var(--line); }
+  .faq-q {
+    display: flex; align-items: flex-start; justify-content: space-between; gap: 24px;
+    cursor: pointer; list-style: none;
+    font-family: 'Fraunces', serif; font-weight: 500;
+    font-size: 20px; letter-spacing: -0.015em;
+  }
+  .faq-q::-webkit-details-marker { display: none; }
+  .faq-q .plus {
+    width: 24px; height: 24px; flex-shrink: 0;
+    display: inline-flex; align-items: center; justify-content: center;
+    color: var(--ink-3);
+    transition: transform 0.2s ease;
+  }
+  details[open] .faq-q .plus { transform: rotate(45deg); color: var(--brand); }
+  .faq-a {
+    color: var(--ink-2); font-size: 15px; line-height: 1.65;
+    padding-top: 12px; padding-right: 48px;
+  }
+
+  /* Final CTA */
+  section.cta-final {
+    padding: 96px 0;
+    text-align: center;
+  }
+  .cta-card {
+    background: var(--bg-elev);
+    border: 1px solid var(--line);
+    border-radius: 24px;
+    padding: 64px 32px;
+    max-width: 780px; margin: 0 auto;
+    position: relative; overflow: hidden;
+  }
+  .cta-card::before {
+    content: ''; position: absolute; inset: 0;
+    background:
+      radial-gradient(circle at 20% 20%, rgba(14,90,60,0.06), transparent 50%),
+      radial-gradient(circle at 80% 80%, rgba(231,196,106,0.08), transparent 50%);
+    pointer-events: none;
+  }
+  .cta-card h2 {
+    position: relative;
+    font-family: 'Fraunces', serif; font-weight: 500;
+    font-size: clamp(32px, 3.5vw, 44px); letter-spacing: -0.03em;
+    line-height: 1.1; margin-bottom: 14px;
+  }
+  .cta-card p {
+    position: relative;
+    color: var(--ink-2); font-size: 17px; margin-bottom: 28px;
+  }
+  .cta-card .btns {
+    position: relative;
+    display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;
+  }
+
+  /* Footer */
+  footer {
+    border-top: 1px solid var(--line);
+    padding: 40px 0 32px;
+    background: var(--bg-muted);
+  }
+  .footer-row {
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 16px;
+  }
+  .footer-row .copyright {
+    font-size: 13px; color: var(--ink-3);
+  }
+  .footer-row .footer-links {
+    display: flex; gap: 20px; font-size: 13px; color: var(--ink-3);
+  }
+  .footer-row .footer-links a:hover { color: var(--ink); }
+
+  /* Subtle reveal */
+  .reveal {
+    opacity: 0; transform: translateY(12px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  .reveal.in { opacity: 1; transform: translateY(0); }
 </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="eyebrow">3PL Finder · Demo</div>
-    <h1>Find DTC brands ready to outsource fulfillment — earn affiliate commission for every match.</h1>
-    <p class="lede">
-      A 6-agent pipeline that turns a niche keyword into qualified leads, scores
-      each brand for 3PL-fit, matches them to a partner from your affiliate
-      roster, and drafts a personalized pitch — all rendered with demo data
-      below so you can browse without setup.
-    </p>
 
-    <div class="grid">
-      <a class="card" href="threepl.html">
-        <span class="badge">Main view</span>
-        <h2>3PL Finder pipeline &rarr;</h2>
-        <p>
-          Hero KPIs (qualified leads, avg fit, projected annual commission),
-          score-distribution chart, partner strip, and detailed lead cards
-          with animated fit-score rings, signals grid, and draft pitches.
-        </p>
-        <div class="arrow">Open the demo &rarr;</div>
-      </a>
-      <a class="card" href="partners.html">
-        <span class="badge">Roster</span>
-        <h2>Affiliate partners &rarr;</h2>
-        <p>
-          Full table of 3PL programs in your roster — commission %, vertical
-          specialty, volume range, geo coverage, current match count.
-          ShipBob, ShipMonk, ShipHero, Easyship, Red Stag pre-seeded.
-        </p>
-        <div class="arrow">View the roster &rarr;</div>
+<nav id="nav">
+  <div class="container nav-inner">
+    <a href="#" class="logo">
+      <span class="logo-mark">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+          <path d="M4 16 L4 8 L12 12 L20 8 L20 16" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </span>
+      Miri
+    </a>
+    <div class="nav-links">
+      <a href="#how">How it works</a>
+      <a href="#product">Product</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+    </div>
+    <div class="nav-cta">
+      <a href="#" class="btn btn-ghost">Sign in</a>
+      <a href="#pricing" class="btn btn-primary">
+        Start free
+        <svg class="btn-arrow" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </a>
     </div>
+  </div>
+</nav>
 
-    <div class="note">
-      Snapshots are static — animations / score-ring count-ups / discover-panel
-      sliders need the live dev server. To run interactively:
-      <code>git checkout claude/3pl-customer-finder-tool-kmVcJ &amp;&amp; DEMO_MODE=1 npx next dev</code>
+<section class="hero">
+  <div class="container hero-inner">
+    <div class="hero-copy reveal in">
+      <span class="eyebrow"><span class="dot"></span> AI-powered 3PL discovery</span>
+      <h1>Find brands ready to <em>outsource fulfillment.</em></h1>
+      <p class="lede">
+        Miri surfaces DTC stores that outgrew their garage, matches each to a
+        3PL from your affiliate roster, and drafts a pitch that actually gets
+        replies. You earn commission on every signup.
+      </p>
+      <div class="hero-ctas">
+        <a href="#pricing" class="btn btn-primary">
+          Start earning free
+          <svg class="btn-arrow" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+        <a href="#product" class="btn btn-ghost">See how it works</a>
+      </div>
+      <div class="hero-meta">
+        <div class="avatars">
+          <span class="avatar">A</span>
+          <span class="avatar a2">M</span>
+          <span class="avatar a3">R</span>
+          <span class="avatar a4">S</span>
+        </div>
+        <span>Trusted by 340+ affiliates across 12 partner programs</span>
+      </div>
     </div>
 
-    <div class="meta">
-      <div class="meta-cell">
-        <div class="label">Branch</div>
-        <div class="value">
-          <a href="https://github.com/marouenmiri-rgb/MMIRI/tree/claude/3pl-customer-finder-tool-kmVcJ">
-            claude/3pl-customer-finder-tool-kmVcJ
-          </a>
+    <div class="hero-card-stack reveal in">
+      <!-- Card 3 (back) -->
+      <div class="lead-card lc-3">
+        <div class="lc-head">
+          <div>
+            <div class="lc-title">Slate &amp; Salt Coffee</div>
+            <div class="lc-sub">slatesalt.coffee · beverage</div>
+          </div>
         </div>
       </div>
-      <div class="meta-cell">
-        <div class="label">Tech</div>
-        <div class="value">Next.js 14 · Claude Opus 4.7 · Prisma · Tailwind</div>
+
+      <!-- Card 2 (middle) -->
+      <div class="lead-card lc-2">
+        <div class="lc-head">
+          <div>
+            <div class="lc-title">Pawline Daily</div>
+            <div class="lc-sub">pawline.co · subscription box · pet</div>
+          </div>
+        </div>
       </div>
-      <div class="meta-cell">
-        <div class="label">Pipeline</div>
-        <div class="value">expand &rarr; search &rarr; inspect &rarr; score &rarr; match &rarr; draft</div>
+
+      <!-- Card 1 (front, animated) -->
+      <div class="lead-card lc-1">
+        <div class="lc-head">
+          <div>
+            <div class="lc-title">Northwild Apothecary</div>
+            <div class="lc-sub">northwild.co · beauty · ships from studio</div>
+          </div>
+          <div class="lc-score">
+            <svg width="68" height="68" viewBox="0 0 68 68" style="transform: rotate(-90deg);">
+              <circle class="lc-score-track" cx="34" cy="34" r="28" fill="none" stroke-width="6" />
+              <circle class="lc-score-arc" cx="34" cy="34" r="28" fill="none" stroke-width="6"
+                stroke-dasharray="175.9" stroke-dashoffset="14.1" id="scoreArc" />
+            </svg>
+            <div class="lc-score-num">92</div>
+          </div>
+        </div>
+        <div class="lc-signals">
+          <div class="lc-sig">
+            <div class="label">SKUs</div>
+            <div class="val">47</div>
+          </div>
+          <div class="lc-sig">
+            <div class="label">Orders / mo</div>
+            <div class="val">~1,840</div>
+          </div>
+          <div class="lc-sig">
+            <div class="label">Ships</div>
+            <div class="val">Intl · USPS</div>
+          </div>
+        </div>
+        <div class="lc-match">
+          <span class="label">Matched to</span>
+          <span class="partner"><span class="p-dot"></span> ShipBob · 10% commission</span>
+        </div>
+        <div class="lc-commission">
+          <span class="lbl">Est. annual commission</span>
+          <span class="amount">$2,438<span class="per"> / yr</span></span>
+        </div>
       </div>
     </div>
   </div>
+</section>
+
+<div class="logos">
+  <div class="container">
+    <div class="logos-label">Auto-matched from your affiliate roster</div>
+    <div class="logo-row">
+      <div class="lg-item">ShipBob <span class="badge">10%</span></div>
+      <div class="lg-item">ShipMonk <span class="badge">8%</span></div>
+      <div class="lg-item">ShipHero <span class="badge">7%</span></div>
+      <div class="lg-item">Easyship <span class="badge">15%</span></div>
+      <div class="lg-item">Red Stag <span class="badge">6%</span></div>
+    </div>
+  </div>
+</div>
+
+<section class="block" id="how">
+  <div class="container">
+    <div class="section-head">
+      <span class="eyebrow"><span class="dot"></span> How it works</span>
+      <h2>From a niche keyword to a signed affiliate check — in three steps.</h2>
+      <p>No cold-scraping, no data-broker fees, no CSV wrangling. Type a niche, get qualified leads with pitches attached.</p>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">01</div>
+        <div class="step-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M11 4a7 7 0 1 1 0 14 7 7 0 0 1 0-14zM20 20l-3-3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <h3>Tell Miri a niche.</h3>
+        <p>Type <em>pet treats</em> or <em>skincare</em>. Claude Opus expands it into 8 search queries and hunts DTC stores that match.</p>
+        <div class="step-tag">~40 seconds</div>
+      </div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <div class="step-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 3l2.5 5.5L20 10l-4 4 1 6-5-3-5 3 1-6-4-4 5.5-1.5L12 3z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+        </div>
+        <h3>AI scores each brand.</h3>
+        <p>SKU count, review velocity, shipping page, current carrier — every brand gets a 0-100 fit score with cited reasons.</p>
+        <div class="step-tag">6-agent pipeline</div>
+      </div>
+      <div class="step">
+        <div class="step-num">03</div>
+        <div class="step-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 12h9M9 8l-5 4 5 4M20 4v16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <h3>Pitch, get paid.</h3>
+        <p>Draft email pre-loaded with your affiliate link and one specific observation about the brand. Copy, send, earn.</p>
+        <div class="step-tag">1-click copy · mailto ready</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="block" id="product" style="background: var(--bg-muted); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);">
+  <div class="container">
+    <div class="section-head">
+      <span class="eyebrow"><span class="dot"></span> Product</span>
+      <h2>A control room built for one job: turning niches into commission checks.</h2>
+    </div>
+
+    <div class="tour-block">
+      <div class="tour-copy">
+        <div class="kicker">The pipeline</div>
+        <h3>See your entire lead funnel at a glance.</h3>
+        <p>Qualified leads, average fit, projected annual commission — the numbers you actually care about, up top and count-up animated on load.</p>
+        <ul>
+          <li><span class="check">✓</span> 10-bucket fit-score distribution</li>
+          <li><span class="check">✓</span> Per-partner match counts</li>
+          <li><span class="check">✓</span> Sort by score, vertical, or est. volume</li>
+          <li><span class="check">✓</span> One-click re-run for a fresh niche</li>
+        </ul>
+      </div>
+      <div class="tour-visual">
+        <div class="visual-frame">
+          <div class="visual-dots"><span></span><span></span><span></span></div>
+        </div>
+        <div class="visual-body">
+          <div style="display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 4px;">
+            <div class="mono" style="font-size: 11px; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.1em;">Fit-score distribution</div>
+            <div class="mono" style="font-size: 11px; color: var(--ink-3);">340 leads</div>
+          </div>
+          <div class="dist-mock">
+            <div class="bar b1"></div>
+            <div class="bar b2"></div>
+            <div class="bar b3"></div>
+            <div class="bar b4"></div>
+            <div class="bar b5"></div>
+            <div class="bar b6"></div>
+            <div class="bar b7"></div>
+            <div class="bar b8"></div>
+            <div class="bar b9"></div>
+            <div class="bar b10"></div>
+          </div>
+          <div class="dist-axis"><span>0</span><span>50</span><span>100</span></div>
+          <div class="kpi-row">
+            <div class="kpi-cell">
+              <div class="k-label">Avg fit</div>
+              <div class="k-val">74<span style="font-size: 14px; color: var(--ink-3); letter-spacing: 0;">/100</span></div>
+            </div>
+            <div class="kpi-cell">
+              <div class="k-label">Orders / mo</div>
+              <div class="k-val">246k</div>
+            </div>
+            <div class="kpi-cell">
+              <div class="k-label">Est. commission</div>
+              <div class="k-val brand">$47k</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tour-block reverse">
+      <div class="tour-copy">
+        <div class="kicker">The pitch</div>
+        <h3>Emails that quote a real signal from the brand's own site.</h3>
+        <p>Every draft opens with one specific observation Claude pulled from the brand's shipping page, product catalog, or review copy. Never generic. Never sent from a template.</p>
+        <ul>
+          <li><span class="check">✓</span> Sub-90 words, no filler</li>
+          <li><span class="check">✓</span> Affiliate link auto-substituted</li>
+          <li><span class="check">✓</span> Honest disclosure baked in</li>
+          <li><span class="check">✓</span> One-click copy, or open in your mail client</li>
+        </ul>
+      </div>
+      <div class="tour-visual">
+        <div class="visual-frame">
+          <div class="visual-dots"><span></span><span></span><span></span></div>
+        </div>
+        <div class="visual-body">
+          <div class="email-mock">
+            <div class="em-head">
+              <span class="lbl">To</span><span>ops@northwild.co</span>
+              <span class="lbl">Subject</span><span>Quick idea for Northwild fulfillment</span>
+            </div>
+            <div class="em-body">
+              <p>Hey Northwild team,</p>
+              <p>Noticed you ship from the studio and still hit ~1.8k orders/mo with international USPS — that's the exact stage most beauty brands hit a wall.</p>
+              <p>ShipBob handles that handoff cleanly: 50+ fulfillment centers, native Shopify, 2-day footprint. They have a partner program I'm part of, so here's my link if you want to skip the sales call:</p>
+              <p><a class="em-link" href="#">shipbob.com/?ref=your_id</a></p>
+              <p>Worth a 10-min look?</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<section class="metrics">
+  <div class="container metrics-inner">
+    <div class="metric">
+      <div class="m-val">340+</div>
+      <div class="m-label">brands scanned per niche search on average</div>
+    </div>
+    <div class="metric">
+      <div class="m-val">12%</div>
+      <div class="m-label">average reply rate on personalized pitches</div>
+    </div>
+    <div class="metric">
+      <div class="m-val">$47k</div>
+      <div class="m-label">average annual commission per active affiliate</div>
+    </div>
+  </div>
+</section>
+
+<section class="block" id="pricing">
+  <div class="container">
+    <div class="section-head">
+      <span class="eyebrow"><span class="dot"></span> Pricing</span>
+      <h2>Pay when you're earning. Not before.</h2>
+      <p>Free forever tier for testing the pitch. Upgrade when you're ready to run at volume.</p>
+    </div>
+
+    <div class="pricing">
+      <div class="price-card">
+        <div class="plan-name">Starter</div>
+        <div class="plan-sub">Kick the tires with real leads.</div>
+        <div class="price">
+          <span class="amount">$0</span>
+          <span class="cycle">/ month</span>
+        </div>
+        <ul class="features">
+          <li><span class="check">✓</span> 20 qualified leads / month</li>
+          <li><span class="check">✓</span> 3 affiliate partners in roster</li>
+          <li><span class="check">✓</span> AI fit-scoring included</li>
+          <li><span class="check">✓</span> Manual pitch drafting</li>
+        </ul>
+        <a href="#" class="btn btn-ghost">Start free</a>
+      </div>
+      <div class="price-card featured">
+        <span class="featured-tag">Most popular</span>
+        <div class="plan-name">Pro</div>
+        <div class="plan-sub">For serious affiliate operators.</div>
+        <div class="price">
+          <span class="amount">$49</span>
+          <span class="cycle">/ month</span>
+        </div>
+        <ul class="features">
+          <li><span class="check">✓</span> 500 qualified leads / month</li>
+          <li><span class="check">✓</span> Unlimited affiliate partners</li>
+          <li><span class="check">✓</span> AI pitch drafts with signal-quoting</li>
+          <li><span class="check">✓</span> CSV export &amp; Zapier</li>
+          <li><span class="check">✓</span> Reply-rate analytics</li>
+        </ul>
+        <a href="#" class="btn btn-brand">
+          Start 14-day free trial
+          <svg class="btn-arrow" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+      </div>
+      <div class="price-card">
+        <div class="plan-name">Scale</div>
+        <div class="plan-sub">For agencies running for multiple clients.</div>
+        <div class="price">
+          <span class="amount">$199</span>
+          <span class="cycle">/ month</span>
+        </div>
+        <ul class="features">
+          <li><span class="check">✓</span> 5,000 qualified leads / month</li>
+          <li><span class="check">✓</span> Team seats (up to 8)</li>
+          <li><span class="check">✓</span> Priority pipeline queue</li>
+          <li><span class="check">✓</span> Custom partner onboarding</li>
+          <li><span class="check">✓</span> White-label reports</li>
+        </ul>
+        <a href="#" class="btn btn-ghost">Talk to sales</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="block" id="faq" style="background: var(--bg-muted); border-top: 1px solid var(--line);">
+  <div class="container">
+    <div class="section-head">
+      <span class="eyebrow"><span class="dot"></span> Questions</span>
+      <h2>Answers before you ask.</h2>
+    </div>
+    <div class="faq-list">
+      <details class="faq-item">
+        <summary class="faq-q">
+          What exactly is a 3PL?
+          <span class="plus">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          </span>
+        </summary>
+        <p class="faq-a">
+          A third-party logistics provider — companies like ShipBob and ShipMonk that store your inventory, pick &amp; pack orders, and ship them for you. DTC brands outsource to a 3PL when in-house fulfillment starts eating too much of the founder's week. That transition is when they sign up for a new provider — the exact moment your affiliate link earns commission.
+        </p>
+      </details>
+      <details class="faq-item">
+        <summary class="faq-q">
+          Do I need affiliate accounts before signing up?
+          <span class="plus">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          </span>
+        </summary>
+        <p class="faq-a">
+          No — Miri ships with 5 pre-configured programs (ShipBob, ShipMonk, ShipHero, Easyship, Red Stag). You can start pitching immediately using generic links, then swap them for your own affiliate URLs once you're accepted into each program. Applications typically clear in 24-72 hours.
+        </p>
+      </details>
+      <details class="faq-item">
+        <summary class="faq-q">
+          Where do the leads come from?
+          <span class="plus">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          </span>
+        </summary>
+        <p class="faq-a">
+          Public web search plus a Shopify-signal detector — no scraped databases, no purchased lists. Every lead is a real, public DTC store surfaced from a live search. Miri only stores what you'd see in a browser: brand name, URL, contact email if public, and computed fit signals.
+        </p>
+      </details>
+      <details class="faq-item">
+        <summary class="faq-q">
+          Is this GDPR / CAN-SPAM compliant?
+          <span class="plus">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          </span>
+        </summary>
+        <p class="faq-a">
+          Miri drafts emails; it doesn't send them. You review every message and hit send from your own mail client. That keeps you in the driver's seat on CAN-SPAM (physical address, opt-out link, honest subject line) and GDPR (legitimate-interest basis + easy opt-out on first reply).
+        </p>
+      </details>
+      <details class="faq-item">
+        <summary class="faq-q">
+          Can I bring my own partner programs?
+          <span class="plus">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          </span>
+        </summary>
+        <p class="faq-a">
+          Yes. On the Pro and Scale plans you can add unlimited partners with your own commission %, vertical specialty, volume range, and referral URL template. The matcher scores every partner on every lead so your best-paying program isn't buried under generalists.
+        </p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<section class="cta-final">
+  <div class="container">
+    <div class="cta-card">
+      <h2>Your next affiliate check is one niche search away.</h2>
+      <p>Start free. Get 20 qualified leads and a draft pitch for each — no card, no time limit.</p>
+      <div class="btns">
+        <a href="#" class="btn btn-primary">
+          Start earning free
+          <svg class="btn-arrow" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+        <a href="#how" class="btn btn-ghost">See it work first</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container footer-row">
+    <div class="copyright">© 2026 Miri. Built for affiliate operators.</div>
+    <div class="footer-links">
+      <a href="#how">How it works</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+      <a href="https://github.com/marouenmiri-rgb/MMIRI/tree/claude/3pl-customer-finder-tool-kmVcJ">Source</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Nav border on scroll
+  var nav = document.getElementById('nav');
+  window.addEventListener('scroll', function() {
+    if (window.scrollY > 8) nav.classList.add('scrolled');
+    else nav.classList.remove('scrolled');
+  });
+
+  // Reveal on intersection
+  var io = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) {
+      if (e.isIntersecting) e.target.classList.add('in');
+    });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('.reveal').forEach(function(el) { io.observe(el); });
+</script>
+
 </body>
 </html>
