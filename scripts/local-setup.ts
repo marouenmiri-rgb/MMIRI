@@ -13,7 +13,7 @@ import { existsSync, mkdirSync } from "node:fs";
 import path from "node:path";
 
 async function main() {
-  process.env.DATABASE_URL ??= "file:./prisma/dev.db";
+  process.env.DATABASE_URL ??= "file:./dev.db";
 
   // Make sure the directory for the SQLite file exists.
   const url = process.env.DATABASE_URL;
@@ -54,7 +54,7 @@ async function main() {
   }
 }
 
-type DB = Awaited<ReturnType<typeof import("@prisma/client")["PrismaClient"]>> extends never ? never : InstanceType<typeof import("@prisma/client")["PrismaClient"]>;
+type DB = InstanceType<typeof import("@prisma/client").PrismaClient>;
 
 async function seed(db: DB) {
   const user = await db.user.upsert({
@@ -71,7 +71,7 @@ async function seed(db: DB) {
       status: "READY",
       thumbnailUrl:
         "https://images.unsplash.com/photo-1511920170033-f8396924c348?w=400",
-      scriptJson: {
+      scriptJson: JSON.stringify({
         hook: "Cold coffee ruins your morning. Here's the fix.",
         problem:
           "You take one sip, get pulled into a meeting, and by the time you look back your $6 latte is cold.",
@@ -80,7 +80,7 @@ async function seed(db: DB) {
         cta: "Tap the link. First sip's still hot at noon.",
         fullScript:
           "Cold coffee ruins your morning. You take one sip, get pulled into a meeting, and your $6 latte is ice. Ember Mug 2 holds it at the exact temp you pick — for three hours. Tap the link. First sip's still hot at noon.",
-      },
+      }),
     },
   });
 

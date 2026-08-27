@@ -4,6 +4,7 @@ import { findShopifyStores } from "@/agents/shopify-finder";
 import { db } from "@/lib/db";
 import { getCurrentUserId } from "@/lib/auth";
 import { hasDb } from "@/lib/env";
+import { packJson } from "@/lib/json";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -37,14 +38,14 @@ export async function POST(req: Request) {
         update: {
           storeName: s.storeName,
           email: s.email ?? null,
-          socialsJson: s.socials as object,
+          socialsJson: packJson(s.socials),
         },
         create: {
           userId,
           storeName: s.storeName,
           websiteUrl: s.websiteUrl,
           email: s.email ?? null,
-          socialsJson: s.socials as object,
+          socialsJson: packJson(s.socials),
           source: s.source ?? "duckduckgo",
         },
       });
