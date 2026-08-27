@@ -85,7 +85,7 @@ async function load(): Promise<{
       id: p.id,
       platform: p.platform as PlatformKey,
       scheduledFor: p.scheduledFor,
-      status: p.status,
+      status: p.status as TimelinePost["status"],
       externalUrl: p.externalUrl,
       ad: p.ad ? { productTitle: p.ad.productTitle, thumbnailUrl: p.ad.thumbnailUrl } : null,
     })),

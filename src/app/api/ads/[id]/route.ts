@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getCurrentUserId } from "@/lib/auth";
 import { hasDb } from "@/lib/env";
+import { unpackJson } from "@/lib/json";
 
 export const runtime = "nodejs";
 
@@ -18,5 +19,10 @@ export async function GET(
     where: { id: params.id, userId },
   });
   if (!ad) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  return NextResponse.json(ad);
+  // scriptJson/scenesJson are TEXT in SQLite; the generator expects objects.
+  return NextResponse.json({
+    ...ad,
+    scriptJson: unpackJson<Record<string, unknown> | null>(ad.scriptJson, null),
+    scenesJson: unpackJson<Record<string, unknown> | null>(ad.scenesJson, null),
+  });
 }

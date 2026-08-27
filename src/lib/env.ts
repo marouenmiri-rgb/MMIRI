@@ -1,11 +1,24 @@
 import { z } from "zod";
 
+/**
+ * `.env.example` ships the optional keys as empty strings, and an unset shell
+ * variable also arrives as `""`. Both mean "not configured", so collapse them
+ * to undefined before validating — otherwise every fresh clone dies at import
+ * time on a key the app is designed to run without.
+ */
+const blankAsUndefined = <T extends z.ZodTypeAny>(inner: T) =>
+  z.preprocess((v) => (v === "" ? undefined : v), inner);
+
 const schema = z.object({
-  DATABASE_URL: z.string().min(1).default("file:./prisma/dev.db"),
-  ANTHROPIC_API_KEY: z.string().min(1).optional(),
-  ELEVENLABS_API_KEY: z.string().optional(),
-  RESEND_API_KEY: z.string().optional(),
-  NEXT_PUBLIC_APP_URL: z.string().default("http://localhost:3000"),
+  // No `.min(1)`: an explicit empty DATABASE_URL is the documented way to
+  // force fixture-mode (see `hasDb` below), so it must survive validation.
+  DATABASE_URL: z.string().default("file:./dev.db"),
+  ANTHROPIC_API_KEY: blankAsUndefined(z.string().min(1).optional()),
+  ELEVENLABS_API_KEY: blankAsUndefined(z.string().optional()),
+  RESEND_API_KEY: blankAsUndefined(z.string().optional()),
+  NEXT_PUBLIC_APP_URL: blankAsUndefined(
+    z.string().default("http://localhost:3000"),
+  ),
 });
 
 export const env = schema.parse({

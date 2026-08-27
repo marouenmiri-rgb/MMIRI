@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { getCurrentUserId } from "@/lib/auth";
 import { hasClaude, hasDb } from "@/lib/env";
 import { extractBrandVoice } from "@/agents/brand-voice";
+import { packJson, unpackJson } from "@/lib/json";
 
 export const runtime = "nodejs";
 export const maxDuration = 90;
@@ -34,7 +35,7 @@ export async function GET() {
   const userId = await getCurrentUserId();
   if (!userId) return NextResponse.json({ voice: null });
   const row = await db.brandVoice.findUnique({ where: { userId } });
-  return NextResponse.json({ voice: row });
+  return NextResponse.json({ voice: row ? toClientVoice(row) : null });
 }
 
 export async function POST(req: Request) {
@@ -86,9 +87,9 @@ export async function POST(req: Request) {
       name: parsed.data.name ?? null,
       tone: parsed.data.tone,
       audience: parsed.data.audience,
-      dosJson: parsed.data.dos as object,
-      dontsJson: parsed.data.donts as object,
-      examplesJson: parsed.data.examples as object,
+      dosJson: packJson(parsed.data.dos),
+      dontsJson: packJson(parsed.data.donts),
+      examplesJson: packJson(parsed.data.examples),
       sourceUrl: parsed.data.sourceUrl ?? null,
     },
     create: {
@@ -96,13 +97,13 @@ export async function POST(req: Request) {
       name: parsed.data.name ?? null,
       tone: parsed.data.tone,
       audience: parsed.data.audience,
-      dosJson: parsed.data.dos as object,
-      dontsJson: parsed.data.donts as object,
-      examplesJson: parsed.data.examples as object,
+      dosJson: packJson(parsed.data.dos),
+      dontsJson: packJson(parsed.data.donts),
+      examplesJson: packJson(parsed.data.examples),
       sourceUrl: parsed.data.sourceUrl ?? null,
     },
   });
-  return NextResponse.json({ voice: saved });
+  return NextResponse.json({ voice: toClientVoice(saved) });
 }
 
 export async function DELETE() {
@@ -136,4 +137,24 @@ async function scrapeForCopy(url: string): Promise<string> {
   } catch {
     return "";
   }
+}
+
+/**
+ * The dos/donts/examples columns are TEXT in SQLite; the brand editor expects
+ * real arrays, so unpack them at the API boundary.
+ */
+function toClientVoice<T extends {
+  dosJson: string | null;
+  dontsJson: string | null;
+  examplesJson: string | null;
+}>(voice: T) {
+  return {
+    ...voice,
+    dosJson: unpackJson<string[]>(voice.dosJson, []),
+    dontsJson: unpackJson<string[]>(voice.dontsJson, []),
+    examplesJson: unpackJson<{ context: string; copy: string }[]>(
+      voice.examplesJson,
+      [],
+    ),
+  };
 }

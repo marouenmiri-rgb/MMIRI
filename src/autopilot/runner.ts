@@ -8,6 +8,7 @@ import { publishOne } from "@/social/publisher";
 import type { AdScript } from "@/agents/types";
 import type { BrandVoice } from "@/agents/brand-voice";
 import type { SocialPlatform } from "@/social/types";
+import { unpackJson } from "@/lib/json";
 
 const PLATFORMS_ALL: SocialPlatform[] = ["TIKTOK", "INSTAGRAM", "YOUTUBE", "X"];
 
@@ -38,11 +39,11 @@ export async function runAutoPilotRule(ruleId: string): Promise<{
   }
 
   try {
-    const productUrls = (rule.productUrls as string[]) ?? [];
+    const productUrls = unpackJson<string[]>(rule.productUrls, []);
     if (productUrls.length === 0) throw new Error("no product URLs in rule");
     const productUrl = productUrls[rule.adsRun % productUrls.length];
 
-    const hook = pickHook(rule.hookCategories as HookCategory[] | null);
+    const hook = pickHook(unpackJson<HookCategory[] | null>(rule.hookCategories, null));
 
     const ad = await db.ad.create({
       data: {
@@ -60,9 +61,10 @@ export async function runAutoPilotRule(ruleId: string): Promise<{
     });
 
     // Ship to every requested platform that has a live connection.
-    const platforms = ((rule.platforms as SocialPlatform[]) ?? PLATFORMS_ALL).filter(
-      (p) => PLATFORMS_ALL.includes(p),
-    );
+    const platforms = unpackJson<SocialPlatform[]>(
+      rule.platforms,
+      PLATFORMS_ALL,
+    ).filter((p) => PLATFORMS_ALL.includes(p));
     if (platforms.length > 0) {
       await shipAdToPlatforms({
         userId: rule.userId,
@@ -118,7 +120,8 @@ async function shipAdToPlatforms(args: {
   platforms: SocialPlatform[];
 }) {
   const ad = await db.ad.findUnique({ where: { id: args.adId } });
-  if (!ad || !ad.scriptJson) return;
+  const script = ad ? unpackJson<AdScript | null>(ad.scriptJson, null) : null;
+  if (!ad || !script) return;
 
   const voiceRow = await db.brandVoice.findUnique({
     where: { userId: args.userId },
@@ -128,11 +131,12 @@ async function shipAdToPlatforms(args: {
         name: voiceRow.name ?? undefined,
         tone: voiceRow.tone,
         audience: voiceRow.audience,
-        dos: (voiceRow.dosJson as string[] | null) ?? [],
-        donts: (voiceRow.dontsJson as string[] | null) ?? [],
-        examples:
-          (voiceRow.examplesJson as { context: string; copy: string }[] | null) ??
+        dos: unpackJson<string[]>(voiceRow.dosJson, []),
+        donts: unpackJson<string[]>(voiceRow.dontsJson, []),
+        examples: unpackJson<{ context: string; copy: string }[]>(
+          voiceRow.examplesJson,
           [],
+        ),
       }
     : null;
   // brandVoiceBlock is exported to keep the dep alive; the captioner uses it
@@ -141,14 +145,14 @@ async function shipAdToPlatforms(args: {
 
   const captions = await writeCaptions({
     product: { title: ad.productTitle ?? "your product", url: ad.productUrl },
-    script: ad.scriptJson as AdScript,
+    script,
     brandVoice,
   }).catch(() => null);
 
   const captionFor = (p: SocialPlatform): string => {
-    if (!captions) return ad.scriptJson ? (ad.scriptJson as AdScript).hook : "Check this out.";
+    if (!captions) return script.hook;
     const key = p.toLowerCase() as keyof typeof captions;
-    return captions[key] ?? (ad.scriptJson as AdScript).hook;
+    return captions[key] ?? script.hook;
   };
 
   const conns = await db.socialConnection.findMany({

@@ -42,8 +42,8 @@ model Ad {
   productUrl    String
   productTitle  String?
   status        String   @default("QUEUED")
-  scriptJson    Json?
-  scenesJson    Json?
+  scriptJson    String?
+  scenesJson    String?
   voiceoverUrl  String?
   videoUrl      String?
   thumbnailUrl  String?
@@ -66,7 +66,7 @@ model Lead {
   storeName   String
   websiteUrl  String
   email       String?
-  socialsJson Json?
+  socialsJson String?
   source      String?
   createdAt   DateTime @default(now())
 
@@ -114,8 +114,8 @@ model Job {
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   kind        String
   status      String   @default("QUEUED")
-  payloadJson Json
-  resultJson  Json?
+  payloadJson String
+  resultJson  String?
   error       String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -185,7 +185,7 @@ model AdVariant {
   kind       String   @default("HOOK")
   label      String
   angle      String?
-  scriptJson Json
+  scriptJson String
   winner     Boolean  @default(false)
   retired    Boolean  @default(false)
   createdAt  DateTime @default(now())
@@ -246,7 +246,7 @@ model Conversion {
   revenueCents    Int
   currency        String       @default("USD")
   occurredAt      DateTime     @default(now())
-  raw             Json?
+  raw             String?
 
   @@unique([trackingLinkId, externalOrderId])
   @@index([userId, occurredAt])
@@ -259,7 +259,7 @@ model Insight {
   kind         String
   title        String
   body         String
-  evidenceJson Json?
+  evidenceJson String?
   actioned     Boolean  @default(false)
   createdAt    DateTime @default(now())
 
@@ -292,9 +292,9 @@ model BrandVoice {
   name         String?
   tone         String?
   audience     String?
-  dosJson      Json?
-  dontsJson    Json?
-  examplesJson Json?
+  dosJson      String?
+  dontsJson    String?
+  examplesJson String?
   sourceUrl    String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
@@ -306,9 +306,9 @@ model AutoPilotRule {
   user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   name           String
   enabled        Boolean   @default(true)
-  productUrls    Json
-  hookCategories Json?
-  platforms      Json
+  productUrls    String
+  hookCategories String?
+  platforms      String
   cadenceHours   Int       @default(24)
   budgetAdsTotal Int?
   adsRun         Int       @default(0)

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import crypto from "node:crypto";
 import { db } from "@/lib/db";
 import { hasDb } from "@/lib/env";
+import { packJson } from "@/lib/json";
 
 export const runtime = "nodejs";
 
@@ -80,7 +81,7 @@ export async function POST(req: Request) {
         externalOrderId: orderId,
         revenueCents: cents,
         currency: (payload.currency ?? "USD").toUpperCase(),
-        raw: payload as object,
+        raw: packJson(payload),
       },
     }),
     db.trackingLink.update({

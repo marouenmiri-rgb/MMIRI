@@ -16,3 +16,6 @@ prisma/dev.db
 prisma/dev.db-journal
 
 public/renders/
+
+# TypeScript incremental build cache
+tsconfig.tsbuildinfo
