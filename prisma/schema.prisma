@@ -18,6 +18,13 @@ model User {
   email      String   @unique
   name       String?
   plan       String   @default("FREE")
+  /// "USER" or "ADMIN". Admins can reach /admin; nothing else differs.
+  role       String   @default("USER")
+  /// scrypt digest. Null for guests, who have no password yet.
+  passwordHash String?
+  /// A visitor who started generating before signing up. Claimed on signup.
+  isGuest    Boolean  @default(false)
+  lastSeenAt DateTime?
   createdAt  DateTime @default(now())
 
   ads               Ad[]
@@ -34,6 +41,7 @@ model User {
   brandVoice        BrandVoice?
   autoPilotRules    AutoPilotRule[]
   clients           Client[]
+  sessions          Session[]
 }
 
 model Ad {
@@ -352,4 +360,20 @@ model Client {
 
   @@unique([userId, name])
   @@index([userId, createdAt])
+}
+
+/// Server-side sessions. The cookie carries a random token; only its SHA-256
+/// is stored, so a database leak does not hand over live sessions. Rows are
+/// deletable, which is what makes sign-out and revocation real.
+model Session {
+  id        String   @id @default(cuid())
+  tokenHash String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  userAgent String?
+
+  @@index([userId])
+  @@index([expiresAt])
 }

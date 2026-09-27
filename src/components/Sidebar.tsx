@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useState } from "react";
 import clsx from "clsx";
 import { Logo } from "./Logo";
 
@@ -133,7 +134,15 @@ const NAV: { href: string; label: string; icon: React.ReactNode; hint?: string }
   },
 ];
 
-export function Sidebar() {
+export type SidebarAccount = {
+  email: string;
+  name: string | null;
+  plan: string;
+  role: string;
+  isGuest: boolean;
+};
+
+export function Sidebar({ account }: { account?: SidebarAccount | null }) {
   const pathname = usePathname();
   return (
     <aside className="sticky top-0 relative flex h-screen w-[252px] shrink-0 flex-col overflow-y-auto border-r border-line-1 bg-base-1/60 backdrop-blur-xl px-4 py-6">
@@ -233,20 +242,67 @@ export function Sidebar() {
             </span>
           </div>
         </Link>
-        <div className="glass overflow-hidden p-3">
-          <div className="flex items-center justify-between">
-            <span className="chip-live">
-              <span className="dot-live" /> Lab live
-            </span>
-            <span className="font-mono text-[10px] uppercase tracking-wider text-ink-dim">
-              v0.1
-            </span>
-          </div>
-          <p className="mt-2 text-[11px] leading-snug text-ink-mid">
-            5-agent pipeline. Claude Opus 4.7. Cached prompts.
-          </p>
-        </div>
+        {account ? <AccountBlock account={account} /> : null}
       </div>
     </aside>
+  );
+}
+
+/** Who you're signed in as, plus the way out. */
+function AccountBlock({ account }: { account: SidebarAccount }) {
+  const router = useRouter();
+  const [busy, setBusy] = useState(false);
+
+  const label = account.isGuest
+    ? "Guest session"
+    : (account.name?.trim() || account.email.split("@")[0]);
+
+  async function signOut() {
+    setBusy(true);
+    await fetch("/api/auth/logout", { method: "POST" }).catch(() => undefined);
+    router.push("/");
+    router.refresh();
+  }
+
+  return (
+    <div className="glass overflow-hidden p-3">
+      {account.role === "ADMIN" && (
+        <Link
+          href="/admin"
+          className="mb-2.5 flex items-center justify-between rounded-lg border border-volt/30 bg-volt/[0.07] px-2.5 py-1.5 text-[12px] font-medium text-volt transition hover:bg-volt/[0.12]"
+        >
+          Admin console
+          <span aria-hidden>→</span>
+        </Link>
+      )}
+
+      <div className="flex items-center gap-2.5">
+        <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-base-4 text-[11px] font-semibold uppercase text-ink-mid">
+          {label.slice(0, 1)}
+        </span>
+        <div className="min-w-0 flex-1">
+          <div className="truncate text-[12.5px] font-medium text-ink-hi">
+            {label}
+          </div>
+          <div className="truncate font-mono text-[10px] uppercase tracking-wider text-ink-dim">
+            {account.isGuest ? "not saved" : account.plan.toLowerCase()}
+          </div>
+        </div>
+      </div>
+
+      {account.isGuest ? (
+        <Link href="/signup" className="btn-primary mt-2.5 w-full py-1.5 text-[12px]">
+          Save my videos
+        </Link>
+      ) : (
+        <button
+          onClick={signOut}
+          disabled={busy}
+          className="mt-2.5 w-full rounded-lg border border-line-2 px-2 py-1.5 text-[12px] text-ink-mid transition hover:border-line-3 hover:text-ink-hi"
+        >
+          {busy ? "Signing out…" : "Sign out"}
+        </button>
+      )}
+    </div>
   );
 }

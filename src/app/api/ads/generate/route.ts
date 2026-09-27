@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { db } from "@/lib/db";
-import { getCurrentUserId } from "@/lib/auth";
+import { getOrCreateGuestUserId } from "@/lib/auth";
 import { hasClaude, hasDb } from "@/lib/env";
 import { runAdPipeline } from "@/agents/orchestrator";
 import { checkLimit } from "@/lib/billing";
@@ -35,7 +35,9 @@ export async function POST(req: Request) {
     );
   }
 
-  const userId = await getCurrentUserId();
+  // The only endpoint that will mint an identity: a visitor spends their free
+  // videos first and signs up afterwards, keeping what they already made.
+  const userId = await getOrCreateGuestUserId(req.headers.get("user-agent"));
   if (!userId) return NextResponse.json({ error: "No user" }, { status: 401 });
 
   // 402 Payment Required when over plan quota — surface the upgrade path.
