@@ -2,6 +2,7 @@ import Link from "next/link";
 import { AgentPipeline } from "@/components/AgentPipeline";
 import { SiteNav, SiteFooter } from "@/components/marketing/SiteChrome";
 import { ProductShot, PhoneAd } from "@/components/marketing/ProductShot";
+import { HeroStart } from "@/components/marketing/HeroStart";
 import { PLANS } from "@/lib/billing";
 
 export default function LandingPage() {
@@ -21,28 +22,18 @@ export default function LandingPage() {
           </div>
 
           <h1 className="rise mt-7 font-display text-[clamp(38px,7vw,72px)] font-semibold leading-[1.02] tracking-ultratight">
-            Product link in.
+            Ten ad videos
             <br />
-            <span className="text-aurora">Ad video out.</span>
+            <span className="text-aurora">before lunch.</span>
           </h1>
 
           <p className="rise mx-auto mt-6 max-w-xl text-[17px] leading-relaxed text-ink-mid">
-            AdGen reads your product page, writes the script, and renders a
-            vertical 9:16 video with captions burned in. You download the MP4
-            and post it wherever you like.
+            Paste a product link. AdGen reads the page, writes the script, and
+            renders a vertical 9:16 video with captions burned in. You download
+            the MP4 and post it wherever you like.
           </p>
 
-          <div className="rise mt-8 flex flex-wrap items-center justify-center gap-3">
-            <Link href="/make" className="btn-primary px-6 py-3 text-[14px]">
-              Make a video — free
-            </Link>
-            <Link href="/pricing" className="btn-ghost px-6 py-3 text-[14px]">
-              See pricing
-            </Link>
-          </div>
-          <p className="mt-4 text-[12.5px] text-ink-dim">
-            2 free videos · no card · no account connections
-          </p>
+          <HeroStart />
         </div>
 
         {/* Product visual */}
@@ -65,6 +56,71 @@ export default function LandingPage() {
                 {v}
               </div>
               <div className="mt-1 text-[13px] leading-snug text-ink-mid">{k}</div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ---------------- The problem ---------------- */}
+      <section className="relative mx-auto max-w-7xl px-6 pb-28">
+        <div className="grid gap-10 lg:grid-cols-2 lg:gap-16">
+          <div>
+            <div className="font-mono text-[11px] uppercase tracking-[0.24em] text-volt">
+              Why this exists
+            </div>
+            <h2 className="mt-3 font-display text-[clamp(28px,4.4vw,44px)] font-semibold leading-[1.08] tracking-tightest">
+              You don&apos;t have a
+              <br />
+              creative problem.
+              <br />
+              <span className="text-aurora">You have a volume problem.</span>
+            </h2>
+          </div>
+          <div className="flex flex-col justify-center gap-5">
+            <p className="text-[16px] leading-relaxed text-ink-mid">
+              The hook decides whether a short-form ad works. Not the edit, not
+              the music — the first two seconds. And you can&apos;t reason your
+              way to the right hook. You have to run several and read the
+              numbers.
+            </p>
+            <p className="text-[16px] leading-relaxed text-ink-mid">
+              That&apos;s the part nobody can afford. A freelance editor is a
+              few hundred a video and a week of back-and-forth, so most stores
+              test two ideas a month and call it a strategy.
+            </p>
+            <p className="text-[16px] font-medium leading-relaxed text-ink-hi">
+              AdGen makes the tenth version as cheap as the first. Test ten
+              hooks this week, find the one that converts, then spend real money
+              behind the winner.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* ---------------- Who it's for ---------------- */}
+      <section className="relative mx-auto max-w-7xl px-6 pb-28">
+        <div className="grid gap-4 md:grid-cols-3">
+          {[
+            [
+              "Shopify sellers",
+              "You have the photos and no time to edit. Turn every product into a week of posts without opening an editor.",
+            ],
+            [
+              "Dropshippers",
+              "You need to know within days whether a product moves. Test hooks cheaply, kill the losers, scale the one that works.",
+            ],
+            [
+              "Freelancers & agencies",
+              "You bill for creative volume. Produce for several stores at once and send each one a report showing what it earned them.",
+            ],
+          ].map(([who, why]) => (
+            <div key={who} className="card p-6">
+              <h3 className="text-[16px] font-semibold tracking-tight text-ink-hi">
+                {who}
+              </h3>
+              <p className="mt-2.5 text-[14px] leading-relaxed text-ink-mid">
+                {why}
+              </p>
             </div>
           ))}
         </div>
@@ -357,6 +413,19 @@ export default function LandingPage() {
               <Link href="/pricing" className="btn-ghost px-6 py-3 text-[14px]">
                 See pricing
               </Link>
+            </div>
+            <div className="mt-9 flex flex-wrap justify-center gap-x-7 gap-y-2.5 text-[13px] text-ink-mid">
+              {[
+                "No card to start",
+                "Nothing to connect",
+                "You own the files",
+                "Cancel anytime",
+              ].map((t) => (
+                <span key={t} className="inline-flex items-center gap-1.5">
+                  <span className="text-mint">✓</span>
+                  {t}
+                </span>
+              ))}
             </div>
           </div>
         </div>

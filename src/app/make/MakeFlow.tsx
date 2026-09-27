@@ -47,8 +47,23 @@ export function MakeFlow() {
     };
   }, []);
 
+  // The landing hero submits straight here with ?url=…, so a visitor who
+  // typed their link on the front page doesn't have to type it twice.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const preset = new URLSearchParams(window.location.search).get("url");
+    if (!preset) return;
+    setUrl(preset);
+    void begin(preset);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   async function start(e: React.FormEvent) {
     e.preventDefault();
+    await begin(url);
+  }
+
+  async function begin(productUrl: string) {
     setBusy(true);
     setErr(null);
     setAd(null);
@@ -56,7 +71,7 @@ export function MakeFlow() {
       const r = await fetch("/api/ads/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ productUrl: url }),
+        body: JSON.stringify({ productUrl }),
       });
       const body = await r.json().catch(() => ({}));
       if (!r.ok) {
