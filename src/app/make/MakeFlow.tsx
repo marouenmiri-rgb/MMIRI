@@ -1,9 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
-import { Logo } from "@/components/Logo";
-import { AppearanceMenu } from "@/components/AppearanceMenu";
+import { SiteNav, SiteFooter } from "@/components/marketing/SiteChrome";
+import { PhoneAd } from "@/components/marketing/ProductShot";
 
 type Ad = {
   id: string;
@@ -106,17 +105,7 @@ export function MakeFlow() {
       <div className="aurora-hero pointer-events-none fixed inset-0 -z-10" />
       <div className="grid-bg pointer-events-none fixed inset-0 -z-10 opacity-40" />
 
-      <header className="mx-auto flex max-w-5xl items-center justify-between px-6 py-5">
-        <Link href="/">
-          <Logo />
-        </Link>
-        <div className="flex items-center gap-3">
-          <AppearanceMenu compact />
-          <Link href="/pricing" className="btn-ghost">
-            Pricing
-          </Link>
-        </div>
-      </header>
+      <SiteNav cta="Pricing" />
 
       <section className="mx-auto max-w-3xl px-6 pb-24 pt-10 sm:pt-16">
         {!ad && (
@@ -292,6 +281,8 @@ export function MakeFlow() {
           </div>
         )}
       </section>
+
+      <SiteFooter />
     </main>
   );
 }

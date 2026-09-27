@@ -3,6 +3,7 @@ import { Logo } from "@/components/Logo";
 import { PricingComparator } from "@/components/PricingComparator";
 import { PLANS, hasStripe } from "@/lib/billing";
 import { AppearanceMenu } from "@/components/AppearanceMenu";
+import { SiteNav, SiteFooter } from "@/components/marketing/SiteChrome";
 
 export const metadata = {
   title: "Pricing — AdGen / lab",
@@ -18,20 +19,7 @@ export default function PricingPage() {
       <div className="aurora-hero pointer-events-none fixed inset-0 -z-10" />
       <div className="grid-bg pointer-events-none fixed inset-0 -z-10 opacity-40" />
 
-      <header className="relative mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
-        <Link href="/">
-          <Logo />
-        </Link>
-        <nav className="flex items-center gap-8 text-[13px] text-ink-mid">
-          <Link href="/#pipeline" className="hover:text-ink-hi">
-            How it works
-          </Link>
-          <AppearanceMenu compact />
-          <Link href="/dashboard" className="btn-ghost">
-            Enter the lab →
-          </Link>
-        </nav>
-      </header>
+      <SiteNav />
 
       <section className="relative mx-auto max-w-6xl px-6 pt-24 pb-8 text-center sm:pt-32">
         <div className="rise mx-auto inline-flex items-center gap-2 rounded-full border border-line-2 bg-base-3 px-3 py-1 font-mono text-[11px] uppercase tracking-[0.28em] text-volt backdrop-blur">
@@ -93,12 +81,7 @@ export default function PricingPage() {
         </div>
       </section>
 
-      <footer className="relative mx-auto flex max-w-6xl items-center justify-between border-t border-line-1 px-6 py-6 text-xs text-ink-dim">
-        <Logo size={18} />
-        <span className="font-mono uppercase tracking-[0.22em]">
-          same side · same incentives
-        </span>
-      </footer>
+      <SiteFooter />
     </main>
   );
 }
