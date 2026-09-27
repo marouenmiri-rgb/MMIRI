@@ -2,7 +2,6 @@ import { TopBar } from "@/components/TopBar";
 import { db } from "@/lib/db";
 import { hasDb } from "@/lib/env";
 import { getCurrentUserId } from "@/lib/auth";
-import { fixtureLeads } from "@/lib/fixtures";
 import { DiscoverButton } from "./DiscoverButton";
 
 type LeadRow = {
@@ -15,17 +14,15 @@ type LeadRow = {
 };
 
 async function loadLeads(): Promise<LeadRow[]> {
-  if (!hasDb) return fixtureLeads as unknown as LeadRow[];
+  if (!hasDb) return [];
   const userId = await getCurrentUserId();
-  if (!userId) return fixtureLeads as unknown as LeadRow[];
+  if (!userId) return [];
   const leads = await db.lead.findMany({
     where: { userId },
     orderBy: { createdAt: "desc" },
     take: 100,
   });
-  return leads.length
-    ? (leads as unknown as LeadRow[])
-    : (fixtureLeads as unknown as LeadRow[]);
+  return leads as unknown as LeadRow[];
 }
 
 function initials(name: string): string {

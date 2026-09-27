@@ -9,7 +9,6 @@ import { db } from "@/lib/db";
 import { hasDb } from "@/lib/env";
 import { getCurrentUserId } from "@/lib/auth";
 import { allPlatformMeta } from "@/social/registry";
-import { fixtureDistribution } from "@/lib/fixtures";
 import { themeColor } from "@/lib/theme";
 
 type PageProps = { searchParams: { connected?: string; demo?: string; err?: string } };
@@ -31,11 +30,7 @@ async function load(): Promise<{
   };
 
   if (!hasDb) {
-    return {
-      connections: fixtureDistribution.connections,
-      posts: fixtureDistribution.posts,
-      credentialed,
-    };
+    return { connections: empty, posts: [], credentialed };
   }
   const userId = await getCurrentUserId();
   if (!userId) {
