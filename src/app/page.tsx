@@ -50,8 +50,8 @@ export default function LandingPage() {
         </p>
 
         <div className="rise mt-12 flex flex-wrap items-center justify-center gap-3">
-          <Link href="/generator" className="btn-primary">
-            Generate an ad
+          <Link href="/make" className="btn-primary">
+            Make a video — free
           </Link>
           <Link href="/dashboard" className="btn-ghost">
             Explore the lab
@@ -207,8 +207,8 @@ export default function LandingPage() {
               voiceover and subtitles included, by the time you're back.
             </p>
             <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
-              <Link href="/generator" className="btn-primary">
-                Start generating →
+              <Link href="/make" className="btn-primary">
+                Make a video — free →
               </Link>
               <Link href="/pricing" className="btn-ghost">
                 See pricing

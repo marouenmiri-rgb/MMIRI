@@ -61,16 +61,15 @@ export default function PricingPage() {
           What's included
         </h2>
         <div className="overflow-hidden rounded-xl2 border border-line-2 bg-base-1">
-          <FeatureRow feature="Ads per month" row={["3", "20", "100", "Unlimited"]} />
-          <FeatureRow feature="Published posts / mo" row={["10", "100", "500", "Unlimited"]} />
-          <FeatureRow feature="Workspaces" row={["1", "1", "3", "10"]} />
-          <FeatureRow feature="Claude Opus 4.7 agents" row={["•", "•", "•", "•"]} />
-          <FeatureRow feature="Variant Lab" row={["—", "•", "•", "•"]} />
-          <FeatureRow feature="Weekly Insights" row={["—", "•", "•", "•"]} />
-          <FeatureRow feature="Real social OAuth" row={["—", "•", "•", "•"]} />
-          <FeatureRow feature="Shopify attribution" row={["—", "•", "•", "•"]} />
-          <FeatureRow feature="White-label PDFs" row={["—", "—", "—", "•"]} />
-          <FeatureRow feature="Dedicated Slack" row={["—", "—", "—", "•"]} last />
+          <FeatureRow feature="Videos per month" row={["15", "50", "Unlimited", "Unlimited"]} />
+          <FeatureRow feature="Download the MP4" row={["•", "•", "•", "•"]} />
+          <FeatureRow feature="Script + shot list" row={["•", "•", "•", "•"]} />
+          <FeatureRow feature="Your brand voice" row={["—", "•", "•", "•"]} />
+          <FeatureRow feature="Variant Lab · A/B hooks" row={["—", "•", "•", "•"]} />
+          <FeatureRow feature="Auto-post to channels" row={["—", "•", "•", "•"]} />
+          <FeatureRow feature="Shopify attribution" row={["—", "—", "•", "•"]} />
+          <FeatureRow feature="Client roster" row={["—", "—", "—", "•"]} />
+          <FeatureRow feature="White-label client report" row={["—", "—", "—", "•"]} last />
         </div>
       </section>
 

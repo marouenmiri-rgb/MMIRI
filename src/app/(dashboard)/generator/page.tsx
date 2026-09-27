@@ -291,9 +291,17 @@ export default function GeneratorPage() {
                     Preview · 9:16
                   </div>
                   {ad.videoUrl && (
-                    <span className="chip-live">
-                      <span className="dot-live" /> Ready
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="chip-live">
+                        <span className="dot-live" /> Ready
+                      </span>
+                      <a
+                        className="btn-ink"
+                        href={`/api/ads/${ad.id}/download`}
+                      >
+                        Download
+                      </a>
+                    </div>
                   )}
                 </div>
                 <div className="relative mx-auto aspect-[9/16] w-full max-w-[280px] overflow-hidden rounded-2xl border border-line-2 bg-base-0">
