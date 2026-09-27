@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Logo } from "@/components/Logo";
 import { PricingComparator } from "@/components/PricingComparator";
 import { PLANS, hasStripe } from "@/lib/billing";
-import { ThemeToggle } from "@/components/ThemeToggle";
+import { AppearanceMenu } from "@/components/AppearanceMenu";
 
 export const metadata = {
   title: "Pricing — AdGen / lab",
@@ -26,7 +26,7 @@ export default function PricingPage() {
           <Link href="/#pipeline" className="hover:text-ink-hi">
             How it works
           </Link>
-          <ThemeToggle />
+          <AppearanceMenu compact />
           <Link href="/dashboard" className="btn-ghost">
             Enter the lab →
           </Link>

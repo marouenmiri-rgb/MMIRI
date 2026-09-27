@@ -8,21 +8,32 @@ export const metadata: Metadata = {
 };
 
 /**
- * Resolves the theme before first paint so the page never flashes the wrong
- * palette. Runs ahead of hydration, reads the saved choice, and falls back to
- * the OS preference.
+ * Applies the saved appearance before first paint, so the page never flashes a
+ * different theme, density or corner radius during hydration. Kept in sync
+ * with src/lib/appearance.ts — it reads the same record and writes the same
+ * attributes, just early and without React.
  */
-const themeScript = `
+const appearanceScript = `
 (function () {
+  var el = document.documentElement;
+  var A = { palette: ['studio','noir','aurora'], mode: ['light','dark','system'],
+            density: ['compact','comfortable','spacious'], radius: ['sharp','soft','round'],
+            motion: ['full','reduced'] };
+  var D = { palette: 'studio', mode: 'system', density: 'comfortable', radius: 'soft', motion: 'full' };
+  var s = D;
   try {
-    var saved = localStorage.getItem('adgen-theme');
-    var theme = saved === 'dark' || saved === 'light'
-      ? saved
-      : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-    document.documentElement.setAttribute('data-theme', theme);
-  } catch (e) {
-    document.documentElement.setAttribute('data-theme', 'light');
+    var raw = JSON.parse(localStorage.getItem('adgen-appearance') || '{}');
+    for (var k in A) s[k] = A[k].indexOf(raw[k]) > -1 ? raw[k] : D[k];
+  } catch (e) {}
+  var mode = s.mode;
+  if (mode === 'system') {
+    mode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
   }
+  el.setAttribute('data-theme', mode);
+  el.setAttribute('data-palette', s.palette);
+  el.setAttribute('data-density', s.density);
+  el.setAttribute('data-radius', s.radius);
+  el.setAttribute('data-motion', s.motion);
 })();
 `;
 
@@ -32,9 +43,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" data-theme="light" suppressHydrationWarning>
+    <html
+      lang="en"
+      data-theme="light"
+      data-palette="studio"
+      data-density="comfortable"
+      data-radius="soft"
+      data-motion="full"
+      suppressHydrationWarning
+    >
       <head>
-        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        <script dangerouslySetInnerHTML={{ __html: appearanceScript }} />
       </head>
       <body>{children}</body>
     </html>

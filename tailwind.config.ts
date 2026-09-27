@@ -106,11 +106,17 @@ const config: Config = {
         "glow-mint": "var(--shadow-glow-mint)",
         focus: "0 0 0 4px rgb(var(--accent-500) / 0.18)",
       },
+      // Radius is a user-facing setting, so the whole scale reads from CSS
+      // variables that [data-radius] swaps. `rounded-full` keeps its default.
       borderRadius: {
-        xl2: "1.125rem",
-        "2xl": "1.25rem",
-        "3xl": "1.75rem",
-        "4xl": "2.25rem",
+        sm: "var(--r-sm)",
+        md: "var(--r-md)",
+        lg: "var(--r-lg)",
+        xl: "var(--r-xl)",
+        xl2: "var(--r-xl2)",
+        "2xl": "var(--r-2xl)",
+        "3xl": "var(--r-3xl)",
+        "4xl": "var(--r-4xl)",
       },
       transitionTimingFunction: {
         ios: "cubic-bezier(0.22, 1, 0.36, 1)",

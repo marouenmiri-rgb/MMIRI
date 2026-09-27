@@ -16,9 +16,10 @@ export function Logo({ className, size = 24 }: { className?: string; size?: numb
       >
         <defs>
           <linearGradient id="adgen-g" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
-            <stop offset="0" stopColor="#8B85FF" />
-            <stop offset="0.55" stopColor="#635BFF" />
-            <stop offset="1" stopColor="#22D3EE" />
+            {/* Palette-driven, so the mark belongs to whichever theme is active. */}
+            <stop offset="0" style={{ stopColor: "rgb(var(--accent-400))" }} />
+            <stop offset="0.55" style={{ stopColor: "rgb(var(--accent-500))" }} />
+            <stop offset="1" style={{ stopColor: "rgb(var(--ribbon-cyan))" }} />
           </linearGradient>
           <linearGradient id="adgen-inner" x1="0" y1="0" x2="0" y2="32" gradientUnits="userSpaceOnUse">
             <stop offset="0" stopColor="rgba(255,255,255,0.35)" />

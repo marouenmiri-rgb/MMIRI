@@ -1,5 +1,6 @@
 import { TopBar } from "@/components/TopBar";
 import { BillingPanel } from "@/components/BillingPanel";
+import { AppearancePanel } from "@/components/AppearancePanel";
 import { hasClaude, hasDb } from "@/lib/env";
 import { PLANS, computeUsage, currentTier, hasStripe } from "@/lib/billing";
 import { getCurrentUserId } from "@/lib/auth";
@@ -64,7 +65,7 @@ export default async function SettingsPage({
     {
       label: "Database",
       ok: hasDb,
-      hint: "Postgres via Prisma · DATABASE_URL",
+      hint: "SQLite via Prisma · DATABASE_URL",
       critical: true,
     },
     {
@@ -127,6 +128,9 @@ export default async function SettingsPage({
             {searchParams.demo ? " (demo mode · no card charged)" : ""} · welcome.
           </div>
         )}
+
+        {/* Appearance */}
+        <AppearancePanel />
 
         {/* Billing */}
         <BillingPanel

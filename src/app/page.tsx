@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Logo } from "@/components/Logo";
 import { AgentPipeline } from "@/components/AgentPipeline";
-import { ThemeToggle } from "@/components/ThemeToggle";
+import { AppearanceMenu } from "@/components/AppearanceMenu";
 
 export default function LandingPage() {
   return (
@@ -25,7 +25,7 @@ export default function LandingPage() {
           <Link href="/pricing" className="transition hover:text-ink-hi">Pricing</Link>
         </nav>
         <div className="flex items-center gap-3">
-          <ThemeToggle />
+          <AppearanceMenu compact />
           <Link href="/dashboard" className="btn-ghost">
             Enter the lab →
           </Link>

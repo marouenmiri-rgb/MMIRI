@@ -1,4 +1,4 @@
-import { ThemeToggle } from "./ThemeToggle";
+import { AppearanceMenu } from "./AppearanceMenu";
 
 export function TopBar({
   eyebrow,
@@ -13,9 +13,13 @@ export function TopBar({
 }) {
   return (
     <div className="sticky top-0 z-20 border-b border-line-1 bg-base-0/70 backdrop-blur-xl">
-      <div className="relative overflow-hidden px-10 py-8">
-        <div className="aurora pointer-events-none absolute inset-0 -z-10 opacity-30" />
-        <div className="grid-bg pointer-events-none absolute inset-0 -z-10 opacity-40" />
+      {/* Only the decorative layers are clipped — the content sits outside the
+          overflow context so popovers (the appearance menu) can escape the bar. */}
+      <div className="relative px-10 py-8">
+        <div className="pointer-events-none absolute inset-0 overflow-hidden">
+          <div className="aurora absolute inset-0 opacity-30" />
+          <div className="grid-bg absolute inset-0 opacity-40" />
+        </div>
         <div className="relative flex items-start justify-between gap-6">
           <div>
             {eyebrow && (
@@ -34,7 +38,7 @@ export function TopBar({
           </div>
           <div className="flex shrink-0 items-center gap-3">
             {action}
-            <ThemeToggle />
+            <AppearanceMenu />
           </div>
         </div>
       </div>
