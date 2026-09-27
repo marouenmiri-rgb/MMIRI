@@ -35,6 +35,23 @@ export default function GeneratorPage() {
   const [ad, setAd] = useState<AdResult | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [log, setLog] = useState<string[]>([]);
+  // Assigning the ad to a client is what routes its revenue onto that client's
+  // report. Left as "my own store" when the roster is empty.
+  const [clients, setClients] = useState<{ id: string; name: string }[]>([]);
+  const [clientId, setClientId] = useState("");
+
+  useEffect(() => {
+    fetch("/api/clients")
+      .then((r) => (r.ok ? r.json() : { clients: [] }))
+      .then((d) =>
+        setClients(
+          (d.clients ?? [])
+            .filter((c: { archived: boolean }) => !c.archived)
+            .map((c: { id: string; name: string }) => ({ id: c.id, name: c.name })),
+        ),
+      )
+      .catch(() => setClients([]));
+  }, []);
 
   // If ?id= or ?url= are in the URL, jump to that context.
   useEffect(() => {
@@ -62,7 +79,10 @@ export default function GeneratorPage() {
       const r = await fetch("/api/ads/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ productUrl: url }),
+        body: JSON.stringify({
+          productUrl: url,
+          ...(clientId ? { clientId } : {}),
+        }),
       });
       if (!r.ok) {
         const body = await r.json().catch(() => ({}));
@@ -138,6 +158,25 @@ export default function GeneratorPage() {
                 {busy ? "Running…" : "Roll pipeline"}
               </button>
             </div>
+            {clients.length > 0 && (
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-dim">
+                  For
+                </span>
+                <select
+                  className="input max-w-[280px] py-1.5 text-[13px]"
+                  value={clientId}
+                  onChange={(e) => setClientId(e.target.value)}
+                >
+                  <option value="">My own store</option>
+                  {clients.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
             {err ? (
               <p className="mt-3 text-sm text-danger">{err}</p>
             ) : (

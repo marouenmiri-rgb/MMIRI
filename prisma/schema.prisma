@@ -33,12 +33,16 @@ model User {
   subscription      Subscription?
   brandVoice        BrandVoice?
   autoPilotRules    AutoPilotRule[]
+  clients           Client[]
 }
 
 model Ad {
   id            String   @id @default(cuid())
   userId        String
   user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // Which client this ad was made for. Null = the operator's own store.
+  clientId      String?
+  client        Client?  @relation(fields: [clientId], references: [id], onDelete: SetNull)
   productUrl    String
   productTitle  String?
   status        String   @default("QUEUED")
@@ -57,6 +61,7 @@ model Ad {
   variants      AdVariant[]
 
   @@index([userId, createdAt])
+  @@index([clientId, createdAt])
 }
 
 model Lead {
@@ -320,4 +325,31 @@ model AutoPilotRule {
 
   @@index([enabled, nextRunAt])
   @@index([userId])
+}
+
+/// A store you run ads for. Everything the white-label report shows is scoped
+/// to one of these, and `retainerCents` is what they pay you — which is what
+/// turns attributed revenue into a return multiple on the report.
+model Client {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name          String
+  websiteUrl    String?
+  contactEmail  String?
+  /// Unguessable token for the public report URL at /r/<token>.
+  reportToken   String   @unique
+  /// Hex accent used to brand the report for this client.
+  accentColor   String   @default("#635BFF")
+  /// What the client pays per month, in cents.
+  retainerCents Int      @default(0)
+  currency      String   @default("USD")
+  archived      Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  ads Ad[]
+
+  @@unique([userId, name])
+  @@index([userId, createdAt])
 }

@@ -12,6 +12,8 @@ export const maxDuration = 300;
 const Body = z.object({
   productUrl: z.string().url(),
   hookHint: z.string().min(2).max(280).optional(),
+  /** Attributes the ad — and everything it earns — to one client. */
+  clientId: z.string().min(1).optional(),
 });
 
 export async function POST(req: Request) {
@@ -52,9 +54,23 @@ export async function POST(req: Request) {
     );
   }
 
+  // Only accept a client the caller actually owns.
+  let clientId: string | null = null;
+  if (parsed.data.clientId) {
+    const owned = await db.client.findFirst({
+      where: { id: parsed.data.clientId, userId },
+      select: { id: true },
+    });
+    if (!owned) {
+      return NextResponse.json({ error: "Unknown client" }, { status: 400 });
+    }
+    clientId = owned.id;
+  }
+
   const ad = await db.ad.create({
     data: {
       userId,
+      clientId,
       productUrl: parsed.data.productUrl,
       status: "QUEUED",
     },
