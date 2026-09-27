@@ -28,8 +28,8 @@ const MAP: Record<string, { label: string; className: string; dot?: string }> = 
   },
   READY: {
     label: "On air",
-    className: "bg-lime/10 text-lime border border-lime/30",
-    dot: "bg-lime",
+    className: "bg-mint/10 text-mint border border-mint/30",
+    dot: "bg-mint",
   },
   FAILED: {
     label: "Failed",

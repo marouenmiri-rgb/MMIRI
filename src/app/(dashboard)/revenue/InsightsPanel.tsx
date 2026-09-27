@@ -24,7 +24,7 @@ const KIND_META: Record<
   },
   WINNING_HOOK: {
     label: "Winner",
-    chip: "bg-lime/10 text-lime border-lime/30",
+    chip: "bg-mint/10 text-mint border-mint/30",
     glyph: "🏆",
   },
   LOSING_HOOK: {

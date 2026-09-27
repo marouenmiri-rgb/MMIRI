@@ -1,6 +1,7 @@
 import { TopBar } from "@/components/TopBar";
 import { Sparkline } from "@/components/Sparkline";
 import { fixtureCampaigns } from "@/lib/fixtures";
+import { themeColor } from "@/lib/theme";
 
 function pct(a: number, b: number): string {
   if (!b) return "—";
@@ -15,7 +16,7 @@ export default function CampaignsPage() {
         eyebrow="Outreach floor"
         title="Campaigns"
         subtitle="Sequenced sends. Funnel health. Replies that deserve your attention."
-        action={<button className="btn-lime">New campaign</button>}
+        action={<button className="btn-mint">New campaign</button>}
       />
       <div className="space-y-6 p-8">
         {campaigns.map((c) => {
@@ -66,7 +67,7 @@ export default function CampaignsPage() {
                   label="Replied"
                   value={c.replied}
                   total={c.sent}
-                  tint="lime"
+                  tint="mint"
                   sub={pct(c.replied, c.sent)}
                 />
               </div>
@@ -94,8 +95,8 @@ export default function CampaignsPage() {
                   <div className="mt-3">
                     <Sparkline
                       values={[0, 1, 2, 3, 4, 5, 6, 7, 7, 8]}
-                      stroke="#c3ff3e"
-                      fill="rgba(195,255,62,0.15)"
+                      stroke={themeColor.mint}
+                      fill={themeColor.mintSoft}
                     />
                   </div>
                 </div>
@@ -135,18 +136,18 @@ function FunnelStep({
   label: string;
   value: number;
   total: number;
-  tint: "volt" | "lime";
+  tint: "volt" | "mint";
   sub: string;
 }) {
   const ratio = total ? value / total : 0;
-  const bar = tint === "lime" ? "bg-lime" : "bg-volt";
+  const bar = tint === "mint" ? "bg-mint" : "bg-volt";
   return (
     <div className="relative overflow-hidden rounded-xl2 border border-line-1 bg-base-2 p-4">
       <div className="flex items-center justify-between">
         <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-ink-dim">
           {label}
         </div>
-        <div className={`font-mono text-[11px] ${tint === "lime" ? "text-lime" : "text-volt"}`}>
+        <div className={`font-mono text-[11px] ${tint === "mint" ? "text-mint" : "text-volt"}`}>
           {sub}
         </div>
       </div>

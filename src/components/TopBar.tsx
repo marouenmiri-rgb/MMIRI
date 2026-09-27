@@ -1,3 +1,5 @@
+import { ThemeToggle } from "./ThemeToggle";
+
 export function TopBar({
   eyebrow,
   title,
@@ -10,7 +12,7 @@ export function TopBar({
   action?: React.ReactNode;
 }) {
   return (
-    <div className="sticky top-0 z-20 border-b border-white/[0.06] bg-base-0/70 backdrop-blur-xl">
+    <div className="sticky top-0 z-20 border-b border-line-1 bg-base-0/70 backdrop-blur-xl">
       <div className="relative overflow-hidden px-10 py-8">
         <div className="aurora pointer-events-none absolute inset-0 -z-10 opacity-30" />
         <div className="grid-bg pointer-events-none absolute inset-0 -z-10 opacity-40" />
@@ -30,7 +32,10 @@ export function TopBar({
               </p>
             ) : null}
           </div>
-          {action}
+          <div className="flex shrink-0 items-center gap-3">
+            {action}
+            <ThemeToggle />
+          </div>
         </div>
       </div>
     </div>

@@ -118,7 +118,7 @@ export default async function SettingsPage({
 
       <div className="space-y-6 p-8">
         {searchParams.upgraded && (
-          <div className="card border-lime/40 bg-lime/5 p-4 text-sm text-lime">
+          <div className="card border-mint/40 bg-mint/5 p-4 text-sm text-mint">
             Upgraded to{" "}
             <span className="font-semibold">
               {PLANS[searchParams.upgraded as keyof typeof PLANS]?.label ??
@@ -221,8 +221,8 @@ function HealthDot({ ok }: { ok: boolean }) {
   if (ok) {
     return (
       <span className="relative inline-flex h-2.5 w-2.5">
-        <span className="absolute inset-0 rounded-full bg-lime animate-pulseRing" />
-        <span className="relative inline-block h-2.5 w-2.5 rounded-full bg-lime" />
+        <span className="absolute inset-0 rounded-full bg-mint animate-pulseRing" />
+        <span className="relative inline-block h-2.5 w-2.5 rounded-full bg-mint" />
       </span>
     );
   }

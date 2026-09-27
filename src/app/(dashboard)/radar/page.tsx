@@ -9,6 +9,7 @@ import {
   type HookCategory,
 } from "@/data/hook-templates";
 import clsx from "clsx";
+import { themeColor } from "@/lib/theme";
 
 export default function RadarPage() {
   const [active, setActive] = useState<HookCategory | "ALL">("ALL");
@@ -92,7 +93,7 @@ export default function RadarPage() {
           <div className="mt-3 flex flex-wrap items-center gap-2">
             <CategoryChip
               label={`All (${counts.ALL ?? 0})`}
-              color="#a78bfa"
+              color={themeColor.accent}
               active={active === "ALL"}
               onClick={() => setActive("ALL")}
             />

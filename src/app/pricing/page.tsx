@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Logo } from "@/components/Logo";
 import { PricingComparator } from "@/components/PricingComparator";
 import { PLANS, hasStripe } from "@/lib/billing";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export const metadata = {
   title: "Pricing — AdGen / lab",
@@ -25,6 +26,7 @@ export default function PricingPage() {
           <Link href="/#pipeline" className="hover:text-ink-hi">
             How it works
           </Link>
+          <ThemeToggle />
           <Link href="/dashboard" className="btn-ghost">
             Enter the lab →
           </Link>
@@ -32,7 +34,7 @@ export default function PricingPage() {
       </header>
 
       <section className="relative mx-auto max-w-6xl px-6 pt-24 pb-8 text-center sm:pt-32">
-        <div className="rise mx-auto inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.04] px-3 py-1 font-mono text-[11px] uppercase tracking-[0.28em] text-volt backdrop-blur">
+        <div className="rise mx-auto inline-flex items-center gap-2 rounded-full border border-line-2 bg-base-3 px-3 py-1 font-mono text-[11px] uppercase tracking-[0.28em] text-volt backdrop-blur">
           <span className="dot-live" /> New · revenue-share tier
         </div>
         <h1 className="rise mx-auto mt-8 max-w-4xl font-display text-6xl font-semibold leading-[0.95] tracking-ultratight text-ink-hi sm:text-7xl md:text-[88px] md:leading-[0.92]">

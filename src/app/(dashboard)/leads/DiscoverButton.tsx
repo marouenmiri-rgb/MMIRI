@@ -35,7 +35,7 @@ export function DiscoverButton() {
 
   if (!open) {
     return (
-      <button className="btn-lime" onClick={() => setOpen(true)}>
+      <button className="btn-mint" onClick={() => setOpen(true)}>
         Discover stores
       </button>
     );

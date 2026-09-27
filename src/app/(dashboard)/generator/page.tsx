@@ -298,7 +298,7 @@ export default function GeneratorPage() {
                     <span className="flex gap-1">
                       <span className="h-2 w-2 rounded-full bg-danger/60" />
                       <span className="h-2 w-2 rounded-full bg-warn/60" />
-                      <span className="h-2 w-2 rounded-full bg-lime/60" />
+                      <span className="h-2 w-2 rounded-full bg-mint/60" />
                     </span>
                     <span className="font-mono text-[11px] uppercase tracking-[0.22em] text-ink-mid">
                       console

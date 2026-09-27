@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import { categoryMeta, type HookTemplate } from "@/data/hook-templates";
+import { themeColor } from "@/lib/theme";
 
 /**
- * One hook on the Radar grid. The momentum bar at the top glows lime
+ * One hook on the Radar grid. The momentum bar at the top glows mint
  * when the score is hot (>= 85). Click "Use this hook" to drop into the
  * generator with the hook formula pre-loaded as a hint to the
  * copywriter agent.
@@ -46,7 +47,7 @@ export function HookCard({ hook }: { hook: HookTemplate }) {
           style={{
             width: `${hook.momentum}%`,
             background: hot
-              ? "linear-gradient(90deg, #c3ff3e, #a3e019)"
+              ? `linear-gradient(90deg, ${themeColor.mint}, rgb(var(--mint-600)))`
               : meta.color,
             boxShadow: hot ? `0 0 12px ${meta.color}80` : undefined,
           }}
@@ -68,7 +69,7 @@ export function HookCard({ hook }: { hook: HookTemplate }) {
           <span
             className={
               "font-mono text-[11px] tracking-wider " +
-              (hot ? "text-lime" : "text-ink-mid")
+              (hot ? "text-mint" : "text-ink-mid")
             }
           >
             {hot && <span className="dot-live mr-1.5 inline-block" />}
@@ -119,7 +120,7 @@ export function HookCard({ hook }: { hook: HookTemplate }) {
                 <button
                   type="submit"
                   disabled={busy || !productUrl}
-                  className={hot ? "btn-lime h-8 flex-1 text-[12px]" : "btn-primary h-8 flex-1 text-[12px]"}
+                  className={hot ? "btn-mint h-8 flex-1 text-[12px]" : "btn-primary h-8 flex-1 text-[12px]"}
                 >
                   {busy ? "Starting…" : "Generate"}
                 </button>

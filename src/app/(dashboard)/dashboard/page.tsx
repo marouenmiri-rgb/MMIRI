@@ -7,6 +7,7 @@ import { AgentPipeline } from "@/components/AgentPipeline";
 import { AdReelCard } from "@/components/AdReelCard";
 import { Sparkline } from "@/components/Sparkline";
 import { HeroCapture } from "./HeroCapture";
+import { themeColor } from "@/lib/theme";
 
 async function loadAds() {
   if (!hasDb) return fixtureAds as unknown as AdRow[];
@@ -44,7 +45,7 @@ export default async function DashboardPage() {
       value: ads.filter((a) => a.status === "READY").length.toString().padStart(2, "0"),
       delta: "+2 today",
       trend: [2, 3, 3, 5, 4, 6, 8, 7, 9, 11],
-      color: "#c3ff3e",
+      color: themeColor.mint,
       fill: "rgba(195,255,62,0.15)",
     },
     {
@@ -54,11 +55,11 @@ export default async function DashboardPage() {
       ).length.toString().padStart(2, "0"),
       delta: active ? "rendering" : "idle",
       trend: [1, 2, 1, 3, 2, 4, 3, 2, 1, 2],
-      color: "#a78bfa",
+      color: themeColor.accent,
       fill: "rgba(167,139,250,0.14)",
     },
-    { label: "Leads on file", value: "0", delta: "ready", trend: [0, 1, 2, 2, 3, 5, 5, 6, 7, 9], color: "#a78bfa", fill: "rgba(167,139,250,0.14)" },
-    { label: "Replies this week", value: "0", delta: "first send pending", trend: [0, 0, 1, 1, 2, 2, 3, 4, 4, 5], color: "#c3ff3e", fill: "rgba(195,255,62,0.15)" },
+    { label: "Leads on file", value: "0", delta: "ready", trend: [0, 1, 2, 2, 3, 5, 5, 6, 7, 9], color: themeColor.accent, fill: "rgba(167,139,250,0.14)" },
+    { label: "Replies this week", value: "0", delta: "first send pending", trend: [0, 0, 1, 1, 2, 2, 3, 4, 4, 5], color: themeColor.mint, fill: "rgba(195,255,62,0.15)" },
   ];
 
   return (

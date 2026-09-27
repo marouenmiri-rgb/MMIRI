@@ -126,7 +126,7 @@ const NAV: { href: string; label: string; icon: React.ReactNode; hint?: string }
 export function Sidebar() {
   const pathname = usePathname();
   return (
-    <aside className="relative flex h-screen w-[252px] flex-col border-r border-white/[0.06] bg-base-1/60 backdrop-blur-xl px-4 py-6">
+    <aside className="sticky top-0 relative flex h-screen w-[252px] shrink-0 flex-col overflow-y-auto border-r border-line-1 bg-base-1/60 backdrop-blur-xl px-4 py-6">
       <div className="noise absolute inset-0 pointer-events-none" />
       <Link href="/" className="mb-8 flex items-center gap-2 px-2">
         <Logo size={22} />
@@ -140,7 +140,7 @@ export function Sidebar() {
             new KeyboardEvent("keydown", { key: "k", metaKey: true, bubbles: true }),
           );
         }}
-        className="group mb-6 flex w-full items-center gap-2.5 rounded-xl border border-white/[0.06] bg-white/[0.03] px-3 py-2.5 text-left text-[13px] text-ink-mid backdrop-blur transition-all duration-300 ease-ios hover:border-white/[0.12] hover:bg-white/[0.05] hover:text-ink-hi"
+        className="group mb-6 flex w-full items-center gap-2.5 rounded-xl border border-line-1 bg-base-3/60 px-3 py-2.5 text-left text-[13px] text-ink-mid backdrop-blur transition-all duration-300 ease-ios hover:border-line-3 hover:bg-base-3 hover:text-ink-hi"
       >
         <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4 text-ink-lo group-hover:text-volt">
           <circle cx="11" cy="11" r="6" stroke="currentColor" strokeWidth="1.6" />
@@ -166,8 +166,8 @@ export function Sidebar() {
               className={clsx(
                 "group relative flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all duration-200 ease-ios",
                 active
-                  ? "bg-white/[0.06] text-ink-hi"
-                  : "text-ink-mid hover:bg-white/[0.03] hover:text-ink-hi",
+                  ? "bg-base-3 text-ink-hi"
+                  : "text-ink-mid hover:bg-base-3/60 hover:text-ink-hi",
               )}
             >
               {active && (
@@ -181,7 +181,7 @@ export function Sidebar() {
                   "flex h-7 w-7 items-center justify-center rounded-lg border transition",
                   active
                     ? "border-volt/40 bg-volt/15 text-volt"
-                    : "border-white/[0.06] bg-white/[0.03] text-ink-mid group-hover:text-ink-hi",
+                    : "border-line-1 bg-base-3/60 text-ink-mid group-hover:text-ink-hi",
                 )}
               >
                 {item.icon}
@@ -200,7 +200,7 @@ export function Sidebar() {
       <div className="mt-auto space-y-3">
         <Link
           href="/pricing"
-          className="group relative block overflow-hidden rounded-xl border border-white/[0.08] p-3.5 text-[13px] text-ink-hi transition-all duration-300 ease-ios hover:border-lime/40 hover:translate-y-[-1px]"
+          className="group relative block overflow-hidden rounded-xl border border-line-2 p-3.5 text-[13px] text-ink-hi transition-all duration-300 ease-ios hover:border-mint/40 hover:translate-y-[-1px]"
         >
           <div
             className="absolute inset-0 opacity-50 transition-opacity group-hover:opacity-75"
@@ -214,11 +214,11 @@ export function Sidebar() {
               <div className="font-display text-[13px] font-semibold tracking-tight">
                 Upgrade to Scale
               </div>
-              <div className="mt-0.5 font-mono text-[10px] uppercase tracking-[0.22em] text-lime">
+              <div className="mt-0.5 font-mono text-[10px] uppercase tracking-[0.22em] text-mint">
                 pay 5% · only when you earn
               </div>
             </div>
-            <span className="text-volt transition-transform duration-300 group-hover:translate-x-1 group-hover:text-lime">
+            <span className="text-volt transition-transform duration-300 group-hover:translate-x-1 group-hover:text-mint">
               →
             </span>
           </div>

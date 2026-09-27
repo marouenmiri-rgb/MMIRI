@@ -9,7 +9,7 @@ export function UsageGauge({
   label: string;
   used: number;
   limit: number;
-  color?: "volt" | "lime" | "warn";
+  color?: "volt" | "mint" | "warn";
 }) {
   const unlimited = !isFinite(limit);
   const pct = unlimited ? 0 : Math.min(100, (used / Math.max(limit, 1)) * 100);
@@ -20,8 +20,8 @@ export function UsageGauge({
     ? "bg-danger"
     : near
       ? "bg-warn"
-      : color === "lime"
-        ? "bg-lime"
+      : color === "mint"
+        ? "bg-mint"
         : color === "warn"
           ? "bg-warn"
           : "bg-volt";
@@ -34,7 +34,7 @@ export function UsageGauge({
         </div>
         <div className="font-mono text-[11px] text-ink-mid">
           {unlimited ? (
-            <span className="text-lime">unlimited</span>
+            <span className="text-mint">unlimited</span>
           ) : (
             <>
               <span className={over ? "text-danger" : near ? "text-warn" : "text-ink-hi"}>

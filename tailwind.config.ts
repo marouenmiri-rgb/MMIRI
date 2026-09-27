@@ -1,14 +1,21 @@
 import type { Config } from "tailwindcss";
 
+/**
+ * Colors resolve through CSS variables so a single `data-theme` swap on <html>
+ * repaints the whole app. Each variable holds space-separated RGB channels,
+ * which is what lets Tailwind's `<alpha-value>` keep working (`bg-accent/10`).
+ */
+const withAlpha = (name: string) => `rgb(var(${name}) / <alpha-value>)`;
+
 const config: Config = {
   content: ["./src/**/*.{ts,tsx}"],
-  darkMode: "class",
+  darkMode: ["class", '[data-theme="dark"]'],
   theme: {
     extend: {
       fontFamily: {
         sans: [
-          "SF Pro Display",
           "SF Pro Text",
+          "SF Pro Display",
           "Inter",
           "ui-sans-serif",
           "system-ui",
@@ -18,9 +25,11 @@ const config: Config = {
         ],
         display: [
           "SF Pro Display",
+          "Inter Display",
           "Inter",
           "ui-sans-serif",
           "system-ui",
+          "-apple-system",
           "sans-serif",
         ],
         mono: [
@@ -33,80 +42,85 @@ const config: Config = {
         ],
       },
       letterSpacing: {
-        tightest: "-0.04em",
-        ultratight: "-0.055em",
+        tightest: "-0.035em",
+        ultratight: "-0.05em",
       },
       colors: {
+        // Surfaces, from page background up to the most raised fill.
         base: {
-          0: "#06060a",
-          1: "#0a0a10",
-          2: "#0f0f17",
-          3: "#16161f",
-          4: "#1d1d28",
+          0: withAlpha("--base-0"),
+          1: withAlpha("--base-1"),
+          2: withAlpha("--base-2"),
+          3: withAlpha("--base-3"),
+          4: withAlpha("--base-4"),
         },
+        // Hairlines, ascending in contrast.
         line: {
-          1: "#1c1c26",
-          2: "#262633",
-          3: "#363645",
+          1: withAlpha("--line-1"),
+          2: withAlpha("--line-2"),
+          3: withAlpha("--line-3"),
         },
+        // Text, descending in emphasis.
         ink: {
-          hi: "#fafafa",
-          mid: "#a8a8b8",
-          lo: "#6c6c7c",
-          dim: "#48485a",
+          hi: withAlpha("--ink-hi"),
+          mid: withAlpha("--ink-mid"),
+          lo: withAlpha("--ink-lo"),
+          dim: withAlpha("--ink-dim"),
         },
+        // Primary action colour — Stripe's blurple.
         volt: {
-          DEFAULT: "#a78bfa",
-          400: "#bca5ff",
-          500: "#a78bfa",
-          600: "#8b5cf6",
-          700: "#6d3fe8",
+          DEFAULT: withAlpha("--accent-500"),
+          300: withAlpha("--accent-300"),
+          400: withAlpha("--accent-400"),
+          500: withAlpha("--accent-500"),
+          600: withAlpha("--accent-600"),
+          700: withAlpha("--accent-700"),
         },
-        lime: {
-          DEFAULT: "#c3ff3e",
-          400: "#d4ff66",
-          500: "#c3ff3e",
-          600: "#a3e019",
+        // Money / live / success. Replaces the old neon lime.
+        mint: {
+          DEFAULT: withAlpha("--mint-500"),
+          400: withAlpha("--mint-400"),
+          500: withAlpha("--mint-500"),
+          600: withAlpha("--mint-600"),
         },
-        // Stripe-style accent stops for mesh gradients.
+        // Mesh-gradient stops, used decoratively.
         ribbon: {
-          violet: "#7c4dff",
-          indigo: "#5b8def",
-          cyan: "#22d3ee",
-          rose: "#ff6691",
-          amber: "#ffb454",
-          lime: "#c3ff3e",
+          violet: withAlpha("--ribbon-violet"),
+          indigo: withAlpha("--ribbon-indigo"),
+          cyan: withAlpha("--ribbon-cyan"),
+          rose: withAlpha("--ribbon-rose"),
+          amber: withAlpha("--ribbon-amber"),
+          mint: withAlpha("--mint-500"),
         },
-        warn: "#f59e0b",
-        danger: "#ef4444",
+        warn: withAlpha("--warn"),
+        danger: withAlpha("--danger"),
       },
       boxShadow: {
-        // Apple-style multi-layer soft shadows.
-        soft: "0 1px 1px rgba(0,0,0,0.04), 0 2px 4px rgba(0,0,0,0.06), 0 8px 24px -8px rgba(0,0,0,0.4)",
-        lift: "0 1px 0 rgba(255,255,255,0.05) inset, 0 1px 2px rgba(0,0,0,0.4), 0 12px 36px -12px rgba(0,0,0,0.6)",
-        glow: "0 0 0 1px rgba(167,139,250,0.35), 0 8px 40px -8px rgba(167,139,250,0.45)",
-        "glow-lime":
-          "0 0 0 1px rgba(195,255,62,0.4), 0 8px 40px -8px rgba(195,255,62,0.45)",
-        card: "0 1px 0 0 rgba(255,255,255,0.04) inset, 0 1px 2px rgba(0,0,0,0.3), 0 10px 30px -12px rgba(0,0,0,0.5)",
-        // Stripe-style focus ring.
-        focus: "0 0 0 4px rgba(167,139,250,0.18)",
+        // Apple-style shadows: many shallow layers rather than one dark blur.
+        xs: "var(--shadow-xs)",
+        soft: "var(--shadow-soft)",
+        card: "var(--shadow-card)",
+        lift: "var(--shadow-lift)",
+        float: "var(--shadow-float)",
+        glow: "var(--shadow-glow)",
+        "glow-mint": "var(--shadow-glow-mint)",
+        focus: "0 0 0 4px rgb(var(--accent-500) / 0.18)",
       },
       borderRadius: {
         xl2: "1.125rem",
         "2xl": "1.25rem",
         "3xl": "1.75rem",
+        "4xl": "2.25rem",
       },
       transitionTimingFunction: {
-        // iOS standard easing.
         ios: "cubic-bezier(0.22, 1, 0.36, 1)",
-        // Apple emphasis curve.
         emphatic: "cubic-bezier(0.16, 1, 0.3, 1)",
       },
       keyframes: {
         pulseRing: {
-          "0%": { boxShadow: "0 0 0 0 rgba(167,139,250,0.55)" },
-          "70%": { boxShadow: "0 0 0 14px rgba(167,139,250,0)" },
-          "100%": { boxShadow: "0 0 0 0 rgba(167,139,250,0)" },
+          "0%": { boxShadow: "0 0 0 0 rgb(var(--mint-500) / 0.5)" },
+          "70%": { boxShadow: "0 0 0 10px rgb(var(--mint-500) / 0)" },
+          "100%": { boxShadow: "0 0 0 0 rgb(var(--mint-500) / 0)" },
         },
         shimmer: {
           "0%": { backgroundPosition: "-200% 0" },
@@ -122,11 +136,10 @@ const config: Config = {
         },
         gridShift: {
           "0%": { backgroundPosition: "0 0" },
-          "100%": { backgroundPosition: "40px 40px" },
+          "100%": { backgroundPosition: "48px 48px" },
         },
-        // New Apple-style entrance.
         riseIn: {
-          "0%": { opacity: "0", transform: "translateY(8px)" },
+          "0%": { opacity: "0", transform: "translateY(10px)" },
           "100%": { opacity: "1", transform: "translateY(0)" },
         },
         auroraFlow: {
@@ -135,7 +148,7 @@ const config: Config = {
         },
       },
       animation: {
-        pulseRing: "pulseRing 1.8s ease-out infinite",
+        pulseRing: "pulseRing 2s ease-out infinite",
         shimmer: "shimmer 2.4s linear infinite",
         caret: "caret 1.1s steps(1) infinite",
         float: "float 4s ease-in-out infinite",
@@ -144,7 +157,7 @@ const config: Config = {
         auroraFlow: "auroraFlow 28s ease-in-out infinite",
       },
       backgroundSize: {
-        "grid-40": "40px 40px",
+        "grid-40": "48px 48px",
       },
     },
   },

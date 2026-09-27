@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Logo } from "@/components/Logo";
 import { AgentPipeline } from "@/components/AgentPipeline";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export default function LandingPage() {
   return (
@@ -23,14 +24,17 @@ export default function LandingPage() {
           <a href="#manifesto" className="transition hover:text-ink-hi">Manifesto</a>
           <Link href="/pricing" className="transition hover:text-ink-hi">Pricing</Link>
         </nav>
-        <Link href="/dashboard" className="btn-ghost">
-          Enter the lab →
-        </Link>
+        <div className="flex items-center gap-3">
+          <ThemeToggle />
+          <Link href="/dashboard" className="btn-ghost">
+            Enter the lab →
+          </Link>
+        </div>
       </header>
 
       {/* Hero */}
       <section className="relative mx-auto max-w-7xl px-6 pt-24 pb-32 text-center sm:pt-32">
-        <div className="rise mx-auto inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.04] px-3 py-1 font-mono text-[11px] uppercase tracking-[0.28em] text-volt backdrop-blur">
+        <div className="rise mx-auto inline-flex items-center gap-2 rounded-full border border-line-2 bg-base-3 px-3 py-1 font-mono text-[11px] uppercase tracking-[0.28em] text-volt backdrop-blur">
           <span className="dot-live" /> Claude Opus 4.7 · five-agent lab
         </div>
 
@@ -110,7 +114,7 @@ export default function LandingPage() {
             ].map((a) => (
               <div
                 key={a.k}
-                className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-5 backdrop-blur transition hover:bg-white/[0.04]"
+                className="rounded-xl border border-line-1 bg-base-1/50 p-5 backdrop-blur transition hover:bg-base-3"
               >
                 <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-volt">
                   {a.k}
@@ -150,7 +154,7 @@ export default function LandingPage() {
               n: "03",
               t: "Show, don't hide",
               b: "You see the agents working. Artifacts unlock live. No black-box status bar.",
-              accent: "lime",
+              accent: "mint",
             },
           ].map((x) => (
             <div
@@ -214,7 +218,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <footer className="relative mx-auto flex max-w-7xl items-center justify-between border-t border-white/[0.06] px-6 py-8 text-xs text-ink-dim">
+      <footer className="relative mx-auto flex max-w-7xl items-center justify-between border-t border-line-1 px-6 py-8 text-xs text-ink-dim">
         <Logo size={18} />
         <div className="flex items-center gap-6">
           <Link href="/pricing" className="hover:text-ink-mid">Pricing</Link>

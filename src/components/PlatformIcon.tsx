@@ -9,7 +9,7 @@ export const PLATFORM_META: Record<
   TIKTOK: { label: "TikTok", color: "#ff2b66", textOn: "#ffffff", handlePrefix: "@" },
   INSTAGRAM: { label: "Instagram", color: "#e94a85", textOn: "#ffffff", handlePrefix: "@" },
   YOUTUBE: { label: "YouTube", color: "#ff3b3b", textOn: "#ffffff", handlePrefix: "" },
-  X: { label: "X", color: "#f5f5f7", textOn: "#08080c", handlePrefix: "@" },
+  X: { label: "X", color: "#0f1419", textOn: "#ffffff", handlePrefix: "@" },
 };
 
 export function PlatformIcon({

@@ -229,7 +229,7 @@ export default async function RevenuePage() {
                       {a.clicks} clicks · {a.conversions} conversions
                     </div>
                   </div>
-                  <div className="font-display text-xl tracking-tight text-lime">
+                  <div className="font-display text-xl tracking-tight text-mint">
                     {money(a.revenueCents)}
                   </div>
                 </li>
@@ -273,7 +273,7 @@ function Tile({
       <div
         className={
           "mt-3 font-display text-4xl tracking-tightest " +
-          (accent ? "text-lime" : "text-ink-hi")
+          (accent ? "text-mint" : "text-ink-hi")
         }
       >
         {value}

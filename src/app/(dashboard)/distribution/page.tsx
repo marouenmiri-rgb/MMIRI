@@ -10,6 +10,7 @@ import { hasDb } from "@/lib/env";
 import { getCurrentUserId } from "@/lib/auth";
 import { allPlatformMeta } from "@/social/registry";
 import { fixtureDistribution } from "@/lib/fixtures";
+import { themeColor } from "@/lib/theme";
 
 type PageProps = { searchParams: { connected?: string; demo?: string; err?: string } };
 
@@ -124,7 +125,7 @@ export default async function DistributionPage({ searchParams }: PageProps) {
           <div
             className={
               banner.tone === "ok"
-                ? "card p-4 text-sm text-lime border-lime/30"
+                ? "card p-4 text-sm text-mint border-mint/30"
                 : "card p-4 text-sm text-danger border-danger/30"
             }
           >
@@ -165,9 +166,9 @@ export default async function DistributionPage({ searchParams }: PageProps) {
               </h2>
             </div>
             <span className="flex items-center gap-3 text-[11px] text-ink-mid">
-              <LegendSwatch color="#a78bfa" label="scheduled" />
-              <LegendSwatch color="#c3ff3e" label="published" />
-              <LegendSwatch color="#ef4444" label="failed" />
+              <LegendSwatch color={themeColor.accent} label="scheduled" />
+              <LegendSwatch color={themeColor.mint} label="published" />
+              <LegendSwatch color={themeColor.danger} label="failed" />
             </span>
           </div>
           <DistributionTimeline posts={posts} />
