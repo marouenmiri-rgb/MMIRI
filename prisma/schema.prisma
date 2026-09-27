@@ -24,6 +24,8 @@ model User {
   passwordHash String?
   /// A visitor who started generating before signing up. Claimed on signup.
   isGuest    Boolean  @default(false)
+  /// Set once the address has been confirmed by following an emailed link.
+  emailVerifiedAt DateTime?
   lastSeenAt DateTime?
   createdAt  DateTime @default(now())
 
@@ -42,6 +44,7 @@ model User {
   autoPilotRules    AutoPilotRule[]
   clients           Client[]
   sessions          Session[]
+  authTokens        AuthToken[]
 }
 
 model Ad {
@@ -375,5 +378,23 @@ model Session {
   userAgent String?
 
   @@index([userId])
+  @@index([expiresAt])
+}
+
+/// Single-use, expiring links emailed to a user — password resets and address
+/// confirmations. Only the SHA-256 of the token is stored, so the database
+/// never holds anything that could be replayed as a live link.
+model AuthToken {
+  id        String    @id @default(cuid())
+  tokenHash String    @unique
+  /// "PASSWORD_RESET" or "EMAIL_VERIFY".
+  kind      String
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId, kind])
   @@index([expiresAt])
 }

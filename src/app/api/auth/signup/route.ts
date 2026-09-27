@@ -9,6 +9,8 @@ import {
   isBootstrapAdmin,
   normalizeEmail,
 } from "@/lib/auth";
+import { issueToken, sendVerificationEmail } from "@/lib/auth-tokens";
+import { clientIp, rateLimit, tooManyRequests } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
@@ -23,6 +25,11 @@ const Body = z.object({
 
 export async function POST(req: Request) {
   if (!hasDb) return NextResponse.json({ error: "No DB" }, { status: 503 });
+
+  const gate = rateLimit(`signup:${clientIp(req)}`, 5, 60 * 60);
+  if (!gate.ok) {
+    return tooManyRequests(gate, "Too many accounts from here. Try again later.");
+  }
 
   const parsed = Body.safeParse(await req.json().catch(() => ({})));
   if (!parsed.success) {
@@ -62,6 +69,7 @@ export async function POST(req: Request) {
       },
       select: { id: true, email: true, role: true },
     });
+    await sendVerification(user.id, user.email);
     return NextResponse.json({ user }, { status: 201 });
   }
 
@@ -75,5 +83,19 @@ export async function POST(req: Request) {
     select: { id: true, email: true, role: true },
   });
   await createSession(user.id, req.headers.get("user-agent"));
+  await sendVerification(user.id, user.email);
   return NextResponse.json({ user }, { status: 201 });
+}
+
+/**
+ * Confirmation is sent, never awaited for correctness: a mail outage must not
+ * fail a sign-up that has already succeeded.
+ */
+async function sendVerification(userId: string, email: string) {
+  try {
+    const token = await issueToken(userId, "EMAIL_VERIFY");
+    await sendVerificationEmail(email, token);
+  } catch (e) {
+    console.warn("[adgen] verification email failed:", e);
+  }
 }

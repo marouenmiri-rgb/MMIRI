@@ -16,6 +16,9 @@ const schema = z.object({
   ANTHROPIC_API_KEY: blankAsUndefined(z.string().min(1).optional()),
   ELEVENLABS_API_KEY: blankAsUndefined(z.string().optional()),
   RESEND_API_KEY: blankAsUndefined(z.string().optional()),
+  MAIL_FROM: blankAsUndefined(
+    z.string().default("AdGen <onboarding@resend.dev>"),
+  ),
   NEXT_PUBLIC_APP_URL: blankAsUndefined(
     z.string().default("http://localhost:3000"),
   ),
@@ -26,6 +29,7 @@ export const env = schema.parse({
   ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY,
   ELEVENLABS_API_KEY: process.env.ELEVENLABS_API_KEY,
   RESEND_API_KEY: process.env.RESEND_API_KEY,
+  MAIL_FROM: process.env.MAIL_FROM,
   NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
 });
 

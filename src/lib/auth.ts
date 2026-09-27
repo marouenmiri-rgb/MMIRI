@@ -18,6 +18,7 @@ export type SessionUser = {
   plan: string;
   role: string;
   isGuest: boolean;
+  emailVerified: boolean;
 };
 
 /* ------------------------------------------------------------------ *
@@ -123,6 +124,7 @@ export async function getSessionUser(): Promise<SessionUser | null> {
             plan: true,
             role: true,
             isGuest: true,
+            emailVerifiedAt: true,
           },
         },
       },
@@ -136,7 +138,8 @@ export async function getSessionUser(): Promise<SessionUser | null> {
       .catch(() => undefined);
     return null;
   }
-  return session.user;
+  const { emailVerifiedAt, ...user } = session.user;
+  return { ...user, emailVerified: Boolean(emailVerifiedAt) };
 }
 
 /**

@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { Sidebar } from "@/components/Sidebar";
 import { CommandPalette } from "@/components/CommandPalette";
 import { getSessionUser } from "@/lib/auth";
+import { VerifyBanner } from "@/components/VerifyBanner";
 import { hasDb } from "@/lib/env";
 
 export const dynamic = "force-dynamic";
@@ -31,7 +32,12 @@ export default async function DashboardLayout({
             : null
         }
       />
-      <main className="flex-1">{children}</main>
+      <main className="flex-1">
+        {user && !user.isGuest && !user.emailVerified && (
+          <VerifyBanner email={user.email} />
+        )}
+        {children}
+      </main>
       <CommandPalette />
     </div>
   );
