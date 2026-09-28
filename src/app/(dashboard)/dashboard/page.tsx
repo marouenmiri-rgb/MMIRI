@@ -7,6 +7,7 @@ import { AdReelCard } from "@/components/AdReelCard";
 import { Sparkline } from "@/components/Sparkline";
 import { HeroCapture } from "./HeroCapture";
 import { themeColor } from "@/lib/theme";
+import { GettingStarted } from "@/components/GettingStarted";
 
 async function loadAds() {
   if (!hasDb) return [];
@@ -99,7 +100,11 @@ type AdRow = {
 };
 
 export default async function DashboardPage() {
-  const [ads, s] = await Promise.all([loadAds(), loadStats()]);
+  const [ads, s, userId] = await Promise.all([
+    loadAds(),
+    loadStats(),
+    getCurrentUserId(),
+  ]);
   const active = ads.find((a) =>
     ["SCRAPING", "WRITING", "DIRECTING", "RENDERING"].includes(a.status),
   );
@@ -219,6 +224,8 @@ export default async function DashboardPage() {
             </div>
           ))}
         </section>
+
+        {userId ? <GettingStarted userId={userId} /> : null}
 
         {/* Reel wall */}
         <section>
