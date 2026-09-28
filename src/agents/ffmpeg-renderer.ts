@@ -40,20 +40,28 @@ export async function renderSlideshow(args: {
   }
   if (frames.length === 0) return { videoPath: null, thumbnailPath: null };
 
-  // Concat-demuxer list: each image held for its duration, then a final
-  // dup of the last image avoids the known ffmpeg trailing-frame truncation.
+  // Concat-demuxer list: each image held for its own duration. The final
+  // entry is repeated because the demuxer otherwise drops the last image,
+  // and the encode is then cut to `total` — without that cut the repeat
+  // plays for a whole extra scene, leaving several seconds of product shot
+  // after the last caption has gone. That dead tail is where a short-form
+  // viewer leaves, and it takes the call to action with it.
+  const durations = frames.map((_, i) =>
+    Math.max(1, Math.round(scenes[i]?.durationSec ?? 3)),
+  );
+  const total = durations.reduce((a, b) => a + b, 0);
+
   const listPath = path.join(workDir, "list.txt");
   const lines: string[] = [];
   frames.forEach((f, i) => {
-    const dur = Math.max(1, Math.round(scenes[i]?.durationSec ?? 3));
     lines.push(`file '${f}'`);
-    lines.push(`duration ${dur}`);
+    lines.push(`duration ${durations[i]}`);
   });
   lines.push(`file '${frames[frames.length - 1]}'`);
   await fs.writeFile(listPath, lines.join("\n"));
 
   const assPath = path.join(workDir, "subs.ass");
-  await fs.writeFile(assPath, toAss(scenes));
+  await fs.writeFile(assPath, toAss(scenes, durations));
 
   const videoPath = path.join(outDir, "ad.mp4");
   const thumbnailPath = path.join(outDir, "ad.jpg");
@@ -73,6 +81,10 @@ export async function renderSlideshow(args: {
   await run("ffmpeg", [
     ...commonIn,
     ...audioIn,
+    // Exactly as long as the scenes, so the repeated last frame pads the
+    // final image rather than adding silence after it.
+    "-t",
+    String(total),
     "-vf",
     vfilter,
     "-c:v",
@@ -119,7 +131,10 @@ function parseImageRef(ref: string): number | null {
  * outline plus shadow instead of an opaque box, and wide side margins so long
  * lines wrap instead of running to the edges.
  */
-function toAss(scenes: SceneBreakdown["scenes"]): string {
+export function toAss(
+  scenes: SceneBreakdown["scenes"],
+  durations: number[],
+): string {
   const header = [
     "[Script Info]",
     "ScriptType: v4.00+",
@@ -139,9 +154,9 @@ function toAss(scenes: SceneBreakdown["scenes"]): string {
   ].join("\n");
 
   let t = 0;
-  const events = scenes.map((sc) => {
+  const events = scenes.map((sc, i) => {
     const start = t;
-    const end = t + Math.max(1, Math.round(sc.durationSec));
+    const end = t + (durations[i] ?? Math.max(1, Math.round(sc.durationSec)));
     t = end;
     return `Dialogue: 0,${ts(start)},${ts(end)},Caption,,0,0,0,,${assText(sc.text)}`;
   });

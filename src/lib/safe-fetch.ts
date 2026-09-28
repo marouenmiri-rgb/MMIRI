@@ -44,8 +44,21 @@ function ipv4ToLong(ip: string): number | null {
   return out;
 }
 
+/**
+ * Development escape hatch for fetching a product page from a local or staging
+ * host — a Shopify dev server, a fixture, a LAN box.
+ *
+ * Ignored outright when NODE_ENV is "production", so setting it on a live
+ * deployment by accident cannot re-open the hole it exists to bypass.
+ */
+function privateNetworkAllowed(): boolean {
+  if (process.env.NODE_ENV === "production") return false;
+  return process.env.ALLOW_PRIVATE_NETWORK_FETCH === "1";
+}
+
 /** True for anything that is not a public, routable internet address. */
 export function isBlockedAddress(ip: string, family: number): boolean {
+  if (privateNetworkAllowed()) return false;
   if (family === 4) {
     const n = ipv4ToLong(ip);
     if (n === null) return true;
