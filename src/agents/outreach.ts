@@ -30,5 +30,5 @@ Preview link: ${adUrl}
 The goal is a reply. Personalize with one concrete observation about ${store.storeName}.
 Return JSON only.`;
 
-  return askJSON<OutreachEmail>({ system: SYSTEM, user, schema: SCHEMA });
+  return askJSON<OutreachEmail>({ system: SYSTEM, user, schema: SCHEMA, role: "copy" });
 }

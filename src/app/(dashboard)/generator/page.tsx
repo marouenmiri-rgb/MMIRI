@@ -6,6 +6,7 @@ import { StatusPill } from "@/components/StatusPill";
 import { AgentPipeline, PIPELINE } from "@/components/AgentPipeline";
 import { ShipPanel } from "./ShipPanel";
 import { VariantLab } from "./VariantLab";
+import { BulkPanel } from "./BulkPanel";
 
 type AdResult = {
   id: string;
@@ -184,6 +185,7 @@ export default function GeneratorPage() {
                 Shopify & Amazon PDPs work best. Runs: Observe → Write → Direct → Render → Ship.
               </p>
             )}
+            <BulkPanel />
           </form>
         )}
 

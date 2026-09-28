@@ -285,8 +285,8 @@ export function PricingComparator({ plans, hasStripe }: Props) {
                 Running AdGen for 20+ clients?
               </div>
               <div className="text-sm text-ink-mid">
-                Agency plan — $999/mo, unlimited workspaces, white-label client
-                reports, API access, SSO.
+                Agency plan — $349/mo, unlimited videos and clients, a
+                white-label report per client, and the 50-product bulk queue.
               </div>
             </div>
           </div>

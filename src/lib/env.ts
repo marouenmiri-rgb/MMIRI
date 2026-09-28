@@ -22,6 +22,15 @@ const schema = z.object({
   NEXT_PUBLIC_APP_URL: blankAsUndefined(
     z.string().default("http://localhost:3000"),
   ),
+
+  // Model per job. Defaults are the cheapest that do each job well; override
+  // any of them per deployment to retune cost without touching code.
+  CLAUDE_MODEL_COPY: blankAsUndefined(z.string().default("claude-sonnet-5")),
+  CLAUDE_MODEL_PLAN: blankAsUndefined(z.string().default("claude-sonnet-5")),
+  CLAUDE_MODEL_FAST: blankAsUndefined(
+    z.string().default("claude-haiku-4-5-20251001"),
+  ),
+  CLAUDE_MODEL_REASON: blankAsUndefined(z.string().default("claude-sonnet-5")),
 });
 
 export const env = schema.parse({
@@ -31,6 +40,10 @@ export const env = schema.parse({
   RESEND_API_KEY: process.env.RESEND_API_KEY,
   MAIL_FROM: process.env.MAIL_FROM,
   NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
+  CLAUDE_MODEL_COPY: process.env.CLAUDE_MODEL_COPY,
+  CLAUDE_MODEL_PLAN: process.env.CLAUDE_MODEL_PLAN,
+  CLAUDE_MODEL_FAST: process.env.CLAUDE_MODEL_FAST,
+  CLAUDE_MODEL_REASON: process.env.CLAUDE_MODEL_REASON,
 });
 
 export const hasClaude = Boolean(env.ANTHROPIC_API_KEY);

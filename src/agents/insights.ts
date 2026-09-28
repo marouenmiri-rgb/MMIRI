@@ -107,6 +107,8 @@ Return JSON only.`;
     system: SYSTEM,
     user,
     schema: SCHEMA,
+    role: "reason",
+    thinkingTokens: 2000,
     maxTokens: 2048,
   });
 }

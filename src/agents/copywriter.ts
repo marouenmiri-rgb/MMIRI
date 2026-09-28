@@ -50,5 +50,5 @@ ${opts.hookHint ? `\nHook pattern to use (instantiate with the product's facts):
 
 Return JSON only, matching the schema.`;
 
-  return askJSON<AdScript>({ system: SYSTEM, user, schema: SCHEMA });
+  return askJSON<AdScript>({ system: SYSTEM, user, schema: SCHEMA, role: "copy" });
 }

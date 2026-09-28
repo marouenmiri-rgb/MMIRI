@@ -60,5 +60,5 @@ Full narration: ${args.script.fullScript}${voiceBlock}
 
 Return JSON only with the four captions, matching the schema.`;
 
-  return askJSON<PlatformCaptions>({ system: SYSTEM, user, schema: SCHEMA });
+  return askJSON<PlatformCaptions>({ system: SYSTEM, user, schema: SCHEMA, role: "fast" });
 }

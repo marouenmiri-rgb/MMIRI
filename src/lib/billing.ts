@@ -104,9 +104,10 @@ export const PLANS: Record<PlanTier, {
   AGENCY: {
     tier: "AGENCY",
     label: "Agency",
-    priceUsd: 199,
+    priceUsd: 349,
     cadence: "mo",
-    blurb: "Run ads for other stores. Client roster and shareable reports.",
+    blurb:
+      "Run ads for other stores. Unlimited clients, and a report each one can read.",
     tagline: "For freelancers & agencies",
     priceEnvKey: "STRIPE_PRICE_AGENCY",
     limits: {
@@ -120,6 +121,7 @@ export const PLANS: Record<PlanTier, {
       "Unlimited clients",
       "White-label ROI report per client",
       "Retainer vs. attributed revenue",
+      "Bulk queue · 50 products at once",
     ],
     color: "volt",
   },

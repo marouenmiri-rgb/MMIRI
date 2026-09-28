@@ -51,5 +51,5 @@ Full narration: ${script.fullScript}
 
 Return JSON only.`;
 
-  return askJSON<SceneBreakdown>({ system: SYSTEM, user, schema: SCHEMA });
+  return askJSON<SceneBreakdown>({ system: SYSTEM, user, schema: SCHEMA, role: "plan" });
 }
