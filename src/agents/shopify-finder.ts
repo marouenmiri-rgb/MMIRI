@@ -1,4 +1,5 @@
 import type { ShopifyStore } from "./types";
+import { safeFetch } from "@/lib/safe-fetch";
 
 const UA =
   "Mozilla/5.0 (compatible; AdGenBot/0.1; +https://adgen.ai)";
@@ -106,9 +107,12 @@ async function inspectStore(origin: string): Promise<ShopifyStore | null> {
 
 async function fetchText(url: string): Promise<string | null> {
   try {
-    const res = await fetch(url, {
+    // Discovery follows search results to hosts we've never seen, so every
+    // one of them gets the same address check the scraper uses.
+    const res = await safeFetch(url, {
       headers: { "User-Agent": UA, Accept: "text/html" },
-      redirect: "follow",
+      maxBytes: 3 * 1024 * 1024,
+      timeoutMs: 10_000,
     });
     if (!res.ok) return null;
     return await res.text();

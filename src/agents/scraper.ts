@@ -1,4 +1,5 @@
 import type { ProductFacts } from "./types";
+import { safeFetch } from "@/lib/safe-fetch";
 
 const UA = "Mozilla/5.0 (compatible; AdGenBot/0.1; +https://adgen.ai)";
 
@@ -22,8 +23,9 @@ export async function scrapeProduct(url: string): Promise<ProductFacts> {
   const fromShopify = await tryShopifyJson(url);
   if (fromShopify) return fromShopify;
 
-  const res = await fetch(url, {
+  const res = await safeFetch(url, {
     headers: { "User-Agent": UA, Accept: "text/html,application/xhtml+xml" },
+    maxBytes: 4 * 1024 * 1024,
   });
   if (!res.ok) throw new Error(`Scrape failed (${res.status}) for ${url}`);
   const html = await res.text();
@@ -56,8 +58,9 @@ async function tryShopifyJson(url: string): Promise<ProductFacts | null> {
   const jsonUrl = `${target.origin}${target.pathname.replace(/\/$/, "")}.js`;
 
   try {
-    const res = await fetch(jsonUrl, {
+    const res = await safeFetch(jsonUrl, {
       headers: { "User-Agent": UA, Accept: "application/json" },
+      maxBytes: 2 * 1024 * 1024,
     });
     if (!res.ok) return null;
     if (!res.headers.get("content-type")?.includes("json")) return null;

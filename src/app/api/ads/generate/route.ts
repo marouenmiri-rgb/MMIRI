@@ -5,6 +5,7 @@ import { getOrCreateGuestUserId } from "@/lib/auth";
 import { hasClaude, hasDb } from "@/lib/env";
 import { runAdPipeline } from "@/agents/orchestrator";
 import { checkLimit } from "@/lib/billing";
+import { clientIp, rateLimit, tooManyRequests } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
@@ -37,6 +38,11 @@ export async function POST(req: Request) {
 
   // The only endpoint that will mint an identity: a visitor spends their free
   // videos first and signs up afterwards, keeping what they already made.
+  const burst = rateLimit(`generate:${clientIp(req)}`, 12, 10 * 60);
+  if (!burst.ok) {
+    return tooManyRequests(burst, "Too many videos started. Try again shortly.");
+  }
+
   const userId = await getOrCreateGuestUserId(req.headers.get("user-agent"));
   if (!userId) return NextResponse.json({ error: "No user" }, { status: 401 });
 

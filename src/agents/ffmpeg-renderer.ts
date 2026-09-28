@@ -3,6 +3,7 @@ import { promises as fs } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import type { ProductFacts, SceneBreakdown } from "./types";
+import { safeFetch } from "@/lib/safe-fetch";
 
 /**
  * Best-effort FFmpeg slideshow renderer for the MVP.
@@ -176,7 +177,8 @@ function escapeFilterPath(p: string): string {
 
 async function downloadImage(url: string, dest: string): Promise<boolean> {
   try {
-    const res = await fetch(url);
+    // The page chose these URLs, so they get the same check as the page did.
+    const res = await safeFetch(url, { maxBytes: 12 * 1024 * 1024 });
     if (!res.ok) return false;
     const buf = Buffer.from(await res.arrayBuffer());
     await fs.writeFile(dest, buf);

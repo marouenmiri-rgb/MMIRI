@@ -1,4 +1,13 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+
+// The scraper routes every request through the SSRF guard, which resolves the
+// hostname for real. These fixtures use invented domains, so DNS is stubbed to
+// answer with a public address — the guard itself is covered in
+// tests/safe-fetch.test.ts.
+vi.mock("node:dns/promises", () => ({
+  lookup: vi.fn(async () => [{ address: "93.184.216.34", family: 4 }]),
+}));
+
 import { cleanImages, scrapeProduct } from "@/agents/scraper";
 
 const OG_HTML = `

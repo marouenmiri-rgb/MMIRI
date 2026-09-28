@@ -5,6 +5,7 @@ import { hasClaude, hasDb } from "@/lib/env";
 import { getCurrentUserId } from "@/lib/auth";
 import { runAdPipeline } from "@/agents/orchestrator";
 import { checkLimit } from "@/lib/billing";
+import { clientIp, rateLimit, tooManyRequests } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
@@ -35,6 +36,11 @@ export async function POST(req: Request) {
       },
       { status: 503 },
     );
+  }
+
+  const gate = rateLimit(`bulk:${clientIp(req)}`, 4, 15 * 60);
+  if (!gate.ok) {
+    return tooManyRequests(gate, "Too many bulk queues. Try again shortly.");
   }
 
   const userId = await getCurrentUserId();
