@@ -5,6 +5,7 @@ import { directScenes } from "./creative-director";
 import { renderVideo } from "./video-generator";
 import type { BrandVoice } from "./brand-voice";
 import type { GeneratedAd } from "./types";
+import { DEFAULT_FORMAT, type AdFormat } from "./formats";
 import { packJson, unpackJson } from "@/lib/json";
 
 /**
@@ -17,8 +18,10 @@ export async function runAdPipeline(args: {
   productUrl: string;
   hookHint?: string;
   userId?: string;
+  format?: AdFormat;
 }): Promise<GeneratedAd> {
   const { adId, productUrl, hookHint, userId } = args;
+  const format = args.format ?? DEFAULT_FORMAT;
 
   // Brand voice (if the user has one) gets pulled once and threaded through
   // every text-producing agent in this pipeline run.
@@ -48,14 +51,14 @@ export async function runAdPipeline(args: {
   });
 
   await db.ad.update({ where: { id: adId }, data: { status: "WRITING" } });
-  const script = await writeAdScript(product, { hookHint, brandVoice });
+  const script = await writeAdScript(product, { hookHint, brandVoice, format });
   await db.ad.update({
     where: { id: adId },
     data: { scriptJson: packJson(script) },
   });
 
   await db.ad.update({ where: { id: adId }, data: { status: "DIRECTING" } });
-  const breakdown = await directScenes(product, script);
+  const breakdown = await directScenes(product, script, format);
   await db.ad.update({
     where: { id: adId },
     data: { scenesJson: packJson(breakdown) },

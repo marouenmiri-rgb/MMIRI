@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { getOrCreateGuestUserId } from "@/lib/auth";
 import { hasClaude, hasDb } from "@/lib/env";
 import { runAdPipeline } from "@/agents/orchestrator";
+import { asFormat } from "@/agents/formats";
 import { checkLimit } from "@/lib/billing";
 import { clientIp, rateLimit, tooManyRequests } from "@/lib/rate-limit";
 
@@ -15,6 +16,8 @@ const Body = z.object({
   hookHint: z.string().min(2).max(280).optional(),
   /** Attributes the ad — and everything it earns — to one client. */
   clientId: z.string().min(1).optional(),
+  /** "short" | "standard" | "long". Anything else falls back to standard. */
+  format: z.string().optional(),
 });
 
 export async function POST(req: Request) {
@@ -75,10 +78,13 @@ export async function POST(req: Request) {
     clientId = owned.id;
   }
 
+  const format = asFormat(parsed.data.format);
+
   const ad = await db.ad.create({
     data: {
       userId,
       clientId,
+      format,
       productUrl: parsed.data.productUrl,
       status: "QUEUED",
     },
@@ -89,6 +95,7 @@ export async function POST(req: Request) {
     productUrl: parsed.data.productUrl,
     hookHint: parsed.data.hookHint,
     userId,
+    format,
   }).catch(async (err) => {
     await db.ad.update({
       where: { id: ad.id },

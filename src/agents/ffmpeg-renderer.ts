@@ -40,25 +40,10 @@ export async function renderSlideshow(args: {
   }
   if (frames.length === 0) return { videoPath: null, thumbnailPath: null };
 
-  // Concat-demuxer list: each image held for its own duration. The final
-  // entry is repeated because the demuxer otherwise drops the last image,
-  // and the encode is then cut to `total` — without that cut the repeat
-  // plays for a whole extra scene, leaving several seconds of product shot
-  // after the last caption has gone. That dead tail is where a short-form
-  // viewer leaves, and it takes the call to action with it.
   const durations = frames.map((_, i) =>
     Math.max(1, Math.round(scenes[i]?.durationSec ?? 3)),
   );
   const total = durations.reduce((a, b) => a + b, 0);
-
-  const listPath = path.join(workDir, "list.txt");
-  const lines: string[] = [];
-  frames.forEach((f, i) => {
-    lines.push(`file '${f}'`);
-    lines.push(`duration ${durations[i]}`);
-  });
-  lines.push(`file '${frames[frames.length - 1]}'`);
-  await fs.writeFile(listPath, lines.join("\n"));
 
   const assPath = path.join(workDir, "subs.ass");
   await fs.writeFile(assPath, toAss(scenes, durations));
@@ -66,27 +51,61 @@ export async function renderSlideshow(args: {
   const videoPath = path.join(outDir, "ad.mp4");
   const thumbnailPath = path.join(outDir, "ad.jpg");
 
-  const vfilter = [
-    "scale=1080:1920:force_original_aspect_ratio=increase",
-    "crop=1080:1920",
-    `subtitles='${escapeFilterPath(assPath)}'`,
-  ].join(",");
+  // Each scene becomes its own clip so it can carry its own motion. A still
+  // image held for four seconds reads as a slideshow; the same image drifting
+  // slowly reads as a shot. That difference is what lets a 60-second cut work
+  // off six photographs.
+  const clips: string[] = [];
+  for (let i = 0; i < frames.length; i++) {
+    const clip = path.join(workDir, `clip_${i}.mp4`);
+    const dur = durations[i]!;
+    const fx = scenes[i]?.fx ?? "kenburns";
+    await run("ffmpeg", [
+      "-y",
+      "-loop",
+      "1",
+      "-t",
+      String(dur),
+      "-i",
+      frames[i]!,
+      "-vf",
+      sceneFilter(fx, dur, i),
+      "-c:v",
+      "libx264",
+      "-pix_fmt",
+      "yuv420p",
+      "-preset",
+      "veryfast",
+      "-r",
+      String(FPS),
+      clip,
+    ]);
+    clips.push(clip);
+  }
 
-  const commonIn = ["-y", "-f", "concat", "-safe", "0", "-i", listPath];
+  // Concat the clips, then burn captions over the result — one subtitle file
+  // timed against the whole video rather than per clip.
+  const listPath = path.join(workDir, "list.txt");
+  await fs.writeFile(listPath, clips.map((c) => `file '${c}'`).join("\n"));
+
   const audioIn = args.voiceoverPath ? ["-i", args.voiceoverPath] : [];
   const audioMap = args.voiceoverPath
     ? ["-map", "0:v", "-map", "1:a", "-shortest", "-c:a", "aac", "-b:a", "160k"]
     : ["-an"];
 
   await run("ffmpeg", [
-    ...commonIn,
+    "-y",
+    "-f",
+    "concat",
+    "-safe",
+    "0",
+    "-i",
+    listPath,
     ...audioIn,
-    // Exactly as long as the scenes, so the repeated last frame pads the
-    // final image rather than adding silence after it.
     "-t",
     String(total),
     "-vf",
-    vfilter,
+    `subtitles='${escapeFilterPath(assPath)}'`,
     "-c:v",
     "libx264",
     "-pix_fmt",
@@ -112,6 +131,71 @@ export async function renderSlideshow(args: {
   ]);
 
   return { videoPath, thumbnailPath };
+}
+
+const FPS = 25;
+
+/** How much larger than the frame the source is scaled, leaving room to pan. */
+const PAN_OVERSCAN = 1.22;
+
+/**
+ * Fills the 9:16 frame, then drifts across it.
+ *
+ * The obvious way to do this is ffmpeg's `zoompan`, and it is unusably slow:
+ * measured here, one four-second clip took 94 seconds even with the source
+ * already at output size, which for a fourteen-scene cut is around twenty
+ * minutes a video. `crop` with time-based x/y is the same effect for 1.3
+ * seconds — roughly seventy times faster — because nothing is rescaled per
+ * frame.
+ *
+ * It is a pan rather than a push, since `crop` only accepts time expressions
+ * for position, not for width and height. A slow drift reads the same way on
+ * a feed, and it is what stops a held photograph looking like a slideshow.
+ */
+function sceneFilter(
+  fx: "kenburns" | "cut" | "fade" | undefined,
+  durationSec: number,
+  index: number,
+): string {
+  const fill = [
+    "scale=1080:1920:force_original_aspect_ratio=increase",
+    "crop=1080:1920",
+    `fps=${FPS}`,
+    "setsar=1",
+  ];
+
+  if (fx === "cut") return fill.join(",");
+
+  if (fx === "fade") {
+    const out = Math.max(0, durationSec - 0.4).toFixed(2);
+    return [
+      ...fill,
+      `fade=t=in:st=0:d=0.3`,
+      `fade=t=out:st=${out}:d=0.4`,
+    ].join(",");
+  }
+
+  // Overscan, then walk a 1080x1920 window across it over the scene's length.
+  const w = Math.round(1080 * PAN_OVERSCAN);
+  const h = Math.round(1920 * PAN_OVERSCAN);
+  const d = durationSec.toFixed(2);
+
+  // Four directions, cycled, so consecutive shots never drift the same way.
+  const moves = [
+    { x: `(in_w-out_w)*(t/${d})`, y: `(in_h-out_h)*0.5` },
+    { x: `(in_w-out_w)*(1-t/${d})`, y: `(in_h-out_h)*0.5` },
+    { x: `(in_w-out_w)*0.5`, y: `(in_h-out_h)*(t/${d})` },
+    { x: `(in_w-out_w)*0.5`, y: `(in_h-out_h)*(1-t/${d})` },
+  ];
+  const move = moves[index % moves.length]!;
+
+  return [
+    `scale=${w}:${h}:force_original_aspect_ratio=increase`,
+    `crop=${w}:${h}`,
+    `fps=${FPS}`,
+    `crop=1080:1920:x='${move.x}':y='${move.y}'`,
+    "setsar=1",
+  ].join(",");
 }
 
 function parseImageRef(ref: string): number | null {

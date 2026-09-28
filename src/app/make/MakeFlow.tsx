@@ -37,6 +37,7 @@ function stageIndex(status: string) {
 export function MakeFlow() {
   const [url, setUrl] = useState("");
   const [ad, setAd] = useState<Ad | null>(null);
+  const [format, setFormat] = useState("standard");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -71,7 +72,7 @@ export function MakeFlow() {
       const r = await fetch("/api/ads/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ productUrl }),
+        body: JSON.stringify({ productUrl, format }),
       });
       const body = await r.json().catch(() => ({}));
       if (!r.ok) {
@@ -159,10 +160,12 @@ export function MakeFlow() {
               {busy ? "Making…" : "Make my video"}
             </button>
           </div>
-          <p className="mt-3 text-[12px] text-ink-dim">
-            Works best on Shopify and Amazon product pages. Takes about a
-            minute.
-          </p>
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+            <FormatPicker value={format} onChange={setFormat} disabled={busy} />
+            <p className="text-[12px] text-ink-dim">
+              Shopify and Amazon pages work best.
+            </p>
+          </div>
         </form>
 
         {err && (
@@ -299,5 +302,47 @@ export function MakeFlow() {
 
       <SiteFooter />
     </main>
+  );
+}
+
+/** Runtime picker. Longer is not better by default, so Standard leads. */
+function FormatPicker({
+  value,
+  onChange,
+  disabled,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  disabled?: boolean;
+}) {
+  const OPTIONS = [
+    { id: "short", label: "15s", hint: "Best completion" },
+    { id: "standard", label: "30s", hint: "The default" },
+    { id: "long", label: "60s", hint: "Room for proof" },
+  ];
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-dim">
+        Length
+      </span>
+      <div className="flex gap-1 rounded-full border border-line-1 bg-base-3/60 p-1">
+        {OPTIONS.map((o) => (
+          <button
+            key={o.id}
+            type="button"
+            disabled={disabled}
+            onClick={() => onChange(o.id)}
+            title={o.hint}
+            className={`rounded-full px-3 py-1 text-[12px] font-medium transition-all duration-200 ease-ios disabled:opacity-50 ${
+              value === o.id
+                ? "bg-base-1 text-ink-hi shadow-xs"
+                : "text-ink-lo hover:text-ink-hi"
+            }`}
+          >
+            {o.label}
+          </button>
+        ))}
+      </div>
+    </div>
   );
 }

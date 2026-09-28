@@ -40,6 +40,7 @@ export default function GeneratorPage() {
   // report. Left as "my own store" when the roster is empty.
   const [clients, setClients] = useState<{ id: string; name: string }[]>([]);
   const [clientId, setClientId] = useState("");
+  const [format, setFormat] = useState("standard");
 
   useEffect(() => {
     fetch("/api/clients")
@@ -82,6 +83,7 @@ export default function GeneratorPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           productUrl: url,
+          format,
           ...(clientId ? { clientId } : {}),
         }),
       });
@@ -158,6 +160,9 @@ export default function GeneratorPage() {
               <button className="btn-primary" disabled={busy || !url}>
                 {busy ? "Running…" : "Roll pipeline"}
               </button>
+            </div>
+            <div className="mt-3">
+              <FormatPicker value={format} onChange={setFormat} disabled={busy} />
             </div>
             {clients.length > 0 && (
               <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -392,6 +397,48 @@ function SkeletonLines() {
           style={{ width: `${90 - i * 12}%` }}
         />
       ))}
+    </div>
+  );
+}
+
+/** Runtime picker. Longer is not better by default, so Standard leads. */
+function FormatPicker({
+  value,
+  onChange,
+  disabled,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  disabled?: boolean;
+}) {
+  const OPTIONS = [
+    { id: "short", label: "15s", hint: "Best completion" },
+    { id: "standard", label: "30s", hint: "The default" },
+    { id: "long", label: "60s", hint: "Room for proof" },
+  ];
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-dim">
+        Length
+      </span>
+      <div className="flex gap-1 rounded-full border border-line-1 bg-base-3/60 p-1">
+        {OPTIONS.map((o) => (
+          <button
+            key={o.id}
+            type="button"
+            disabled={disabled}
+            onClick={() => onChange(o.id)}
+            title={o.hint}
+            className={`rounded-full px-3 py-1 text-[12px] font-medium transition-all duration-200 ease-ios disabled:opacity-50 ${
+              value === o.id
+                ? "bg-base-1 text-ink-hi shadow-xs"
+                : "text-ink-lo hover:text-ink-hi"
+            }`}
+          >
+            {o.label}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }

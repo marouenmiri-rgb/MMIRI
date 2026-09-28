@@ -56,6 +56,8 @@ model Ad {
   client        Client?  @relation(fields: [clientId], references: [id], onDelete: SetNull)
   productUrl    String
   productTitle  String?
+  /// "short" | "standard" | "long" — the requested runtime.
+  format        String   @default("standard")
   status        String   @default("QUEUED")
   scriptJson    String?
   scenesJson    String?

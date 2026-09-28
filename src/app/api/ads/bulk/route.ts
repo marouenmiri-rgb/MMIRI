@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { hasClaude, hasDb } from "@/lib/env";
 import { getCurrentUserId } from "@/lib/auth";
 import { runAdPipeline } from "@/agents/orchestrator";
+import { asFormat, type AdFormat } from "@/agents/formats";
 import { checkLimit } from "@/lib/billing";
 import { clientIp, rateLimit, tooManyRequests } from "@/lib/rate-limit";
 
@@ -17,6 +18,7 @@ const Body = z.object({
   urls: z.string().min(4).max(20_000),
   clientId: z.string().min(1).optional(),
   hookHint: z.string().min(2).max(280).optional(),
+  format: z.string().optional(),
 });
 
 /**
@@ -74,6 +76,7 @@ export async function POST(req: Request) {
 
   // Quota is checked per URL, so a paste of 50 on a 15-video plan queues the
   // 15 it is entitled to and reports the rest rather than failing outright.
+  const format = asFormat(parsed.data.format);
   const accepted: string[] = [];
   const skipped: { url: string; reason: string }[] = [];
 
@@ -84,13 +87,13 @@ export async function POST(req: Request) {
       continue;
     }
     const ad = await db.ad.create({
-      data: { userId, clientId, productUrl: url, status: "QUEUED" },
+      data: { userId, clientId, format, productUrl: url, status: "QUEUED" },
     });
     accepted.push(ad.id);
   }
 
   if (accepted.length > 0) {
-    void runQueue(accepted, valid, userId, parsed.data.hookHint);
+    void runQueue(accepted, valid, userId, format, parsed.data.hookHint);
   }
 
   return NextResponse.json(
@@ -109,6 +112,7 @@ async function runQueue(
   adIds: string[],
   urls: string[],
   userId: string,
+  format: AdFormat,
   hookHint?: string,
 ) {
   for (let i = 0; i < adIds.length; i++) {
@@ -118,6 +122,7 @@ async function runQueue(
         productUrl: urls[i]!,
         hookHint,
         userId,
+        format,
       });
     } catch (err) {
       // One bad product page must not stop the rest of the catalogue.
