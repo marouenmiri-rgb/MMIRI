@@ -52,7 +52,14 @@ export function MakeFlow() {
   // typed their link on the front page doesn't have to type it twice.
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const preset = new URLSearchParams(window.location.search).get("url");
+    const params = new URLSearchParams(window.location.search);
+    // ?url= comes from the landing hero. The OS share sheet sends the page in
+    // whichever of these the sharing app chose, and some put the link inside
+    // free text, so the text is scanned for one too.
+    const preset =
+      params.get("url") ??
+      firstUrl(params.get("text")) ??
+      firstUrl(params.get("title"));
     if (!preset) return;
     setUrl(preset);
     void begin(preset);
@@ -345,4 +352,12 @@ function FormatPicker({
       </div>
     </div>
   );
+}
+
+/** Pulls the first http(s) link out of shared text, if there is one. */
+function firstUrl(text: string | null): string | null {
+  if (!text) return null;
+  const trimmed = text.trim();
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+  return trimmed.match(/https?:\/\/[^\s]+/i)?.[0] ?? null;
 }

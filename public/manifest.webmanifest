@@ -1,0 +1,27 @@
+{
+  "name": "AdGen — product link to ad video",
+  "short_name": "AdGen",
+  "description": "Paste a product link. Get a vertical video ad you can download and post.",
+  "id": "/",
+  "start_url": "/make",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f6f8fb",
+  "theme_color": "#635bff",
+  "categories": ["business", "productivity", "photo"],
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Make a video", "url": "/make", "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Dashboard", "url": "/dashboard" }
+  ],
+  "share_target": {
+    "action": "/make",
+    "method": "GET",
+    "params": { "title": "title", "text": "text", "url": "url" }
+  }
+}

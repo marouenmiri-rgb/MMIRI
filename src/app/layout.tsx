@@ -1,10 +1,31 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import { PwaProvider } from "@/components/PwaProvider";
 
 export const metadata: Metadata = {
   title: "AdGen — The AI ad lab for Shopify",
   description:
     "Paste a product URL. Watch a five-agent pipeline turn it into a short-form video ad. Find stores that need it. Ship outreach. All from one control room.",
+  manifest: "/manifest.webmanifest",
+  applicationName: "AdGen",
+  appleWebApp: { capable: true, title: "AdGen", statusBarStyle: "default" },
+  icons: {
+    icon: [
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: "/apple-touch-icon.png",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f6f8fb" },
+    { media: "(prefers-color-scheme: dark)", color: "#090a0e" },
+  ],
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
 };
 
 /**
@@ -55,7 +76,10 @@ export default function RootLayout({
       <head>
         <script dangerouslySetInnerHTML={{ __html: appearanceScript }} />
       </head>
-      <body>{children}</body>
+      <body>
+        {children}
+        <PwaProvider />
+      </body>
     </html>
   );
 }
