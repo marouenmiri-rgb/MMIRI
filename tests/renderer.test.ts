@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { toAss } from "@/agents/ffmpeg-renderer";
+import { buildAudio, toAss } from "@/agents/ffmpeg-renderer";
 
 type Scene = { text: string; imageRef: string; durationSec: number };
 
@@ -69,6 +69,81 @@ describe("toAss", () => {
       [{ text: "Save {50%} today", imageRef: "image-0", durationSec: 3 }],
       [3],
     );
-    expect(ass).toContain("Save (50%) today");
+    // Words are wrapped individually for karaoke timing, so check the escaped
+    // text survives rather than expecting one contiguous run.
+    expect(ass).toContain("(50%)");
+    // The only braces left must be ASS tags, never the user's.
+    const body = ass.slice(ass.indexOf("Dialogue:"));
+    expect(body).not.toContain("{50%}");
+    for (const tag of body.match(/\{[^}]*\}/g) ?? []) {
+      expect(tag.startsWith("{\\")).toBe(true);
+    }
+  });
+
+  it("times each word so the line finishes with the shot", () => {
+    const ass = toAss(
+      [{ text: "One two three four", imageRef: "image-0", durationSec: 4 }],
+      [4],
+    );
+    const line = ass.slice(ass.indexOf("Dialogue:"));
+    const spans = [...line.matchAll(/\\k(\d+)/g)].map((m) => Number(m[1]));
+    expect(spans).toHaveLength(4);
+    // Centiseconds across the scene, give or take the trailing hold.
+    const total = spans.reduce((a, b) => a + b, 0);
+    expect(total).toBeGreaterThan(350);
+    expect(total).toBeLessThanOrEqual(400);
+  });
+
+  it("gives longer words a longer beat than short ones", () => {
+    const ass = toAss(
+      [{ text: "a extraordinary", imageRef: "image-0", durationSec: 4 }],
+      [4],
+    );
+    const line = ass.slice(ass.indexOf("Dialogue:"));
+    const [first, second] = [...line.matchAll(/\\k(\d+)/g)].map((m) =>
+      Number(m[1]),
+    );
+    expect(second).toBeGreaterThan(first!);
+  });
+});
+
+describe("buildAudio", () => {
+  const args = (vo?: string, music?: string) =>
+    buildAudio(vo, music, 30).args.join(" ");
+
+  it("never passes -shortest, which truncates the edit to the narration", () => {
+    // The regression: a 30s edit with 6s of voiceover came out 6s long, the
+    // visuals cut off with the audio.
+    for (const a of [
+      args("vo.mp3", "bed.mp3"),
+      args("vo.mp3", undefined),
+      args(undefined, "bed.mp3"),
+      args(undefined, undefined),
+    ]) {
+      expect(a).not.toContain("-shortest");
+    }
+  });
+
+  it("pads a short voiceover rather than letting it end the mix", () => {
+    expect(args("vo.mp3", "bed.mp3")).toContain("apad");
+    expect(args("vo.mp3", undefined)).toContain("apad");
+  });
+
+  it("keeps its own levels by disabling amix normalisation", () => {
+    expect(args("vo.mp3", "bed.mp3")).toContain("normalize=0");
+  });
+
+  it("splits the voice, since a filter label cannot be consumed twice", () => {
+    const a = args("vo.mp3", "bed.mp3");
+    expect(a).toContain("asplit=2[vo][key]");
+    expect(a).toContain("sidechaincompress");
+  });
+
+  it("loops the bed so a short track still covers a long edit", () => {
+    expect(buildAudio("vo.mp3", "bed.mp3", 60).inputs).toContain("-stream_loop");
+  });
+
+  it("stays silent when there is nothing to play", () => {
+    expect(buildAudio(undefined, undefined, 30).args).toEqual(["-an"]);
   });
 });
