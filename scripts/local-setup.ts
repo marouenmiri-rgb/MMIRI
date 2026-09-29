@@ -13,13 +13,14 @@ import { existsSync, mkdirSync } from "node:fs";
 import path from "node:path";
 
 async function main() {
-  process.env.DATABASE_URL ??= "file:./prisma/dev.db";
+  process.env.DATABASE_URL ??= "file:./dev.db";
 
-  // Make sure the directory for the SQLite file exists.
+  // Make sure the directory for the SQLite file exists. Prisma resolves
+  // relative `file:` paths against the schema's directory (prisma/).
   const url = process.env.DATABASE_URL;
   const fileMatch = url.match(/^file:(.+)$/);
   if (fileMatch) {
-    const dir = path.dirname(path.resolve(process.cwd(), fileMatch[1]));
+    const dir = path.dirname(path.resolve(process.cwd(), "prisma", fileMatch[1]));
     if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
   }
 
@@ -54,7 +55,7 @@ async function main() {
   }
 }
 
-type DB = Awaited<ReturnType<typeof import("@prisma/client")["PrismaClient"]>> extends never ? never : InstanceType<typeof import("@prisma/client")["PrismaClient"]>;
+type DB = InstanceType<typeof import("@prisma/client")["PrismaClient"]>;
 
 async function seed(db: DB) {
   const user = await db.user.upsert({

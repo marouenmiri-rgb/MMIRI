@@ -119,6 +119,13 @@ export async function POST(req: Request) {
       },
     });
 
+    // Cartoons made without a product have nothing to attribute to, so they
+    // ship with the caption as written and no tracking link.
+    if (!ad.productUrl) {
+      created.push(post);
+      continue;
+    }
+
     const { link } = await createTrackingLink({
       userId,
       adId: ad.id,

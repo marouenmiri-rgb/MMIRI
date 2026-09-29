@@ -28,6 +28,19 @@ const NAV: { href: string; label: string; icon: React.ReactNode; hint?: string }
     ),
   },
   {
+    href: "/cartoons",
+    label: "Cartoons",
+    hint: "Funny",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4">
+        <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.6" />
+        <circle cx="9" cy="10" r="1.3" fill="currentColor" />
+        <circle cx="15" cy="10" r="1.3" fill="currentColor" />
+        <path d="M8 14.5c1 1.6 2.4 2.4 4 2.4s3-.8 4-2.4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+      </svg>
+    ),
+  },
+  {
     href: "/radar",
     label: "Hook Radar",
     hint: "Trends",

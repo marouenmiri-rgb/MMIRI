@@ -27,6 +27,10 @@ export const AD_STATUSES = [
 ] as const;
 export type AdStatus = (typeof AD_STATUSES)[number];
 
+/** PRODUCT = scraped product slideshow ad; CARTOON = AI-written animated sketch. */
+export const AD_FORMATS = ["PRODUCT", "CARTOON"] as const;
+export type AdFormat = (typeof AD_FORMATS)[number];
+
 export const JOB_KINDS = [
   "AD_GENERATION",
   "SHOPIFY_DISCOVERY",

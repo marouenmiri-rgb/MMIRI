@@ -58,6 +58,8 @@ deterministic and testable.
 | Video Generator    | scenes + voiceover            | `final.mp4` (URL)                                | FFmpeg         |
 | Shopify Finder     | niche / keyword               | `{ stores: [{ name, url, email, socials }] }`    | Playwright     |
 | Outreach           | store + ad URL                | `{ subject, body }`                              | Claude Sonnet  |
+| Cartoonist         | topic + style (+ product)     | `{ title, cast[], panels[], cta }` (sketch)      | Claude         |
+| Cartoon Renderer   | sketch                        | `cartoon.mp4` + `cartoon.png` (URLs)             | resvg + FFmpeg |
 
 ### Orchestration (MVP flow)
 
@@ -80,11 +82,34 @@ failure and **debuggable** per step.
 
 ---
 
+### Cartoon studio
+
+`/cartoons` turns a joke idea (plus an optional product URL) into a 15–30s
+animated cartoon:
+
+```
+POST /api/cartoons/generate { topic, style, productUrl? }
+     │
+     ├─► Scraper (only with productUrl)
+     ├─► Cartoonist  ──► sketch: cast + panels (setting, expressions,
+     │                   actions, dialogue, sfx) — constrained to enums the
+     │                   renderer can draw; src/cartoon/sanitize.ts clamps the rest
+     └─► Renderer    ──► per-frame SVG (src/cartoon/scene.ts) → resvg PNG →
+                         piped into ffmpeg; dialogue from ElevenLabs (one voice
+                         per character) or synthesized babble + SFX
+```
+
+A cartoon is an `Ad` row with `format = "CARTOON"` (the sketch lives in
+`scenesJson`, a caption-friendly script in `scriptJson`), so it ships through
+the same Ship panel, scheduler and autopilot captioner as product ads. Cartoons
+without a product have an empty `productUrl` and post without a tracking link.
+`GET /api/ads/:id/download` returns any rendered MP4 as an attachment.
+
 ## 3. Data Model (Postgres / Prisma)
 
 ```
 User          id, email, name, plan, createdAt
-Ad            id, userId, productUrl, status, scriptJson, scenesJson,
+Ad            id, userId, format, productUrl, topic, status, scriptJson, scenesJson,
               voiceoverUrl, videoUrl, createdAt
 Lead          id, userId, storeName, websiteUrl, email, socialsJson,
               source, createdAt

@@ -21,22 +21,7 @@ export async function runAdPipeline(args: {
 
   // Brand voice (if the user has one) gets pulled once and threaded through
   // every text-producing agent in this pipeline run.
-  let brandVoice: BrandVoice | null = null;
-  if (userId) {
-    const row = await db.brandVoice.findUnique({ where: { userId } });
-    if (row && row.tone && row.audience) {
-      brandVoice = {
-        name: row.name ?? undefined,
-        tone: row.tone,
-        audience: row.audience,
-        dos: (row.dosJson as string[] | null) ?? [],
-        donts: (row.dontsJson as string[] | null) ?? [],
-        examples:
-          (row.examplesJson as { context: string; copy: string }[] | null) ??
-          [],
-      };
-    }
-  }
+  const brandVoice = userId ? await loadBrandVoice(userId) : null;
 
   await db.ad.update({ where: { id: adId }, data: { status: "SCRAPING" } });
   const product = await scrapeProduct(productUrl);
@@ -84,5 +69,19 @@ export async function runAdPipeline(args: {
     voiceoverUrl: media.voiceoverUrl ?? undefined,
     videoUrl: media.videoUrl ?? undefined,
     thumbnailUrl: media.thumbnailUrl ?? product.images[0],
+  };
+}
+
+export async function loadBrandVoice(userId: string): Promise<BrandVoice | null> {
+  const row = await db.brandVoice.findUnique({ where: { userId } });
+  if (!row || !row.tone || !row.audience) return null;
+  return {
+    name: row.name ?? undefined,
+    tone: row.tone,
+    audience: row.audience,
+    dos: (row.dosJson as string[] | null) ?? [],
+    donts: (row.dontsJson as string[] | null) ?? [],
+    examples:
+      (row.examplesJson as { context: string; copy: string }[] | null) ?? [],
   };
 }
