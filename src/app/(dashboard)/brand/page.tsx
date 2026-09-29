@@ -145,7 +145,7 @@ export default function BrandPage() {
               <button
                 onClick={() => extract("url")}
                 disabled={!extractUrl || busy === "extracting"}
-                className="btn-lime"
+                className="btn-mint"
               >
                 {busy === "extracting" ? "Reading…" : "Extract from URL"}
               </button>
@@ -175,7 +175,7 @@ export default function BrandPage() {
 
         {err && <div className="card border border-danger/40 bg-danger/5 p-4 text-sm text-danger">{err}</div>}
         {savedAt && (
-          <div className="card border-lime/40 bg-lime/5 p-3 text-sm text-lime">
+          <div className="card border-mint/40 bg-mint/5 p-3 text-sm text-mint">
             Saved at {savedAt} · brand voice now active across all agents.
           </div>
         )}
@@ -205,7 +205,7 @@ export default function BrandPage() {
 
         <ListEditor
           title="Do"
-          accent="lime"
+          accent="mint"
           items={voice.dos}
           placeholder="e.g. use second person · drop the word 'just'"
           onChange={(items) => setVoice({ ...voice, dos: items })}
@@ -309,7 +309,7 @@ function ListEditor({
   items: string[];
   onChange: (items: string[]) => void;
   placeholder: string;
-  accent: "lime" | "danger";
+  accent: "mint" | "danger";
 }) {
   return (
     <section className="card p-5">
@@ -317,7 +317,7 @@ function ListEditor({
         <h3
           className={
             "font-display text-lg tracking-tight " +
-            (accent === "lime" ? "text-lime" : "text-danger")
+            (accent === "mint" ? "text-mint" : "text-danger")
           }
         >
           {title}

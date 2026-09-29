@@ -4,6 +4,7 @@ import { getCurrentUserId } from "@/lib/auth";
 import { hasClaude, hasDb } from "@/lib/env";
 import { generateHookVariants } from "@/agents/variants";
 import type { AdScript } from "@/agents/types";
+import { packJson, unpackJson } from "@/lib/json";
 
 export const runtime = "nodejs";
 export const maxDuration = 120;
@@ -51,7 +52,7 @@ export async function GET(
       id: v.id,
       label: v.label,
       angle: v.angle,
-      scriptJson: v.scriptJson,
+      scriptJson: unpackJson<Record<string, unknown>>(v.scriptJson, {}),
       winner: v.winner,
       retired: v.retired,
       createdAt: v.createdAt,
@@ -78,7 +79,8 @@ export async function POST(
   const ad = await db.ad.findFirst({
     where: { id: params.id, userId },
   });
-  if (!ad || !ad.scriptJson) {
+  const script = ad ? unpackJson<AdScript | null>(ad.scriptJson, null) : null;
+  if (!ad || !script) {
     return NextResponse.json({ error: "Ad or script not found" }, { status: 404 });
   }
 
@@ -93,7 +95,7 @@ export async function POST(
 
   const variants = await generateHookVariants({
     product,
-    script: ad.scriptJson as AdScript,
+    script,
   });
 
   const created = await db.$transaction(
@@ -104,13 +106,13 @@ export async function POST(
           adId: ad.id,
           label: v.label,
           angle: v.angle,
-          scriptJson: {
+          scriptJson: packJson({
             hook: v.hook,
-            problem: (ad.scriptJson as AdScript).problem,
-            solution: (ad.scriptJson as AdScript).solution,
-            cta: (ad.scriptJson as AdScript).cta,
+            problem: script.problem,
+            solution: script.solution,
+            cta: script.cta,
             fullScript: v.fullScript,
-          } as object,
+          }),
         },
       }),
     ),

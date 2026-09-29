@@ -76,7 +76,7 @@ ${args.rawCopy.slice(0, 12_000)}
 
 Distill the brand voice. Return JSON only.`;
 
-  return askJSON<BrandVoice>({ system: SYSTEM, user, schema: SCHEMA });
+  return askJSON<BrandVoice>({ system: SYSTEM, user, schema: SCHEMA, role: "copy" });
 }
 
 /**

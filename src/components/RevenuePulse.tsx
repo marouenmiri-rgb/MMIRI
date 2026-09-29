@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { themeColor } from "@/lib/theme";
 
 export type PulsePoint = { day: string; cents: number };
 
@@ -91,15 +92,14 @@ export function RevenuePulse({
           >
             <defs>
               <linearGradient id="pulse-g" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0" stopColor="#c3ff3e" stopOpacity="0.5" />
-                <stop offset="1" stopColor="#c3ff3e" stopOpacity="0" />
+                <stop offset="0" style={{ stopColor: themeColor.mint }} stopOpacity="0.45" />
+                <stop offset="1" style={{ stopColor: themeColor.mint }} stopOpacity="0" />
               </linearGradient>
             </defs>
             <path d={path.area} fill="url(#pulse-g)" />
             <path
               d={path.line}
-              fill="none"
-              stroke="#c3ff3e"
+              style={{ fill: "none", stroke: themeColor.mint }}
               strokeWidth={0.8}
               strokeLinejoin="round"
               strokeLinecap="round"
@@ -110,7 +110,7 @@ export function RevenuePulse({
               y1="34"
               x2="100"
               y2="34"
-              stroke="#2a2a38"
+              style={{ stroke: themeColor.line }}
               strokeDasharray="1 2"
               strokeWidth="0.3"
             />
@@ -123,7 +123,7 @@ export function RevenuePulse({
               className="absolute -translate-x-1/2 animate-float"
               style={{ left: `${f.x}%`, bottom: "20%" }}
             >
-              <div className="rounded-full border border-lime bg-lime/20 px-2 py-0.5 font-mono text-[11px] text-lime">
+              <div className="rounded-full border border-mint bg-mint/20 px-2 py-0.5 font-mono text-[11px] text-mint">
                 +{formatMoney(f.amount, currency)}
               </div>
             </div>

@@ -1,10 +1,12 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { db } from "@/lib/db";
-import { getCurrentUserId } from "@/lib/auth";
+import { getOrCreateGuestUserId } from "@/lib/auth";
 import { hasClaude, hasDb } from "@/lib/env";
 import { runAdPipeline } from "@/agents/orchestrator";
+import { asFormat } from "@/agents/formats";
 import { checkLimit } from "@/lib/billing";
+import { clientIp, rateLimit, tooManyRequests } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
@@ -12,6 +14,10 @@ export const maxDuration = 300;
 const Body = z.object({
   productUrl: z.string().url(),
   hookHint: z.string().min(2).max(280).optional(),
+  /** Attributes the ad — and everything it earns — to one client. */
+  clientId: z.string().min(1).optional(),
+  /** "short" | "standard" | "long". Anything else falls back to standard. */
+  format: z.string().optional(),
 });
 
 export async function POST(req: Request) {
@@ -33,7 +39,14 @@ export async function POST(req: Request) {
     );
   }
 
-  const userId = await getCurrentUserId();
+  // The only endpoint that will mint an identity: a visitor spends their free
+  // videos first and signs up afterwards, keeping what they already made.
+  const burst = rateLimit(`generate:${clientIp(req)}`, 12, 10 * 60);
+  if (!burst.ok) {
+    return tooManyRequests(burst, "Too many videos started. Try again shortly.");
+  }
+
+  const userId = await getOrCreateGuestUserId(req.headers.get("user-agent"));
   if (!userId) return NextResponse.json({ error: "No user" }, { status: 401 });
 
   // 402 Payment Required when over plan quota — surface the upgrade path.
@@ -52,9 +65,26 @@ export async function POST(req: Request) {
     );
   }
 
+  // Only accept a client the caller actually owns.
+  let clientId: string | null = null;
+  if (parsed.data.clientId) {
+    const owned = await db.client.findFirst({
+      where: { id: parsed.data.clientId, userId },
+      select: { id: true },
+    });
+    if (!owned) {
+      return NextResponse.json({ error: "Unknown client" }, { status: 400 });
+    }
+    clientId = owned.id;
+  }
+
+  const format = asFormat(parsed.data.format);
+
   const ad = await db.ad.create({
     data: {
       userId,
+      clientId,
+      format,
       productUrl: parsed.data.productUrl,
       status: "QUEUED",
     },
@@ -65,6 +95,7 @@ export async function POST(req: Request) {
     productUrl: parsed.data.productUrl,
     hookHint: parsed.data.hookHint,
     userId,
+    format,
   }).catch(async (err) => {
     await db.ad.update({
       where: { id: ad.id },

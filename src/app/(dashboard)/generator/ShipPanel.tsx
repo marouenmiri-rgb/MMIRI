@@ -300,7 +300,7 @@ export function ShipPanel({ adId, isReady }: { adId: string; isReady: boolean })
             {result ?? (preset === "now" ? "Publishes immediately." : "Scheduled — the cron publisher takes it from here.")}
           </div>
           <button
-            className={preset === "now" ? "btn-lime" : "btn-primary"}
+            className={preset === "now" ? "btn-mint" : "btn-primary"}
             onClick={ship}
             disabled={shipBusy || !anyConnected}
           >

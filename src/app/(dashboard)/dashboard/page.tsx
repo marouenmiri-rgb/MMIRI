@@ -2,22 +2,91 @@ import { TopBar } from "@/components/TopBar";
 import { db } from "@/lib/db";
 import { hasDb } from "@/lib/env";
 import { getCurrentUserId } from "@/lib/auth";
-import { fixtureAds } from "@/lib/fixtures";
 import { AgentPipeline } from "@/components/AgentPipeline";
 import { AdReelCard } from "@/components/AdReelCard";
 import { Sparkline } from "@/components/Sparkline";
 import { HeroCapture } from "./HeroCapture";
+import { themeColor } from "@/lib/theme";
+import { GettingStarted } from "@/components/GettingStarted";
 
 async function loadAds() {
-  if (!hasDb) return fixtureAds as unknown as AdRow[];
+  if (!hasDb) return [];
   const userId = await getCurrentUserId();
-  if (!userId) return fixtureAds as unknown as AdRow[];
+  if (!userId) return [];
   const ads = await db.ad.findMany({
     where: { userId },
     orderBy: { createdAt: "desc" },
     take: 18,
   });
-  return ads.length ? (ads as unknown as AdRow[]) : (fixtureAds as unknown as AdRow[]);
+  return ads as unknown as AdRow[];
+}
+
+/** Counts per day for the last 10 days, oldest first. */
+function dailySeries(dates: Date[]): number[] {
+  const buckets = new Map<string, number>();
+  for (const d of dates) {
+    const k = d.toISOString().slice(0, 10);
+    buckets.set(k, (buckets.get(k) ?? 0) + 1);
+  }
+  const out: number[] = [];
+  for (let i = 9; i >= 0; i--) {
+    const d = new Date();
+    d.setUTCHours(0, 0, 0, 0);
+    d.setUTCDate(d.getUTCDate() - i);
+    out.push(buckets.get(d.toISOString().slice(0, 10)) ?? 0);
+  }
+  return out;
+}
+
+/**
+ * Every figure and every sparkline point below is counted from real rows. The
+ * trend lines used to be hard-coded, which meant a rising curve sat under a
+ * zero on a brand new account.
+ */
+async function loadStats() {
+  const empty = {
+    adsReadyDates: [] as Date[],
+    leadDates: [] as Date[],
+    replyDates: [] as Date[],
+    leadsTotal: 0,
+    repliesThisWeek: 0,
+  };
+  if (!hasDb) return empty;
+  const userId = await getCurrentUserId();
+  if (!userId) return empty;
+
+  const since = new Date();
+  since.setUTCHours(0, 0, 0, 0);
+  since.setUTCDate(since.getUTCDate() - 9);
+  const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
+  const [readyAds, leads, leadsTotal, replies, repliesThisWeek] =
+    await Promise.all([
+      db.ad.findMany({
+        where: { userId, status: "READY", createdAt: { gte: since } },
+        select: { createdAt: true },
+      }),
+      db.lead.findMany({
+        where: { userId, createdAt: { gte: since } },
+        select: { createdAt: true },
+      }),
+      db.lead.count({ where: { userId } }),
+      db.outreach.findMany({
+        where: { campaign: { userId }, repliedAt: { gte: since } },
+        select: { repliedAt: true },
+      }),
+      db.outreach.count({
+        where: { campaign: { userId }, repliedAt: { gte: weekAgo } },
+      }),
+    ]);
+
+  return {
+    adsReadyDates: readyAds.map((a) => a.createdAt),
+    leadDates: leads.map((l) => l.createdAt),
+    replyDates: replies.map((r) => r.repliedAt!).filter(Boolean),
+    leadsTotal,
+    repliesThisWeek,
+  };
 }
 
 type AdRow = {
@@ -31,34 +100,53 @@ type AdRow = {
 };
 
 export default async function DashboardPage() {
-  const ads = await loadAds();
+  const [ads, s, userId] = await Promise.all([
+    loadAds(),
+    loadStats(),
+    getCurrentUserId(),
+  ]);
   const active = ads.find((a) =>
     ["SCRAPING", "WRITING", "DIRECTING", "RENDERING"].includes(a.status),
   );
 
-  // Fake-but-plausible trend lines for the hero stats row. Wire to real
-  // aggregates when usage data exists.
+  const adsReady = ads.filter((a) => a.status === "READY").length;
+  const pipelinesLive = ads.filter((a) =>
+    ["SCRAPING", "WRITING", "DIRECTING", "RENDERING"].includes(a.status),
+  ).length;
+
   const stats = [
     {
       label: "Ads shipped",
-      value: ads.filter((a) => a.status === "READY").length.toString().padStart(2, "0"),
-      delta: "+2 today",
-      trend: [2, 3, 3, 5, 4, 6, 8, 7, 9, 11],
-      color: "#c3ff3e",
-      fill: "rgba(195,255,62,0.15)",
+      value: adsReady.toString().padStart(2, "0"),
+      delta: `${s.adsReadyDates.length} in 10 days`,
+      trend: dailySeries(s.adsReadyDates),
+      color: themeColor.mint,
+      fill: themeColor.mintSoft,
     },
     {
       label: "Pipelines live",
-      value: ads.filter((a) =>
-        ["SCRAPING", "WRITING", "DIRECTING", "RENDERING"].includes(a.status),
-      ).length.toString().padStart(2, "0"),
+      value: pipelinesLive.toString().padStart(2, "0"),
       delta: active ? "rendering" : "idle",
-      trend: [1, 2, 1, 3, 2, 4, 3, 2, 1, 2],
-      color: "#a78bfa",
-      fill: "rgba(167,139,250,0.14)",
+      trend: dailySeries([]),
+      color: themeColor.accent,
+      fill: themeColor.accentSoft,
     },
-    { label: "Leads on file", value: "0", delta: "ready", trend: [0, 1, 2, 2, 3, 5, 5, 6, 7, 9], color: "#a78bfa", fill: "rgba(167,139,250,0.14)" },
-    { label: "Replies this week", value: "0", delta: "first send pending", trend: [0, 0, 1, 1, 2, 2, 3, 4, 4, 5], color: "#c3ff3e", fill: "rgba(195,255,62,0.15)" },
+    {
+      label: "Leads on file",
+      value: s.leadsTotal.toString(),
+      delta: s.leadsTotal > 0 ? "ready" : "none yet",
+      trend: dailySeries(s.leadDates),
+      color: themeColor.accent,
+      fill: themeColor.accentSoft,
+    },
+    {
+      label: "Replies this week",
+      value: s.repliesThisWeek.toString(),
+      delta: s.repliesThisWeek > 0 ? "this week" : "first send pending",
+      trend: dailySeries(s.replyDates),
+      color: themeColor.mint,
+      fill: themeColor.mintSoft,
+    },
   ];
 
   return (
@@ -136,6 +224,8 @@ export default async function DashboardPage() {
             </div>
           ))}
         </section>
+
+        {userId ? <GettingStarted userId={userId} /> : null}
 
         {/* Reel wall */}
         <section>

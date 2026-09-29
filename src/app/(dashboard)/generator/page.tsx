@@ -6,6 +6,7 @@ import { StatusPill } from "@/components/StatusPill";
 import { AgentPipeline, PIPELINE } from "@/components/AgentPipeline";
 import { ShipPanel } from "./ShipPanel";
 import { VariantLab } from "./VariantLab";
+import { BulkPanel } from "./BulkPanel";
 
 type AdResult = {
   id: string;
@@ -35,6 +36,24 @@ export default function GeneratorPage() {
   const [ad, setAd] = useState<AdResult | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [log, setLog] = useState<string[]>([]);
+  // Assigning the ad to a client is what routes its revenue onto that client's
+  // report. Left as "my own store" when the roster is empty.
+  const [clients, setClients] = useState<{ id: string; name: string }[]>([]);
+  const [clientId, setClientId] = useState("");
+  const [format, setFormat] = useState("standard");
+
+  useEffect(() => {
+    fetch("/api/clients")
+      .then((r) => (r.ok ? r.json() : { clients: [] }))
+      .then((d) =>
+        setClients(
+          (d.clients ?? [])
+            .filter((c: { archived: boolean }) => !c.archived)
+            .map((c: { id: string; name: string }) => ({ id: c.id, name: c.name })),
+        ),
+      )
+      .catch(() => setClients([]));
+  }, []);
 
   // If ?id= or ?url= are in the URL, jump to that context.
   useEffect(() => {
@@ -62,7 +81,11 @@ export default function GeneratorPage() {
       const r = await fetch("/api/ads/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ productUrl: url }),
+        body: JSON.stringify({
+          productUrl: url,
+          format,
+          ...(clientId ? { clientId } : {}),
+        }),
       });
       if (!r.ok) {
         const body = await r.json().catch(() => ({}));
@@ -138,6 +161,28 @@ export default function GeneratorPage() {
                 {busy ? "Running…" : "Roll pipeline"}
               </button>
             </div>
+            <div className="mt-3">
+              <FormatPicker value={format} onChange={setFormat} disabled={busy} />
+            </div>
+            {clients.length > 0 && (
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-dim">
+                  For
+                </span>
+                <select
+                  className="input max-w-[280px] py-1.5 text-[13px]"
+                  value={clientId}
+                  onChange={(e) => setClientId(e.target.value)}
+                >
+                  <option value="">My own store</option>
+                  {clients.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
             {err ? (
               <p className="mt-3 text-sm text-danger">{err}</p>
             ) : (
@@ -145,6 +190,7 @@ export default function GeneratorPage() {
                 Shopify & Amazon PDPs work best. Runs: Observe → Write → Direct → Render → Ship.
               </p>
             )}
+            <BulkPanel />
           </form>
         )}
 
@@ -252,9 +298,17 @@ export default function GeneratorPage() {
                     Preview · 9:16
                   </div>
                   {ad.videoUrl && (
-                    <span className="chip-live">
-                      <span className="dot-live" /> Ready
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="chip-live">
+                        <span className="dot-live" /> Ready
+                      </span>
+                      <a
+                        className="btn-ink"
+                        href={`/api/ads/${ad.id}/download`}
+                      >
+                        Download
+                      </a>
+                    </div>
                   )}
                 </div>
                 <div className="relative mx-auto aspect-[9/16] w-full max-w-[280px] overflow-hidden rounded-2xl border border-line-2 bg-base-0">
@@ -298,7 +352,7 @@ export default function GeneratorPage() {
                     <span className="flex gap-1">
                       <span className="h-2 w-2 rounded-full bg-danger/60" />
                       <span className="h-2 w-2 rounded-full bg-warn/60" />
-                      <span className="h-2 w-2 rounded-full bg-lime/60" />
+                      <span className="h-2 w-2 rounded-full bg-mint/60" />
                     </span>
                     <span className="font-mono text-[11px] uppercase tracking-[0.22em] text-ink-mid">
                       console
@@ -343,6 +397,48 @@ function SkeletonLines() {
           style={{ width: `${90 - i * 12}%` }}
         />
       ))}
+    </div>
+  );
+}
+
+/** Runtime picker. Longer is not better by default, so Standard leads. */
+function FormatPicker({
+  value,
+  onChange,
+  disabled,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  disabled?: boolean;
+}) {
+  const OPTIONS = [
+    { id: "short", label: "15s", hint: "Best completion" },
+    { id: "standard", label: "30s", hint: "The default" },
+    { id: "long", label: "60s", hint: "Room for proof" },
+  ];
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-dim">
+        Length
+      </span>
+      <div className="flex gap-1 rounded-full border border-line-1 bg-base-3/60 p-1">
+        {OPTIONS.map((o) => (
+          <button
+            key={o.id}
+            type="button"
+            disabled={disabled}
+            onClick={() => onChange(o.id)}
+            title={o.hint}
+            className={`rounded-full px-3 py-1 text-[12px] font-medium transition-all duration-200 ease-ios disabled:opacity-50 ${
+              value === o.id
+                ? "bg-base-1 text-ink-hi shadow-xs"
+                : "text-ink-lo hover:text-ink-hi"
+            }`}
+          >
+            {o.label}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }

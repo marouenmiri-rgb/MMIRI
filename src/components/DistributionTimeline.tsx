@@ -18,7 +18,7 @@ const HOURS = 24;
 /**
  * Horizontal timeline with one swim lane per platform. Shows a 7-day
  * window starting today. Each post is a chip positioned at its
- * scheduled hour. Published = lime, scheduled = volt, failed = danger.
+ * scheduled hour. Published = mint, scheduled = volt, failed = danger.
  */
 export function DistributionTimeline({ posts }: { posts: TimelinePost[] }) {
   const start = new Date();
@@ -126,7 +126,7 @@ function PostChip({ post, color }: { post: TimelinePost; color: string }) {
         href={post.externalUrl ?? "#"}
         target="_blank"
         rel="noreferrer"
-        className="block rounded-md border border-lime/40 bg-lime/15 px-2 py-1 text-[11px] text-lime hover:bg-lime/25"
+        className="block rounded-md border border-mint/40 bg-mint/15 px-2 py-1 text-[11px] text-mint hover:bg-mint/25"
         title={`Published · ${title}`}
       >
         <span className="font-mono">

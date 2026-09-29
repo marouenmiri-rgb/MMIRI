@@ -95,7 +95,7 @@ export function BillingPanel({
           label="Posts published"
           used={usage.postsUsed}
           limit={limits.postsPerMonth}
-          color="lime"
+          color="mint"
         />
       </div>
 
@@ -106,7 +106,7 @@ export function BillingPanel({
             <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-ink-dim">
               Attributed revenue this period
             </div>
-            <div className="mt-1 font-display text-3xl tracking-tightest text-lime">
+            <div className="mt-1 font-display text-3xl tracking-tightest text-mint">
               {money(usage.revenueAttributedCents)}
             </div>
           </div>

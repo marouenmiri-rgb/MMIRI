@@ -1,5 +1,6 @@
 import { TopBar } from "@/components/TopBar";
 import { BillingPanel } from "@/components/BillingPanel";
+import { AppearancePanel } from "@/components/AppearancePanel";
 import { hasClaude, hasDb } from "@/lib/env";
 import { PLANS, computeUsage, currentTier, hasStripe } from "@/lib/billing";
 import { getCurrentUserId } from "@/lib/auth";
@@ -64,7 +65,7 @@ export default async function SettingsPage({
     {
       label: "Database",
       ok: hasDb,
-      hint: "Postgres via Prisma · DATABASE_URL",
+      hint: "SQLite via Prisma · DATABASE_URL",
       critical: true,
     },
     {
@@ -118,7 +119,7 @@ export default async function SettingsPage({
 
       <div className="space-y-6 p-8">
         {searchParams.upgraded && (
-          <div className="card border-lime/40 bg-lime/5 p-4 text-sm text-lime">
+          <div className="card border-mint/40 bg-mint/5 p-4 text-sm text-mint">
             Upgraded to{" "}
             <span className="font-semibold">
               {PLANS[searchParams.upgraded as keyof typeof PLANS]?.label ??
@@ -127,6 +128,9 @@ export default async function SettingsPage({
             {searchParams.demo ? " (demo mode · no card charged)" : ""} · welcome.
           </div>
         )}
+
+        {/* Appearance */}
+        <AppearancePanel />
 
         {/* Billing */}
         <BillingPanel
@@ -221,8 +225,8 @@ function HealthDot({ ok }: { ok: boolean }) {
   if (ok) {
     return (
       <span className="relative inline-flex h-2.5 w-2.5">
-        <span className="absolute inset-0 rounded-full bg-lime animate-pulseRing" />
-        <span className="relative inline-block h-2.5 w-2.5 rounded-full bg-lime" />
+        <span className="absolute inset-0 rounded-full bg-mint animate-pulseRing" />
+        <span className="relative inline-block h-2.5 w-2.5 rounded-full bg-mint" />
       </span>
     );
   }

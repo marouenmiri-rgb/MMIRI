@@ -4,16 +4,59 @@ import { PlatformIcon, PLATFORM_META, type PlatformKey } from "@/components/Plat
 import { db } from "@/lib/db";
 import { hasDb } from "@/lib/env";
 import { getCurrentUserId } from "@/lib/auth";
-import { fixtureRevenue } from "@/lib/fixtures";
 import { RevenueFeed } from "./RevenueFeed";
 import { InsightsPanel } from "./InsightsPanel";
 
 type Summary = Awaited<ReturnType<typeof loadSummary>>;
 
+/**
+ * A real zero. Typed explicitly rather than derived from loadSummary, which
+ * would make the Summary alias reference itself.
+ */
+function emptySummary() {
+  const series: { day: string; cents: number }[] = [];
+  for (let i = 29; i >= 0; i--) {
+    const d = new Date();
+    d.setUTCHours(0, 0, 0, 0);
+    d.setUTCDate(d.getUTCDate() - i);
+    series.push({ day: d.toISOString().slice(0, 10), cents: 0 });
+  }
+  const zero = { clicks: 0, conversions: 0, revenueCents: 0, posts: 0 };
+  return {
+    totals: { clicks: 0, conversions: 0, revenueCents: 0 },
+    byPlatform: {
+      TIKTOK: { ...zero },
+      INSTAGRAM: { ...zero },
+      YOUTUBE: { ...zero },
+      X: { ...zero },
+    } as Record<
+      PlatformKey,
+      { clicks: number; conversions: number; revenueCents: number; posts: number }
+    >,
+    topAds: [] as {
+      adId: string;
+      title: string;
+      thumbnailUrl: string | null;
+      revenueCents: number;
+      clicks: number;
+      conversions: number;
+    }[],
+    series,
+    recent: [] as {
+      id: string;
+      revenueCents: number;
+      currency: string;
+      occurredAt: string;
+      platform: PlatformKey | null;
+      adTitle: string | null;
+    }[],
+  };
+}
+
 async function loadSummary() {
-  if (!hasDb) return fixtureRevenue;
+  if (!hasDb) return emptySummary();
   const userId = await getCurrentUserId();
-  if (!userId) return fixtureRevenue;
+  if (!userId) return emptySummary();
 
   const since = new Date(Date.now() - 1000 * 60 * 60 * 24 * 30);
 
@@ -229,7 +272,7 @@ export default async function RevenuePage() {
                       {a.clicks} clicks · {a.conversions} conversions
                     </div>
                   </div>
-                  <div className="font-display text-xl tracking-tight text-lime">
+                  <div className="font-display text-xl tracking-tight text-mint">
                     {money(a.revenueCents)}
                   </div>
                 </li>
@@ -273,7 +316,7 @@ function Tile({
       <div
         className={
           "mt-3 font-display text-4xl tracking-tightest " +
-          (accent ? "text-lime" : "text-ink-hi")
+          (accent ? "text-mint" : "text-ink-hi")
         }
       >
         {value}

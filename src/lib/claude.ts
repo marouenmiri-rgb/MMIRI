@@ -1,7 +1,29 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { env, hasClaude } from "./env";
 
-export const CLAUDE_MODEL = "claude-opus-4-7";
+/**
+ * Model per job, not one model for everything.
+ *
+ * Every agent used to run Opus at high effort. For the work these agents
+ * actually do — four lines of ad copy, a shot list, a caption — that is
+ * several times the cost for no difference a buyer would notice, and it put
+ * the 50-video tier close to underwater. Reasoning-heavy jobs keep the bigger
+ * model; the rest drop down.
+ *
+ * Overridable per deployment so pricing can be retuned without a code change.
+ */
+export const MODELS = {
+  /** Short, high-craft copy. Quality here is what the customer sees. */
+  copy: env.CLAUDE_MODEL_COPY,
+  /** Structured planning over a handful of images. */
+  plan: env.CLAUDE_MODEL_PLAN,
+  /** Mechanical reformatting — captions, subject lines. */
+  fast: env.CLAUDE_MODEL_FAST,
+  /** Multi-step analysis over a whole account's numbers. */
+  reason: env.CLAUDE_MODEL_REASON,
+} as const;
+
+export type ModelRole = keyof typeof MODELS;
 
 let client: Anthropic | null = null;
 
@@ -18,50 +40,70 @@ export function claude(): Anthropic {
 /**
  * Ask Claude for a JSON object matching the given schema.
  *
- * - Adaptive thinking + high effort for quality reasoning.
- * - Each agent's system prompt is marked with `cache_control: ephemeral`, so
- *   repeated calls within ~5 minutes hit the cache (~90% cheaper for the
- *   system block). Invariant: system text must be byte-stable per agent —
- *   no timestamps, per-user context, or JSON.stringify of unsorted objects.
+ * Each agent's system prompt is sent with `cache_control: ephemeral`, so
+ * repeated calls within the cache window are far cheaper for that block.
+ * Invariant: system text must be byte-stable per agent — no timestamps, no
+ * per-user context, no JSON.stringify of unsorted objects.
  */
 export async function askJSON<T>(opts: {
   system: string;
   user: string;
   schema: unknown;
   maxTokens?: number;
+  /** Which model tier this job needs. Defaults to the cheap one on purpose. */
+  role?: ModelRole;
+  /** Extended thinking budget, in tokens. Omit for no thinking. */
+  thinkingTokens?: number;
 }): Promise<T> {
-  const params = {
-    model: CLAUDE_MODEL,
-    max_tokens: opts.maxTokens ?? 4096,
-    thinking: { type: "adaptive" as const },
-    output_config: {
-      effort: "high",
-      format: { type: "json_schema", schema: opts.schema },
-    },
+  const model = MODELS[opts.role ?? "fast"];
+  const maxTokens = opts.maxTokens ?? 2048;
+
+  const resp = await claude().messages.create({
+    model,
+    max_tokens: maxTokens,
+    ...(opts.thinkingTokens
+      ? {
+          // The API requires max_tokens to exceed the thinking budget.
+          max_tokens: Math.max(maxTokens, opts.thinkingTokens + 1024),
+          thinking: { type: "enabled", budget_tokens: opts.thinkingTokens },
+        }
+      : {}),
     system: [
       {
-        type: "text" as const,
+        type: "text",
         text: opts.system,
-        cache_control: { type: "ephemeral" as const },
+        cache_control: { type: "ephemeral" },
       },
     ],
-    messages: [{ role: "user" as const, content: opts.user }],
-  };
-
-  const resp = await claude().messages.create(
-    params as unknown as Anthropic.Messages.MessageCreateParamsNonStreaming,
-  );
+    messages: [
+      {
+        role: "user",
+        // The schema travels with the request so the contract and the prompt
+        // can never drift apart.
+        content: `${opts.user}\n\nReturn ONLY a JSON object matching this schema, with no prose and no code fence:\n${JSON.stringify(opts.schema)}`,
+      },
+    ],
+  });
 
   for (const block of resp.content) {
     if (block.type === "text") {
-      try {
-        return JSON.parse(block.text) as T;
-      } catch {
-        const match = block.text.match(/\{[\s\S]*\}/);
-        if (match) return JSON.parse(match[0]) as T;
-        throw new Error("Claude did not return valid JSON");
-      }
+      return parseJson<T>(block.text);
     }
   }
   throw new Error("Claude returned no text content");
+}
+
+/** Tolerates a code fence or stray prose around the object. */
+function parseJson<T>(text: string): T {
+  const cleaned = text
+    .trim()
+    .replace(/^```(?:json)?\s*/i, "")
+    .replace(/\s*```$/, "");
+  try {
+    return JSON.parse(cleaned) as T;
+  } catch {
+    const match = cleaned.match(/\{[\s\S]*\}/);
+    if (match) return JSON.parse(match[0]) as T;
+    throw new Error("Claude did not return valid JSON");
+  }
 }

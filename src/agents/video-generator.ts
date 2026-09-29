@@ -3,6 +3,7 @@ import { promises as fs } from "node:fs";
 import type { AdScript, ProductFacts, SceneBreakdown } from "./types";
 import { renderSlideshow } from "./ffmpeg-renderer";
 import { synthesizeVoiceover } from "./voiceover";
+import { pickMusicBed } from "./music";
 
 /**
  * Full video generation: voiceover (ElevenLabs) + slideshow (FFmpeg).
@@ -30,10 +31,13 @@ export async function renderVideo(args: {
     outDir: publicDir,
   }).catch(() => null);
 
+  const musicPath = await pickMusicBed();
+
   const res = await renderSlideshow({
     product: args.product,
     breakdown: args.breakdown,
     voiceoverPath: voiceoverPath ?? undefined,
+    musicPath: musicPath ?? undefined,
     outDir: publicDir,
   });
 

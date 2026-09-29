@@ -4,6 +4,7 @@ import { getCurrentUserId } from "@/lib/auth";
 import { hasClaude, hasDb } from "@/lib/env";
 import { generateInsights } from "@/agents/insights";
 import type { SocialPlatform } from "@/social/types";
+import { packJson, unpackJson } from "@/lib/json";
 
 export const runtime = "nodejs";
 export const maxDuration = 120;
@@ -23,7 +24,7 @@ export async function GET() {
     orderBy: { createdAt: "desc" },
     take: 20,
   });
-  return NextResponse.json({ insights });
+  return NextResponse.json({ insights: insights.map(toClientInsight) });
 }
 
 export async function POST() {
@@ -44,13 +45,16 @@ export async function POST() {
           kind: s.kind,
           title: s.title,
           body: s.body,
-          evidenceJson: s.action ? ({ action: s.action } as object) : undefined,
+          evidenceJson: s.action ? packJson({ action: s.action }) : undefined,
         },
       }),
     ),
   );
 
-  return NextResponse.json({ summary: out.summary, insights: created });
+  return NextResponse.json({
+    summary: out.summary,
+    insights: created.map(toClientInsight),
+  });
 }
 
 async function buildInput(userId: string) {
@@ -153,7 +157,7 @@ async function buildInput(userId: string) {
 
   const byHook = variants
     .map((v) => {
-      const s = v.scriptJson as { hook?: string } | null;
+      const s = unpackJson<{ hook?: string }>(v.scriptJson, {});
       return {
         label: v.label,
         hook: s?.hook ?? "",
@@ -184,5 +188,16 @@ async function buildInput(userId: string) {
       (a, b) => b.revenueCents - a.revenueCents,
     ),
     byHook,
+  };
+}
+
+/** `evidenceJson` is TEXT in SQLite; the panel expects a real object. */
+function toClientInsight<T extends { evidenceJson: string | null }>(insight: T) {
+  return {
+    ...insight,
+    evidenceJson: unpackJson<{ action?: string } | null>(
+      insight.evidenceJson,
+      null,
+    ),
   };
 }

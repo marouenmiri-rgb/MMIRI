@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import clsx from "clsx";
 import { Logo } from "./Logo";
+import { themeColor } from "@/lib/theme";
 
 type Tier = "FREE" | "STARTER" | "STUDIO" | "SCALE" | "AGENCY";
 
@@ -19,7 +20,7 @@ type Plan = {
     postsPerMonth: number;
     revenueShareBps?: number;
   };
-  color: "volt" | "lime" | "ink";
+  color: "volt" | "mint" | "ink";
 };
 
 type Props = {
@@ -130,12 +131,12 @@ export function PricingComparator({ plans, hasStripe }: Props) {
               onChange={(e) => setRevenueUsd(Number(e.target.value))}
               className="mt-6 w-full"
               style={{
-                background: `linear-gradient(90deg, #a78bfa 0%, #c3ff3e ${(revenueUsd / 100000) * 100}%, rgba(255,255,255,0.06) ${(revenueUsd / 100000) * 100}%)`,
+                background: `linear-gradient(90deg, ${themeColor.accent} 0%, ${themeColor.mint} ${(revenueUsd / 100000) * 100}%, rgb(var(--line-2)) ${(revenueUsd / 100000) * 100}%)`,
                 height: 6,
                 borderRadius: 999,
                 WebkitAppearance: "none",
                 appearance: "none",
-                accentColor: "#a78bfa",
+                accentColor: themeColor.accent,
               }}
             />
             <div className="mt-2 flex justify-between font-mono text-[10px] uppercase tracking-[0.22em] text-ink-dim">
@@ -165,7 +166,7 @@ export function PricingComparator({ plans, hasStripe }: Props) {
               key={p.tier}
               className={clsx(
                 "glass relative flex flex-col overflow-hidden p-8 transition-all duration-500 ease-ios hover:-translate-y-1",
-                isBest ? "shadow-glow-lime" : "",
+                isBest ? "shadow-glow-mint" : "",
               )}
             >
               {isBest && (
@@ -187,7 +188,7 @@ export function PricingComparator({ plans, hasStripe }: Props) {
                 {p.priceUsd === "revenue_share" ? (
                   <>
                     <div className="flex items-baseline gap-2">
-                      <span className="font-display text-6xl font-semibold tracking-ultratight text-lime">
+                      <span className="font-display text-6xl font-semibold tracking-ultratight text-mint">
                         5%
                       </span>
                       <span className="text-[13px] text-ink-mid">
@@ -196,7 +197,7 @@ export function PricingComparator({ plans, hasStripe }: Props) {
                     </div>
                     <div className="mt-2 font-mono text-[11px] text-ink-dim">
                       At {currency(revenueUsd)}/mo →{" "}
-                      <span className="text-lime">{currency(cost)}/mo</span>
+                      <span className="text-mint">{currency(cost)}/mo</span>
                     </div>
                   </>
                 ) : (
@@ -227,8 +228,8 @@ export function PricingComparator({ plans, hasStripe }: Props) {
                     <svg
                       className={clsx(
                         "mt-0.5 h-4 w-4 shrink-0",
-                        p.color === "lime"
-                          ? "text-lime"
+                        p.color === "mint"
+                          ? "text-mint"
                           : p.color === "volt"
                             ? "text-volt"
                             : "text-ink-mid",
@@ -254,7 +255,7 @@ export function PricingComparator({ plans, hasStripe }: Props) {
                 disabled={busyTier === p.tier}
                 className={clsx(
                   "mt-8 w-full",
-                  p.color === "lime" ? "btn-lime" : "btn-primary",
+                  p.color === "mint" ? "btn-mint" : "btn-primary",
                 )}
               >
                 {busyTier === p.tier
@@ -284,8 +285,8 @@ export function PricingComparator({ plans, hasStripe }: Props) {
                 Running AdGen for 20+ clients?
               </div>
               <div className="text-sm text-ink-mid">
-                Agency plan — $999/mo, unlimited workspaces, white-label client
-                reports, API access, SSO.
+                Agency plan — $349/mo, unlimited videos and clients, a
+                white-label report per client, and the 50-product bulk queue.
               </div>
             </div>
           </div>

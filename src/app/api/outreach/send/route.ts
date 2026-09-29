@@ -5,6 +5,7 @@ import { getCurrentUserId } from "@/lib/auth";
 import { hasDb, env } from "@/lib/env";
 import { writeOutreachEmail } from "@/agents/outreach";
 import { sendEmail } from "@/lib/email";
+import { unpackJson } from "@/lib/json";
 
 export const runtime = "nodejs";
 
@@ -41,7 +42,7 @@ export async function POST(req: Request) {
       storeName: lead.storeName,
       websiteUrl: lead.websiteUrl,
       email: lead.email ?? undefined,
-      socials: (lead.socialsJson as never) ?? {},
+      socials: unpackJson(lead.socialsJson, {}) as never,
     },
     product: { title: ad.productTitle ?? "your product", url: ad.productUrl },
     adUrl,

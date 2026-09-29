@@ -110,7 +110,7 @@ export function CommandPalette() {
           <button
             onClick={generate}
             disabled={busy}
-            className="flex w-full items-center justify-between border-b border-white/[0.06] px-5 py-5 text-left transition hover:bg-white/[0.04] disabled:opacity-60"
+            className="flex w-full items-center justify-between border-b border-line-1 px-5 py-5 text-left transition hover:bg-base-3 disabled:opacity-60"
           >
             <div>
               <div className="font-display text-[15px] text-ink-hi">
@@ -129,7 +129,7 @@ export function CommandPalette() {
                     c.run(router);
                     setOpen(false);
                   }}
-                  className="flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-left transition hover:bg-white/[0.05]"
+                  className="flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-left transition hover:bg-base-3"
                 >
                   <div>
                     <div className="text-[14px] text-ink-hi">{c.label}</div>

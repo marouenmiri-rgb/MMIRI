@@ -5,6 +5,8 @@ import { directScenes } from "./creative-director";
 import { renderVideo } from "./video-generator";
 import type { BrandVoice } from "./brand-voice";
 import type { GeneratedAd } from "./types";
+import { DEFAULT_FORMAT, type AdFormat } from "./formats";
+import { packJson, unpackJson } from "@/lib/json";
 
 /**
  * Drives the full product-URL → generated-ad pipeline. Each step updates the
@@ -16,8 +18,10 @@ export async function runAdPipeline(args: {
   productUrl: string;
   hookHint?: string;
   userId?: string;
+  format?: AdFormat;
 }): Promise<GeneratedAd> {
   const { adId, productUrl, hookHint, userId } = args;
+  const format = args.format ?? DEFAULT_FORMAT;
 
   // Brand voice (if the user has one) gets pulled once and threaded through
   // every text-producing agent in this pipeline run.
@@ -29,11 +33,12 @@ export async function runAdPipeline(args: {
         name: row.name ?? undefined,
         tone: row.tone,
         audience: row.audience,
-        dos: (row.dosJson as string[] | null) ?? [],
-        donts: (row.dontsJson as string[] | null) ?? [],
-        examples:
-          (row.examplesJson as { context: string; copy: string }[] | null) ??
+        dos: unpackJson<string[]>(row.dosJson, []),
+        donts: unpackJson<string[]>(row.dontsJson, []),
+        examples: unpackJson<{ context: string; copy: string }[]>(
+          row.examplesJson,
           [],
+        ),
       };
     }
   }
@@ -46,17 +51,17 @@ export async function runAdPipeline(args: {
   });
 
   await db.ad.update({ where: { id: adId }, data: { status: "WRITING" } });
-  const script = await writeAdScript(product, { hookHint, brandVoice });
+  const script = await writeAdScript(product, { hookHint, brandVoice, format });
   await db.ad.update({
     where: { id: adId },
-    data: { scriptJson: script as object },
+    data: { scriptJson: packJson(script) },
   });
 
   await db.ad.update({ where: { id: adId }, data: { status: "DIRECTING" } });
-  const breakdown = await directScenes(product, script);
+  const breakdown = await directScenes(product, script, format);
   await db.ad.update({
     where: { id: adId },
-    data: { scenesJson: breakdown as object },
+    data: { scenesJson: packJson(breakdown) },
   });
 
   await db.ad.update({ where: { id: adId }, data: { status: "RENDERING" } });

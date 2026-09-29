@@ -77,6 +77,7 @@ Return JSON only with three variants.`;
     system: SYSTEM,
     user,
     schema: SCHEMA,
+    role: "copy",
   });
   return out.variants;
 }

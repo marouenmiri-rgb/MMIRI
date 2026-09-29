@@ -59,13 +59,16 @@ export async function GET() {
     X: zero(),
   };
   for (const l of links) {
-    const p = l.socialPost?.platform;
-    if (!p) continue;
+    const p = l.socialPost?.platform as keyof PlatformTotals | undefined;
+    if (!p || !byPlatform[p]) continue;
     byPlatform[p].clicks += l.clicks;
     byPlatform[p].conversions += l.conversions;
     byPlatform[p].revenueCents += l.revenueCents;
   }
-  for (const post of posts) byPlatform[post.platform].posts += 1;
+  for (const post of posts) {
+    const p = post.platform as keyof PlatformTotals;
+    if (byPlatform[p]) byPlatform[p].posts += 1;
+  }
 
   // Top ads — fetch titles for the ids we grouped
   const adIds = topAds.map((r) => r.adId).filter(Boolean) as string[];

@@ -62,7 +62,7 @@ export function VariantLab({ adId }: { adId: string }) {
 
   return (
     <section className="card relative overflow-hidden p-6">
-      <div className="absolute -top-10 -left-10 h-40 w-40 rounded-full bg-lime/20 blur-3xl" />
+      <div className="absolute -top-10 -left-10 h-40 w-40 rounded-full bg-mint/20 blur-3xl" />
       <div className="relative">
         <div className="flex items-start justify-between gap-4">
           <div>
@@ -76,7 +76,7 @@ export function VariantLab({ adId }: { adId: string }) {
           <button
             onClick={generate}
             disabled={busy}
-            className="btn-lime h-9 px-3 text-[12px]"
+            className="btn-mint h-9 px-3 text-[12px]"
           >
             {busy ? "Drafting…" : "Generate 3 variants"}
           </button>
@@ -100,7 +100,7 @@ export function VariantLab({ adId }: { adId: string }) {
                   className={clsx(
                     "relative overflow-hidden rounded-xl2 border p-4 transition",
                     v.winner
-                      ? "border-lime/60 bg-lime/5 shadow-glow-lime"
+                      ? "border-mint/60 bg-mint/5 shadow-glow-mint"
                       : v.retired
                         ? "border-line-1 bg-base-2 opacity-60"
                         : "border-line-2 bg-base-2",
@@ -113,7 +113,7 @@ export function VariantLab({ adId }: { adId: string }) {
                           className={clsx(
                             "pill",
                             v.winner
-                              ? "bg-lime/15 text-lime border border-lime/40"
+                              ? "bg-mint/15 text-mint border border-mint/40"
                               : "bg-base-3 text-ink-mid border border-line-2",
                           )}
                         >
@@ -140,7 +140,7 @@ export function VariantLab({ adId }: { adId: string }) {
                       )}
                     </div>
                     <div className="shrink-0 text-right">
-                      <div className="font-display text-xl tracking-tight text-lime">
+                      <div className="font-display text-xl tracking-tight text-mint">
                         {money(v.revenueCents)}
                       </div>
                       <div className="font-mono text-[10px] uppercase tracking-wider text-ink-dim">
@@ -152,7 +152,7 @@ export function VariantLab({ adId }: { adId: string }) {
                   {/* Revenue bar */}
                   <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-base-3">
                     <div
-                      className="h-full bg-lime transition-[width] duration-500"
+                      className="h-full bg-mint transition-[width] duration-500"
                       style={{ width: `${pct}%` }}
                     />
                   </div>

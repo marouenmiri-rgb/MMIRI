@@ -4,6 +4,8 @@ import { findShopifyStores } from "@/agents/shopify-finder";
 import { db } from "@/lib/db";
 import { getCurrentUserId } from "@/lib/auth";
 import { hasDb } from "@/lib/env";
+import { packJson } from "@/lib/json";
+import { clientIp, rateLimit, tooManyRequests } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -24,6 +26,11 @@ export async function POST(req: Request) {
   });
 
   if (!hasDb) return NextResponse.json({ stores, saved: 0 });
+  const gate = rateLimit(`discover:${clientIp(req)}`, 6, 10 * 60);
+  if (!gate.ok) {
+    return tooManyRequests(gate, "Too many searches. Try again shortly.");
+  }
+
   const userId = await getCurrentUserId();
   if (!userId) return NextResponse.json({ stores, saved: 0 });
 
@@ -37,14 +44,14 @@ export async function POST(req: Request) {
         update: {
           storeName: s.storeName,
           email: s.email ?? null,
-          socialsJson: s.socials as object,
+          socialsJson: packJson(s.socials),
         },
         create: {
           userId,
           storeName: s.storeName,
           websiteUrl: s.websiteUrl,
           email: s.email ?? null,
-          socialsJson: s.socials as object,
+          socialsJson: packJson(s.socials),
           source: s.source ?? "duckduckgo",
         },
       });

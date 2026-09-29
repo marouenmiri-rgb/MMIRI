@@ -20,6 +20,10 @@ export type Scene = {
   imageRef: string;
   durationSec: number;
   fx?: "kenburns" | "cut" | "fade";
+  /** "product" uses the store's own photo; "broll" fetches stock footage. */
+  source?: "product" | "broll";
+  /** Search terms for the b-roll shot, when source is "broll". */
+  brollQuery?: string;
 };
 
 export type SceneBreakdown = {

@@ -18,6 +18,15 @@ model User {
   email      String   @unique
   name       String?
   plan       String   @default("FREE")
+  /// "USER" or "ADMIN". Admins can reach /admin; nothing else differs.
+  role       String   @default("USER")
+  /// scrypt digest. Null for guests, who have no password yet.
+  passwordHash String?
+  /// A visitor who started generating before signing up. Claimed on signup.
+  isGuest    Boolean  @default(false)
+  /// Set once the address has been confirmed by following an emailed link.
+  emailVerifiedAt DateTime?
+  lastSeenAt DateTime?
   createdAt  DateTime @default(now())
 
   ads               Ad[]
@@ -33,17 +42,25 @@ model User {
   subscription      Subscription?
   brandVoice        BrandVoice?
   autoPilotRules    AutoPilotRule[]
+  clients           Client[]
+  sessions          Session[]
+  authTokens        AuthToken[]
 }
 
 model Ad {
   id            String   @id @default(cuid())
   userId        String
   user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // Which client this ad was made for. Null = the operator's own store.
+  clientId      String?
+  client        Client?  @relation(fields: [clientId], references: [id], onDelete: SetNull)
   productUrl    String
   productTitle  String?
+  /// "short" | "standard" | "long" — the requested runtime.
+  format        String   @default("standard")
   status        String   @default("QUEUED")
-  scriptJson    Json?
-  scenesJson    Json?
+  scriptJson    String?
+  scenesJson    String?
   voiceoverUrl  String?
   videoUrl      String?
   thumbnailUrl  String?
@@ -57,6 +74,7 @@ model Ad {
   variants      AdVariant[]
 
   @@index([userId, createdAt])
+  @@index([clientId, createdAt])
 }
 
 model Lead {
@@ -66,7 +84,7 @@ model Lead {
   storeName   String
   websiteUrl  String
   email       String?
-  socialsJson Json?
+  socialsJson String?
   source      String?
   createdAt   DateTime @default(now())
 
@@ -114,8 +132,8 @@ model Job {
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   kind        String
   status      String   @default("QUEUED")
-  payloadJson Json
-  resultJson  Json?
+  payloadJson String
+  resultJson  String?
   error       String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -185,7 +203,7 @@ model AdVariant {
   kind       String   @default("HOOK")
   label      String
   angle      String?
-  scriptJson Json
+  scriptJson String
   winner     Boolean  @default(false)
   retired    Boolean  @default(false)
   createdAt  DateTime @default(now())
@@ -246,7 +264,7 @@ model Conversion {
   revenueCents    Int
   currency        String       @default("USD")
   occurredAt      DateTime     @default(now())
-  raw             Json?
+  raw             String?
 
   @@unique([trackingLinkId, externalOrderId])
   @@index([userId, occurredAt])
@@ -259,7 +277,7 @@ model Insight {
   kind         String
   title        String
   body         String
-  evidenceJson Json?
+  evidenceJson String?
   actioned     Boolean  @default(false)
   createdAt    DateTime @default(now())
 
@@ -292,9 +310,9 @@ model BrandVoice {
   name         String?
   tone         String?
   audience     String?
-  dosJson      Json?
-  dontsJson    Json?
-  examplesJson Json?
+  dosJson      String?
+  dontsJson    String?
+  examplesJson String?
   sourceUrl    String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
@@ -306,9 +324,9 @@ model AutoPilotRule {
   user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   name           String
   enabled        Boolean   @default(true)
-  productUrls    Json
-  hookCategories Json?
-  platforms      Json
+  productUrls    String
+  hookCategories String?
+  platforms      String
   cadenceHours   Int       @default(24)
   budgetAdsTotal Int?
   adsRun         Int       @default(0)
@@ -320,4 +338,65 @@ model AutoPilotRule {
 
   @@index([enabled, nextRunAt])
   @@index([userId])
+}
+
+/// A store you run ads for. Everything the white-label report shows is scoped
+/// to one of these, and `retainerCents` is what they pay you — which is what
+/// turns attributed revenue into a return multiple on the report.
+model Client {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name          String
+  websiteUrl    String?
+  contactEmail  String?
+  /// Unguessable token for the public report URL at /r/<token>.
+  reportToken   String   @unique
+  /// Hex accent used to brand the report for this client.
+  accentColor   String   @default("#635BFF")
+  /// What the client pays per month, in cents.
+  retainerCents Int      @default(0)
+  currency      String   @default("USD")
+  archived      Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  ads Ad[]
+
+  @@unique([userId, name])
+  @@index([userId, createdAt])
+}
+
+/// Server-side sessions. The cookie carries a random token; only its SHA-256
+/// is stored, so a database leak does not hand over live sessions. Rows are
+/// deletable, which is what makes sign-out and revocation real.
+model Session {
+  id        String   @id @default(cuid())
+  tokenHash String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  userAgent String?
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+/// Single-use, expiring links emailed to a user — password resets and address
+/// confirmations. Only the SHA-256 of the token is stored, so the database
+/// never holds anything that could be replayed as a live link.
+model AuthToken {
+  id        String    @id @default(cuid())
+  tokenHash String    @unique
+  /// "PASSWORD_RESET" or "EMAIL_VERIFY".
+  kind      String
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId, kind])
+  @@index([expiresAt])
 }

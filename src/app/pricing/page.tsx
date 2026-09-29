@@ -2,6 +2,8 @@ import Link from "next/link";
 import { Logo } from "@/components/Logo";
 import { PricingComparator } from "@/components/PricingComparator";
 import { PLANS, hasStripe } from "@/lib/billing";
+import { AppearanceMenu } from "@/components/AppearanceMenu";
+import { SiteNav, SiteFooter } from "@/components/marketing/SiteChrome";
 
 export const metadata = {
   title: "Pricing — AdGen / lab",
@@ -17,22 +19,10 @@ export default function PricingPage() {
       <div className="aurora-hero pointer-events-none fixed inset-0 -z-10" />
       <div className="grid-bg pointer-events-none fixed inset-0 -z-10 opacity-40" />
 
-      <header className="relative mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
-        <Link href="/">
-          <Logo />
-        </Link>
-        <nav className="flex items-center gap-8 text-[13px] text-ink-mid">
-          <Link href="/#pipeline" className="hover:text-ink-hi">
-            How it works
-          </Link>
-          <Link href="/dashboard" className="btn-ghost">
-            Enter the lab →
-          </Link>
-        </nav>
-      </header>
+      <SiteNav />
 
       <section className="relative mx-auto max-w-6xl px-6 pt-24 pb-8 text-center sm:pt-32">
-        <div className="rise mx-auto inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.04] px-3 py-1 font-mono text-[11px] uppercase tracking-[0.28em] text-volt backdrop-blur">
+        <div className="rise mx-auto inline-flex items-center gap-2 rounded-full border border-line-2 bg-base-3 px-3 py-1 font-mono text-[11px] uppercase tracking-[0.28em] text-volt backdrop-blur">
           <span className="dot-live" /> New · revenue-share tier
         </div>
         <h1 className="rise mx-auto mt-8 max-w-4xl font-display text-6xl font-semibold leading-[0.95] tracking-ultratight text-ink-hi sm:text-7xl md:text-[88px] md:leading-[0.92]">
@@ -59,16 +49,15 @@ export default function PricingPage() {
           What's included
         </h2>
         <div className="overflow-hidden rounded-xl2 border border-line-2 bg-base-1">
-          <FeatureRow feature="Ads per month" row={["3", "20", "100", "Unlimited"]} />
-          <FeatureRow feature="Published posts / mo" row={["10", "100", "500", "Unlimited"]} />
-          <FeatureRow feature="Workspaces" row={["1", "1", "3", "10"]} />
-          <FeatureRow feature="Claude Opus 4.7 agents" row={["•", "•", "•", "•"]} />
-          <FeatureRow feature="Variant Lab" row={["—", "•", "•", "•"]} />
-          <FeatureRow feature="Weekly Insights" row={["—", "•", "•", "•"]} />
-          <FeatureRow feature="Real social OAuth" row={["—", "•", "•", "•"]} />
-          <FeatureRow feature="Shopify attribution" row={["—", "•", "•", "•"]} />
-          <FeatureRow feature="White-label PDFs" row={["—", "—", "—", "•"]} />
-          <FeatureRow feature="Dedicated Slack" row={["—", "—", "—", "•"]} last />
+          <FeatureRow feature="Videos per month" row={["15", "50", "Unlimited", "Unlimited"]} />
+          <FeatureRow feature="Download the MP4" row={["•", "•", "•", "•"]} />
+          <FeatureRow feature="Script + shot list" row={["•", "•", "•", "•"]} />
+          <FeatureRow feature="Your brand voice" row={["—", "•", "•", "•"]} />
+          <FeatureRow feature="Variant Lab · A/B hooks" row={["—", "•", "•", "•"]} />
+          <FeatureRow feature="Auto-post to channels" row={["—", "•", "•", "•"]} />
+          <FeatureRow feature="Shopify attribution" row={["—", "—", "•", "•"]} />
+          <FeatureRow feature="Client roster" row={["—", "—", "—", "•"]} />
+          <FeatureRow feature="White-label client report" row={["—", "—", "—", "•"]} last />
         </div>
       </section>
 
@@ -92,12 +81,7 @@ export default function PricingPage() {
         </div>
       </section>
 
-      <footer className="relative mx-auto flex max-w-6xl items-center justify-between border-t border-line-1 px-6 py-6 text-xs text-ink-dim">
-        <Logo size={18} />
-        <span className="font-mono uppercase tracking-[0.22em]">
-          same side · same incentives
-        </span>
-      </footer>
+      <SiteFooter />
     </main>
   );
 }

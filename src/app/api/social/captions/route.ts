@@ -5,6 +5,7 @@ import { getCurrentUserId } from "@/lib/auth";
 import { hasClaude, hasDb } from "@/lib/env";
 import { writeCaptions } from "@/agents/captioner";
 import type { AdScript } from "@/agents/types";
+import { unpackJson } from "@/lib/json";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -28,7 +29,8 @@ export async function POST(req: Request) {
   const ad = await db.ad.findFirst({
     where: { id: parsed.data.adId, userId },
   });
-  if (!ad || !ad.scriptJson) {
+  const script = ad ? unpackJson<AdScript | null>(ad.scriptJson, null) : null;
+  if (!ad || !script) {
     return NextResponse.json(
       { error: "Ad or its script not found" },
       { status: 404 },
@@ -37,7 +39,7 @@ export async function POST(req: Request) {
 
   const captions = await writeCaptions({
     product: { title: ad.productTitle ?? "the product", url: ad.productUrl },
-    script: ad.scriptJson as AdScript,
+    script,
   });
   return NextResponse.json({ captions });
 }

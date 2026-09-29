@@ -3,6 +3,7 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { getCurrentUserId } from "@/lib/auth";
 import { hasDb } from "@/lib/env";
+import { packJson, unpackJson } from "@/lib/json";
 
 export const runtime = "nodejs";
 
@@ -41,7 +42,7 @@ export async function GET() {
     where: { userId },
     orderBy: { createdAt: "desc" },
   });
-  return NextResponse.json({ rules });
+  return NextResponse.json({ rules: rules.map(toClientRule) });
 }
 
 export async function POST(req: Request) {
@@ -63,14 +64,31 @@ export async function POST(req: Request) {
     data: {
       userId,
       name: parsed.data.name,
-      productUrls: parsed.data.productUrls as object,
-      platforms: parsed.data.platforms as object,
-      hookCategories: (parsed.data.hookCategories ?? []) as object,
+      productUrls: packJson(parsed.data.productUrls),
+      platforms: packJson(parsed.data.platforms),
+      hookCategories: packJson(parsed.data.hookCategories ?? []),
       cadenceHours: parsed.data.cadenceHours,
       budgetAdsTotal: parsed.data.budgetAdsTotal,
       enabled: parsed.data.enabled,
       nextRunAt,
     },
   });
-  return NextResponse.json({ rule });
+  return NextResponse.json({ rule: toClientRule(rule) });
+}
+
+/**
+ * The JSON-backed columns are TEXT in SQLite; the dashboard expects real
+ * arrays, so unpack them at the API boundary.
+ */
+function toClientRule<T extends {
+  productUrls: string;
+  platforms: string;
+  hookCategories: string | null;
+}>(rule: T) {
+  return {
+    ...rule,
+    productUrls: unpackJson<string[]>(rule.productUrls, []),
+    platforms: unpackJson<string[]>(rule.platforms, []),
+    hookCategories: unpackJson<string[]>(rule.hookCategories, []),
+  };
 }

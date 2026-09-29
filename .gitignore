@@ -16,3 +16,10 @@ prisma/dev.db
 prisma/dev.db-journal
 
 public/renders/
+
+# TypeScript incremental build cache
+tsconfig.tsbuildinfo
+public/_fixture/
+
+# Licensed music beds — supply your own; never commit them.
+public/audio/

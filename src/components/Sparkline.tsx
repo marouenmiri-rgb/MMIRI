@@ -1,8 +1,10 @@
+import { themeColor } from "@/lib/theme";
+
 export function Sparkline({
   values,
   height = 28,
-  stroke = "#a78bfa",
-  fill = "rgba(167,139,250,0.14)",
+  stroke = themeColor.accent,
+  fill = themeColor.accentSoft,
 }: {
   values: number[];
   height?: number;
@@ -31,8 +33,14 @@ export function Sparkline({
       preserveAspectRatio="none"
       className="block"
     >
-      <path d={area} fill={fill} />
-      <path d={line} fill="none" stroke={stroke} strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" />
+      <path d={area} style={{ fill }} />
+      <path
+        d={line}
+        style={{ stroke, fill: "none" }}
+        strokeWidth={1.5}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   );
 }

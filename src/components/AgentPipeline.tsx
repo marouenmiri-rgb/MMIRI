@@ -29,7 +29,7 @@ function phaseFor(stepIdx: number, current: string | null | undefined): Phase {
 /**
  * Horizontal agent-flow — the product's identity. Shown on the dashboard
  * hero and the generator. When `current` is an active status key, that
- * step glows and pulses. Done steps light up lime; pending steps are dim.
+ * step glows and pulses. Done steps light up mint; pending steps are dim.
  */
 export function AgentPipeline({
   current,
@@ -87,7 +87,7 @@ function StepNode({
             phase === "active"
               ? "text-volt"
               : phase === "done"
-                ? "text-lime"
+                ? "text-mint"
                 : "text-ink-dim",
           )}
         >
@@ -110,7 +110,7 @@ function StepNode({
             phase === "active"
               ? "text-volt-400"
               : phase === "done"
-                ? "text-lime/80"
+                ? "text-mint/80"
                 : "text-ink-dim",
           )}
         >
@@ -131,7 +131,7 @@ function Dot({ phase }: { phase: Phase }) {
     );
   }
   if (phase === "done") {
-    return <span className="inline-block h-2.5 w-2.5 rounded-full bg-lime" />;
+    return <span className="inline-block h-2.5 w-2.5 rounded-full bg-mint" />;
   }
   return <span className="inline-block h-2.5 w-2.5 rounded-full border border-line-3" />;
 }
@@ -143,7 +143,7 @@ function Connector({ phase }: { phase: Phase }) {
       <div
         className={clsx(
           "h-[2px] w-full rounded",
-          active ? "bg-gradient-to-r from-volt to-lime" : "bg-line-2",
+          active ? "bg-gradient-to-r from-volt to-mint" : "bg-line-2",
         )}
       />
       {phase === "active" && (

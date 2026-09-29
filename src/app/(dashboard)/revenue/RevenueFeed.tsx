@@ -14,7 +14,7 @@ type Event = {
 
 /**
  * Live conversion feed. Polls /api/analytics/summary every 30s and
- * animates new events in with a lime ripple so the page stays alive
+ * animates new events in with a mint ripple so the page stays alive
  * during a demo call.
  */
 export function RevenueFeed({ initial }: { initial: Event[] }) {
@@ -71,7 +71,7 @@ export function RevenueFeed({ initial }: { initial: Event[] }) {
             key={e.id}
             className={
               "flex items-center gap-4 px-5 py-3 transition " +
-              (fresh ? "bg-lime/10" : "")
+              (fresh ? "bg-mint/10" : "")
             }
           >
             {meta ? (
@@ -95,7 +95,7 @@ export function RevenueFeed({ initial }: { initial: Event[] }) {
             <div
               className={
                 "font-display text-lg tracking-tight " +
-                (fresh ? "text-lime" : "text-ink-hi")
+                (fresh ? "text-mint" : "text-ink-hi")
               }
             >
               +{money(e.revenueCents, e.currency)}

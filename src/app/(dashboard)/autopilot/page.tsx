@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { TopBar } from "@/components/TopBar";
 import { PlatformIcon, PLATFORM_META, type PlatformKey } from "@/components/PlatformIcon";
 import { CATEGORIES, type HookCategory } from "@/data/hook-templates";
+import { themeColor } from "@/lib/theme";
 
 type Rule = {
   id: string;
@@ -70,7 +71,7 @@ export default function AutoPilotPage() {
         title="Set it once. Wake up to revenue."
         subtitle="Each rule cycles through your products, picks a winning hook, generates an ad, and ships it across your connected channels — on the cadence you set."
         action={
-          <button onClick={() => setCreating(true)} className="btn-lime">
+          <button onClick={() => setCreating(true)} className="btn-mint">
             New rule
           </button>
         }
@@ -206,7 +207,7 @@ function RuleCard({
           <Stat
             label="Next ad ships in"
             value={rule.enabled ? countdown : "paused"}
-            color="lime"
+            color="mint"
           />
           <Stat
             label="Last shipped"
@@ -240,7 +241,7 @@ function Stat({
 }: {
   label: string;
   value: string;
-  color?: "lime" | "volt";
+  color?: "mint" | "volt";
 }) {
   return (
     <div className="rounded-xl2 border border-line-1 bg-base-2 p-3">
@@ -250,7 +251,7 @@ function Stat({
       <div
         className={
           "mt-1 font-display text-xl tracking-tight " +
-          (color === "lime" ? "text-lime" : color === "volt" ? "text-volt" : "text-ink-hi")
+          (color === "mint" ? "text-mint" : color === "volt" ? "text-volt" : "text-ink-hi")
         }
       >
         {value}
@@ -316,7 +317,7 @@ function NewRuleForm({
 
   return (
     <form onSubmit={submit} className="card relative overflow-hidden p-6">
-      <div className="absolute -left-16 -top-16 h-40 w-40 rounded-full bg-lime/20 blur-3xl" />
+      <div className="absolute -left-16 -top-16 h-40 w-40 rounded-full bg-mint/20 blur-3xl" />
       <div className="relative">
         <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-volt">
           New rule
@@ -370,7 +371,7 @@ function NewRuleForm({
                     style={
                       on
                         ? { background: m.color, borderColor: m.color, color: m.textOn }
-                        : { borderColor: "#2a2a38", color: "#a7a7b8" }
+                        : { borderColor: themeColor.line, color: themeColor.inkLo }
                     }
                   >
                     <PlatformIcon platform={p} className="h-3 w-3" />
@@ -396,8 +397,8 @@ function NewRuleForm({
                     className="pill border transition"
                     style={
                       on
-                        ? { background: c.color, borderColor: c.color, color: "#08080c" }
-                        : { borderColor: "#2a2a38", color: "#a7a7b8" }
+                        ? { background: c.color, borderColor: c.color, color: "#fff" }
+                        : { borderColor: themeColor.line, color: themeColor.inkLo }
                     }
                   >
                     {c.label}
@@ -421,8 +422,8 @@ function NewRuleForm({
                     className="pill border transition"
                     style={
                       cadenceHours === c.hours
-                        ? { background: "#a78bfa", borderColor: "#a78bfa", color: "#08080c" }
-                        : { borderColor: "#2a2a38", color: "#a7a7b8" }
+                        ? { background: themeColor.accent, borderColor: themeColor.accent, color: "#fff" }
+                        : { borderColor: themeColor.line, color: themeColor.inkLo }
                     }
                   >
                     {c.label}
@@ -458,7 +459,7 @@ function NewRuleForm({
             <button
               type="submit"
               disabled={busy || !name || !urlsText || platforms.length === 0}
-              className="btn-lime"
+              className="btn-mint"
             >
               {busy ? "Creating…" : "Launch rule"}
             </button>
