@@ -4,6 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import type { ProductFacts, SceneBreakdown } from "./types";
 import { safeFetch } from "@/lib/safe-fetch";
+import { fetchBrollClip } from "./broll";
 
 /**
  * Best-effort FFmpeg slideshow renderer for the MVP.
@@ -31,18 +32,39 @@ export async function renderSlideshow(args: {
   await fs.mkdir(outDir, { recursive: true });
 
   const scenes = args.breakdown.scenes;
-  const frames: string[] = [];
+
+  // A scene is either a product photograph or a piece of stock footage. B-roll
+  // is best-effort: if the fetch finds nothing the scene quietly falls back to
+  // a still, because a missing stock clip must never fail a render.
+  type Source = { path: string; kind: "still" | "clip" };
+  const sources: Source[] = [];
+  const credits: string[] = [];
+
   for (let i = 0; i < scenes.length; i++) {
-    const idx = parseImageRef(scenes[i].imageRef);
+    const scene = scenes[i]!;
+
+    if (scene.source === "broll" && scene.brollQuery) {
+      const clip = await fetchBrollClip(scene.brollQuery, workDir, {
+        minSeconds: Math.max(2, Math.round(scene.durationSec ?? 3)),
+        seed: i,
+      });
+      if (clip) {
+        sources.push({ path: clip.filePath, kind: "clip" });
+        credits.push(`${clip.credit.photographer} (${clip.credit.url})`);
+        continue;
+      }
+    }
+
+    const idx = parseImageRef(scene.imageRef);
     const url = args.product.images[idx ?? 0];
     if (!url) continue;
     const file = path.join(workDir, `scene_${i}.jpg`);
     const ok = await downloadImage(url, file);
-    if (ok) frames.push(file);
+    if (ok) sources.push({ path: file, kind: "still" });
   }
-  if (frames.length === 0) return { videoPath: null, thumbnailPath: null };
+  if (sources.length === 0) return { videoPath: null, thumbnailPath: null };
 
-  const durations = frames.map((_, i) =>
+  const durations = sources.map((_, i) =>
     Math.max(1, Math.round(scenes[i]?.durationSec ?? 3)),
   );
   const total = durations.reduce((a, b) => a + b, 0);
@@ -58,20 +80,25 @@ export async function renderSlideshow(args: {
   // slowly reads as a shot. That difference is what lets a 60-second cut work
   // off six photographs.
   const clips: string[] = [];
-  for (let i = 0; i < frames.length; i++) {
-    const clip = path.join(workDir, `clip_${i}.mp4`);
+  for (let i = 0; i < sources.length; i++) {
+    const out = path.join(workDir, `clip_${i}.mp4`);
     const dur = durations[i]!;
+    const src = sources[i]!;
     const fx = scenes[i]?.fx ?? "kenburns";
+
+    // A still is looped to length and given motion. Footage already moves, so
+    // it is trimmed and framed instead — panning a moving shot fights itself.
+    const input =
+      src.kind === "still"
+        ? ["-loop", "1", "-t", String(dur), "-i", src.path]
+        : ["-t", String(dur), "-i", src.path];
+
     await run("ffmpeg", [
       "-y",
-      "-loop",
-      "1",
-      "-t",
-      String(dur),
-      "-i",
-      frames[i]!,
+      ...input,
       "-vf",
-      sceneFilter(fx, dur, i),
+      src.kind === "still" ? sceneFilter(fx, dur, i) : clipFilter(),
+      "-an",
       "-c:v",
       "libx264",
       "-pix_fmt",
@@ -80,9 +107,9 @@ export async function renderSlideshow(args: {
       "veryfast",
       "-r",
       String(FPS),
-      clip,
+      out,
     ]);
-    clips.push(clip);
+    clips.push(out);
   }
 
   // Concat the clips, then burn captions over the result — one subtitle file
@@ -244,6 +271,24 @@ const GRADE = [
   "vignette=PI/4.6",
   "noise=alls=5:allf=t",
 ].join(",");
+
+/**
+ * Framing for footage that already moves.
+ *
+ * Stock clips arrive at whatever size and crop the shooter used, so they are
+ * filled to 9:16 and graded with the same chain as the stills — without that
+ * the cut between a graded photograph and raw footage is obvious. No pan: the
+ * shot is already moving, and adding a second motion on top reads as a mistake.
+ */
+function clipFilter(): string {
+  return [
+    "scale=1080:1920:force_original_aspect_ratio=increase",
+    "crop=1080:1920",
+    `fps=${FPS}`,
+    GRADE,
+    "setsar=1",
+  ].join(",");
+}
 
 /** How much larger than the frame the source is scaled, leaving room to pan. */
 const PAN_OVERSCAN = 1.22;

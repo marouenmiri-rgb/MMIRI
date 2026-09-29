@@ -1,6 +1,7 @@
 import { askJSON } from "@/lib/claude";
 import type { AdScript, ProductFacts, SceneBreakdown } from "./types";
 import { AD_FORMATS, DEFAULT_FORMAT, type AdFormat } from "./formats";
+import { hasBroll } from "./broll";
 
 const SYSTEM = `You are a creative director for short-form video ads (TikTok / Reels / Shorts).
 You take a written script and a set of product images, and you decide the exact
@@ -35,6 +36,8 @@ const SCHEMA = {
           durationSec: { type: "number" },
           fx: { type: "string", enum: ["kenburns", "cut", "fade"] },
           framing: { type: "string", enum: ["wide", "detail", "angled"] },
+          source: { type: "string", enum: ["product", "broll"] },
+          brollQuery: { type: "string" },
         },
       },
     },
@@ -47,7 +50,10 @@ export async function directScenes(
   format: AdFormat = DEFAULT_FORMAT,
 ): Promise<SceneBreakdown> {
   const fmt = AD_FORMATS[format];
-  const user = `Break this ad into ${fmt.minScenes}–${fmt.maxScenes} scenes.
+  const broll = hasBroll()
+    ? `\nStock footage IS available — use it as instructed for non-product beats.`
+    : `\nStock footage is NOT available. Set source "product" on every scene.`;
+  const user = `Break this ad into ${fmt.minScenes}–${fmt.maxScenes} scenes.${broll}
 
 The durations must add up to about ${fmt.seconds} seconds.
 There are ${product.images.length} image(s) available for ${fmt.minScenes}+ scenes,
