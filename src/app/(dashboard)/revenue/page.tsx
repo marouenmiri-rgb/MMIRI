@@ -8,6 +8,9 @@ import { fixtureRevenue } from "@/lib/fixtures";
 import { RevenueFeed } from "./RevenueFeed";
 import { InsightsPanel } from "./InsightsPanel";
 
+// Reads the signed-in user's data — render per request, never at build time.
+export const dynamic = "force-dynamic";
+
 type Summary = Awaited<ReturnType<typeof loadSummary>>;
 
 async function loadSummary() {

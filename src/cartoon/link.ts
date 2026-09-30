@@ -96,6 +96,9 @@ async function viaYtDlp(url: string, platform: string, dir: string): Promise<Lin
       "--sub-langs", ".*-orig,en.*",
       "--sub-format", "vtt",
       ...(path.isAbsolute(ff) ? ["--ffmpeg-location", ff] : []),
+      // Instagram / some X posts only download for a logged-in session:
+      // point this at a cookies.txt exported from your browser.
+      ...(process.env.YTDLP_COOKIES ? ["--cookies", process.env.YTDLP_COOKIES] : []),
       "-o", path.join(dir, "ref.%(ext)s"),
       url,
     ],

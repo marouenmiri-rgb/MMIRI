@@ -42,6 +42,24 @@ describe("scrapeProduct", () => {
     expect(new Set(product.images).size).toBe(product.images.length);
   });
 
+  it("resolves relative and protocol-relative image URLs", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () =>
+        new Response(
+          `<meta property="og:title" content="Mug"><meta property="og:image" content="/files/hero.jpg">
+           <meta property="og:image" content="//cdn.shopify.com/s/files/side.png">`,
+          { status: 200, headers: { "content-type": "text/html" } },
+        ),
+      ),
+    );
+    const product = await scrapeProduct("https://shop.example.com/products/mug");
+    expect(product.images).toEqual([
+      "https://shop.example.com/files/hero.jpg",
+      "https://cdn.shopify.com/s/files/side.png",
+    ]);
+  });
+
   it("throws when the response is non-OK", async () => {
     vi.stubGlobal(
       "fetch",

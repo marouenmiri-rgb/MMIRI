@@ -43,7 +43,11 @@ export async function scrapeProduct(url: string): Promise<ProductFacts> {
     .map((m) => m[0])
     .slice(0, 20);
 
-  const images = Array.from(new Set([...ogImages, ...productImages])).slice(0, 8);
+  // og:image is often relative ("/files/x.jpg") or protocol-relative
+  // ("//cdn.shopify.com/…") — resolve against the page so it can be fetched.
+  const images = Array.from(
+    new Set([...ogImages, ...productImages].map((u) => absolutize(decodeEntities(u), url)).filter(Boolean)),
+  ).slice(0, 8) as string[];
 
   const price =
     meta("product:price:amount") ??
@@ -67,4 +71,13 @@ function decodeEntities(s: string): string {
     .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'")
     .replace(/&nbsp;/g, " ");
+}
+
+function absolutize(src: string, base: string): string | null {
+  try {
+    const u = new URL(src, base);
+    return u.protocol === "http:" || u.protocol === "https:" ? u.toString() : null;
+  } catch {
+    return null;
+  }
 }
