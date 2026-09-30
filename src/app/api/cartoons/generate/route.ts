@@ -10,6 +10,7 @@ import { hasClaude, hasDb } from "@/lib/env";
 import { checkLimit } from "@/lib/billing";
 import { runCartoonPipeline, type ReferenceInput } from "@/agents/cartoon-pipeline";
 import { MAX_REFERENCE_CHARS, MAX_VIDEO_BYTES } from "@/cartoon/reference";
+import { isPublicHttpUrl, platformOf } from "@/cartoon/link";
 import { CARTOON_STYLES, REFERENCE_MODES } from "@/cartoon/types";
 
 export const runtime = "nodejs";
@@ -25,8 +26,10 @@ const Body = z
     /** "remix" = make something similar; "adapt" = animate it as-is. */
     mode: z.enum(REFERENCE_MODES).default("remix"),
     script: z.string().trim().max(MAX_REFERENCE_CHARS).optional(),
+    /** A TikTok / YouTube / Reels / X / direct .mp4 link to base it on. */
+    videoUrl: z.string().trim().max(2000).optional(),
   })
-  .transform((b) => ({ ...b, script: b.script || undefined }));
+  .transform((b) => ({ ...b, script: b.script || undefined, videoUrl: b.videoUrl || undefined }));
 
 /**
  * JSON: { topic, style, productUrl?, mode?, script? }
@@ -39,7 +42,7 @@ export async function POST(req: Request) {
   if ((req.headers.get("content-type") ?? "").includes("multipart/form-data")) {
     const form = await req.formData().catch(() => null);
     if (!form) return NextResponse.json({ error: "Invalid form data" }, { status: 400 });
-    for (const key of ["topic", "style", "productUrl", "mode", "script"]) {
+    for (const key of ["topic", "style", "productUrl", "mode", "script", "videoUrl"]) {
       const v = form.get(key);
       if (typeof v === "string") raw[key] = v;
     }
@@ -56,10 +59,16 @@ export async function POST(req: Request) {
       { status: 400 },
     );
   }
-  const hasReference = Boolean(video || parsed.data.script);
+  const hasReference = Boolean(video || parsed.data.script || parsed.data.videoUrl);
   if (!hasReference && parsed.data.topic.length < 3) {
     return NextResponse.json(
       { error: "Give the cartoon a topic, or share a script or video to base it on." },
+      { status: 400 },
+    );
+  }
+  if (parsed.data.videoUrl && !video && !isPublicHttpUrl(parsed.data.videoUrl)) {
+    return NextResponse.json(
+      { error: "That link doesn't look right. Paste the full https:// link to the video." },
       { status: 400 },
     );
   }
@@ -107,7 +116,7 @@ export async function POST(req: Request) {
     );
   }
 
-  const { topic, style, productUrl, mode, script } = parsed.data;
+  const { topic, style, productUrl, mode, script, videoUrl } = parsed.data;
 
   // Stash the upload in a temp file; the pipeline deletes it once studied.
   let reference: ReferenceInput | undefined;
@@ -116,15 +125,20 @@ export async function POST(req: Request) {
     const videoPath = path.join(os.tmpdir(), `adgen-upload-${crypto.randomUUID()}${ext}`);
     await fs.writeFile(videoPath, new Uint8Array(await video.arrayBuffer()));
     reference = { kind: "video", mode, videoPath, name: video.name.slice(0, 120) };
+  } else if (videoUrl) {
+    reference = { kind: "link", mode, url: videoUrl };
   } else if (script) {
     reference = { kind: "script", mode, text: script };
   }
 
+  const verb = mode === "remix" ? "Inspired by" : "Adapted from";
   const label =
     topic ||
     (reference?.kind === "video"
-      ? `${mode === "remix" ? "Inspired by" : "Adapted from"} ${reference.name ?? "a video"}`
-      : `${mode === "remix" ? "Inspired by" : "Adapted from"} a script`);
+      ? `${verb} ${reference.name ?? "a video"}`
+      : reference?.kind === "link"
+        ? `${verb} a ${platformOf(reference.url) === "Web" ? "video" : `${platformOf(reference.url)} video`}`
+        : `${verb} a script`);
 
   const ad = await db.ad.create({
     data: {

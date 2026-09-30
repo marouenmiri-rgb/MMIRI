@@ -3,6 +3,7 @@ import path from "node:path";
 import { db } from "@/lib/db";
 import { renderCartoon } from "@/cartoon/renderer";
 import { studyVideo } from "@/cartoon/reference";
+import { studyLink, type LinkStudy } from "@/cartoon/link";
 import type { CartoonSketch, CartoonStyle, InspiredBy, ReferenceMode } from "@/cartoon/types";
 import { writeCartoon, type CartoonReference } from "./cartoonist";
 import { loadBrandVoice } from "./orchestrator";
@@ -16,10 +17,11 @@ export type CartoonScenes = {
   inspiredBy?: InspiredBy;
 };
 
-/** A shared script (text) or uploaded video (temp file path) to base it on. */
+/** A shared script (text), uploaded video (temp file path) or video link. */
 export type ReferenceInput =
   | { kind: "script"; mode: ReferenceMode; text: string }
-  | { kind: "video"; mode: ReferenceMode; videoPath: string; name?: string };
+  | { kind: "video"; mode: ReferenceMode; videoPath: string; name?: string }
+  | { kind: "link"; mode: ReferenceMode; url: string };
 
 /**
  * Topic (+ optional product URL) → funny animated cartoon MP4.
@@ -47,7 +49,7 @@ export async function runCartoonPipeline(args: {
   let reference: CartoonReference | null = null;
   let inspiredBy: InspiredBy | undefined;
   let product: ProductFacts | null = null;
-  if (productUrl || args.reference?.kind === "video") {
+  if (productUrl || args.reference?.kind === "video" || args.reference?.kind === "link") {
     await setStatus(adId, "SCRAPING");
   }
   if (args.reference?.kind === "video") {
@@ -64,6 +66,25 @@ export async function runCartoonPipeline(args: {
     } finally {
       await fs.rm(videoPath, { force: true }).catch(() => {});
     }
+  } else if (args.reference?.kind === "link") {
+    const { url, mode } = args.reference;
+    const link = await studyLink(url);
+    reference = {
+      mode,
+      kind: link.depth === "full" ? "video" : "link-preview",
+      text: link.study.transcript,
+      details: linkDetails(link),
+      frames: link.study.frames,
+      durationSec: link.study.durationSec,
+    };
+    inspiredBy = {
+      kind: "link",
+      mode,
+      url,
+      depth: link.depth,
+      name: [link.platform, link.author].filter(Boolean).join(" · "),
+      excerpt: (link.title ?? link.description ?? link.study.transcript ?? url).slice(0, 280),
+    };
   } else if (args.reference?.kind === "script") {
     const { text, mode } = args.reference;
     reference = { mode, kind: "script", text };
@@ -117,6 +138,17 @@ export function sketchToScript(sketch: CartoonSketch): AdScript {
     cta: sketch.cta,
     fullScript: spoken.map((p) => `${names.get(p.speaker) ?? "?"}: ${p.line}`).join("\n"),
   };
+}
+
+function linkDetails(link: LinkStudy): string {
+  return [
+    `Platform: ${link.platform}`,
+    link.author ? `Creator: ${link.author}` : null,
+    link.title ? `Title / caption: ${link.title}` : null,
+    link.description && link.description !== link.title ? `Description: ${link.description}` : null,
+  ]
+    .filter(Boolean)
+    .join("\n");
 }
 
 async function setStatus(adId: string, status: string) {

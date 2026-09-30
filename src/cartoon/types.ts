@@ -129,8 +129,11 @@ export type ReferenceMode = (typeof REFERENCE_MODES)[number];
 
 /** Shown on the studio page so you can see what a cartoon was based on. */
 export type InspiredBy = {
-  kind: "script" | "video";
+  kind: "script" | "video" | "link";
   mode: ReferenceMode;
   name?: string;
   excerpt: string;
+  /** For links: the URL, and whether we read the whole video or a preview. */
+  url?: string;
+  depth?: "full" | "preview";
 };

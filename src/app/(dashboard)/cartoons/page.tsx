@@ -48,7 +48,7 @@ type Source = "idea" | "script" | "video";
 const SOURCES: { value: Source; label: string; hint: string }[] = [
   { value: "idea", label: "An idea", hint: "Type a joke or premise" },
   { value: "script", label: "A script", hint: "Paste one you like or wrote" },
-  { value: "video", label: "A video", hint: "Upload a clip you like or made" },
+  { value: "video", label: "A video", hint: "Paste a link or upload a clip" },
 ];
 
 const MODES: { value: ReferenceMode; label: string; hint: string }[] = [
@@ -73,6 +73,7 @@ export default function CartoonStudioPage() {
   const [mode, setMode] = useState<ReferenceMode>("remix");
   const [script, setScript] = useState("");
   const [video, setVideo] = useState<File | null>(null);
+  const [videoUrl, setVideoUrl] = useState("");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [ad, setAd] = useState<CartoonAd | null>(null);
@@ -104,6 +105,8 @@ export default function CartoonStudioPage() {
         productUrl: productUrl.trim(),
         ...(source !== "idea" ? { mode } : {}),
         ...(source === "script" ? { script } : {}),
+        // An uploaded file wins over a pasted link.
+        ...(source === "video" && !video && videoUrl.trim() ? { videoUrl: videoUrl.trim() } : {}),
       };
       let init: RequestInit;
       if (source === "video" && video) {
@@ -154,7 +157,7 @@ export default function CartoonStudioPage() {
       ? topic.trim().length >= 3
       : source === "script"
         ? script.trim().length > 0
-        : Boolean(video);
+        : Boolean(video) || /^https?:\/\/\S+\.\S+/i.test(videoUrl.trim());
 
   function pickVideo(f: File) {
     if (f.size > MAX_VIDEO_MB * 1024 * 1024) {
@@ -239,8 +242,20 @@ export default function CartoonStudioPage() {
             {source === "video" && (
               <div>
                 <label className="font-mono text-[11px] uppercase tracking-[0.22em] text-volt">
-                  Upload the video
+                  Paste a video link
                 </label>
+                <input
+                  className="input mt-3 w-full"
+                  type="url"
+                  inputMode="url"
+                  placeholder="https://www.tiktok.com/@creator/video/…  ·  YouTube  ·  Instagram Reels  ·  X"
+                  value={videoUrl}
+                  onChange={(e) => setVideoUrl(e.target.value)}
+                  disabled={Boolean(video)}
+                />
+                <div className="my-4 flex items-center gap-3 font-mono text-[10px] uppercase tracking-[0.22em] text-ink-dim">
+                  <span className="h-px flex-1 bg-line-2" /> or upload the file <span className="h-px flex-1 bg-line-2" />
+                </div>
                 <label
                   className={clsx(
                     "mt-3 flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl2 border border-dashed p-8 text-center transition",
@@ -266,21 +281,32 @@ export default function CartoonStudioPage() {
                     <>
                       <div className="text-sm font-medium text-ink-hi">{video.name}</div>
                       <div className="font-mono text-[10px] text-ink-mid">
-                        {(video.size / 1024 / 1024).toFixed(1)} MB · click to change
+                        {(video.size / 1024 / 1024).toFixed(1)} MB · click to change ·{" "}
+                        <button
+                          type="button"
+                          className="text-volt hover:underline"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setVideo(null);
+                          }}
+                        >
+                          remove
+                        </button>
                       </div>
                     </>
                   ) : (
                     <>
                       <div className="text-sm text-ink-hi">Drop a video here or click to choose</div>
                       <div className="font-mono text-[10px] text-ink-dim">
-                        MP4 · MOV · WebM · up to {MAX_VIDEO_MB} MB. Save TikTok/Reels clips to your device first.
+                        MP4 · MOV · WebM · up to {MAX_VIDEO_MB} MB
                       </div>
                     </>
                   )}
                 </label>
                 <p className="mt-2 text-[11px] text-ink-dim">
-                  Claude watches sampled frames; with an ElevenLabs key it also hears the dialogue.
-                  The upload is deleted right after it&apos;s studied.
+                  Claude watches frames sampled across the video and reads its captions/subtitles;
+                  with an ElevenLabs key it also hears the dialogue. Downloaded or uploaded videos
+                  are deleted right after they&apos;re studied.
                 </p>
               </div>
             )}
@@ -662,15 +688,32 @@ function ChoiceCard({
 
 function InspiredCard({ ref_ }: { ref_: InspiredBy }) {
   const verb = ref_.mode === "remix" ? "Inspired by" : "Adapted from";
+  const what = ref_.kind === "link" ? "a video link" : `your ${ref_.kind}`;
   return (
     <section className="card p-6">
       <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-volt">
-        {verb} your {ref_.kind}
+        {verb} {what}
         {ref_.name ? <span className="text-ink-dim"> · {ref_.name}</span> : null}
       </div>
       <p className="mt-3 line-clamp-3 whitespace-pre-line text-sm italic text-ink-mid">
         “{ref_.excerpt}”
       </p>
+      {ref_.url && (
+        <a
+          href={ref_.url}
+          target="_blank"
+          rel="noreferrer noopener"
+          className="mt-3 block truncate font-mono text-[11px] text-volt hover:underline"
+        >
+          {ref_.url}
+        </a>
+      )}
+      {ref_.depth === "preview" && (
+        <p className="mt-3 text-[11px] text-warn">
+          Only the post&apos;s title and thumbnail could be read, so this is a looser match. For a
+          closer one, install yt-dlp on the server or upload the video file.
+        </p>
+      )}
     </section>
   );
 }

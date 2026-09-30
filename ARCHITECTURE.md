@@ -104,7 +104,12 @@ POST /api/cartoons/generate { topic, style, productUrl? }
 `mode`: `remix` studies the reference's comedic engine (hook, escalation,
 payoff, pacing) and writes an *original* sketch in the same format;
 `adapt` turns the user's own material into a cartoon, keeping its beats and
-lines. Videos are studied by sampling 4–10 frames with ffmpeg (sent to
+lines. A `videoUrl` (TikTok, YouTube, Reels, X, Vimeo or a direct .mp4) is
+read by `src/cartoon/link.ts`: yt-dlp downloads the clip plus platform
+subtitles when installed; otherwise a direct video URL is downloaded; otherwise
+the post's oEmbed / Open Graph title, caption and thumbnail are used (a looser
+"preview" match). Only public http(s) URLs are fetched — localhost and private
+IP ranges are refused. Videos are studied by sampling 4–10 frames with ffmpeg (sent to
 Claude as images) plus an ElevenLabs Scribe transcript when
 `ELEVENLABS_API_KEY` is set; the upload is deleted right after
 (`src/cartoon/reference.ts`).

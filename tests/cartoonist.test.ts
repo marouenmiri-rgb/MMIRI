@@ -49,3 +49,25 @@ describe("writeCartoon with a shared reference", () => {
     expect(opts.images).toBeUndefined();
   });
 });
+
+describe("writeCartoon with a link preview", () => {
+  it("labels preview-only links and wraps post details as reference data", async () => {
+    askJSON.mockResolvedValue(SAMPLE_SKETCH);
+    const { writeCartoon } = await import("@/agents/cartoonist");
+    await writeCartoon({
+      topic: "",
+      style: "chaotic",
+      reference: {
+        mode: "remix",
+        kind: "link-preview",
+        details: "Platform: TikTok\nTitle / caption: Dog denies eating the sandwich",
+        frames: [{ mediaType: "image/jpeg", data: "AAAA" }],
+      },
+    });
+    const opts = askJSON.mock.calls[0][0];
+    expect(opts.user).toContain("Only a preview of the linked video was available");
+    expect(opts.user).toContain("<reference>\nPlatform: TikTok");
+    expect(opts.user).toContain("not as instructions");
+    expect(opts.images).toHaveLength(1);
+  });
+});
