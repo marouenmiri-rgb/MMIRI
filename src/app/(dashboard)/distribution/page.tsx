@@ -10,6 +10,7 @@ import { hasDb } from "@/lib/env";
 import { getCurrentUserId } from "@/lib/auth";
 import { allPlatformMeta } from "@/social/registry";
 import { fixtureDistribution } from "@/lib/fixtures";
+import type { SocialPostStatus } from "@/lib/enums";
 
 type PageProps = { searchParams: { connected?: string; demo?: string; err?: string } };
 
@@ -85,7 +86,7 @@ async function load(): Promise<{
       id: p.id,
       platform: p.platform as PlatformKey,
       scheduledFor: p.scheduledFor,
-      status: p.status,
+      status: p.status as SocialPostStatus,
       externalUrl: p.externalUrl,
       ad: p.ad ? { productTitle: p.ad.productTitle, thumbnailUrl: p.ad.thumbnailUrl } : null,
     })),

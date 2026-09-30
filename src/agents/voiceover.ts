@@ -12,6 +12,7 @@ export async function synthesizeVoiceover(args: {
   script: string;
   outDir: string;
   voiceId?: string;
+  fileName?: string;
 }): Promise<string | null> {
   if (!env.ELEVENLABS_API_KEY) return null;
 
@@ -43,7 +44,7 @@ export async function synthesizeVoiceover(args: {
   }
 
   await fs.mkdir(args.outDir, { recursive: true });
-  const outPath = path.join(args.outDir, "voiceover.mp3");
+  const outPath = path.join(args.outDir, args.fileName ?? "voiceover.mp3");
   const buf = Buffer.from(await res.arrayBuffer());
   await fs.writeFile(outPath, buf);
   return outPath;

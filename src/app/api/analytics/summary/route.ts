@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getCurrentUserId } from "@/lib/auth";
 import { hasDb } from "@/lib/env";
+import type { SocialPlatform } from "@/lib/enums";
 
 export const runtime = "nodejs";
 
@@ -59,13 +60,13 @@ export async function GET() {
     X: zero(),
   };
   for (const l of links) {
-    const p = l.socialPost?.platform;
+    const p = l.socialPost?.platform as SocialPlatform | undefined;
     if (!p) continue;
     byPlatform[p].clicks += l.clicks;
     byPlatform[p].conversions += l.conversions;
     byPlatform[p].revenueCents += l.revenueCents;
   }
-  for (const post of posts) byPlatform[post.platform].posts += 1;
+  for (const post of posts) byPlatform[post.platform as SocialPlatform].posts += 1;
 
   // Top ads — fetch titles for the ids we grouped
   const adIds = topAds.map((r) => r.adId).filter(Boolean) as string[];

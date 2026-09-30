@@ -6,6 +6,7 @@ type Ad = {
   id: string;
   productTitle?: string | null;
   productUrl: string;
+  format?: string;
   status: string;
   thumbnailUrl?: string | null;
   videoUrl?: string | null;
@@ -24,7 +25,7 @@ export function AdReelCard({ ad }: { ad: Ad }) {
 
   return (
     <Link
-      href={`/generator?id=${ad.id}`}
+      href={ad.format === "CARTOON" ? `/cartoons?id=${ad.id}` : `/generator?id=${ad.id}`}
       className="group relative block aspect-[9/16] overflow-hidden rounded-2xl border border-white/[0.08] bg-base-2 transition-all duration-500 ease-ios hover:-translate-y-1 hover:border-volt/40 hover:shadow-glow"
     >
       {ad.thumbnailUrl ? (

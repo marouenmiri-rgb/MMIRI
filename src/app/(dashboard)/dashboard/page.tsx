@@ -8,6 +8,9 @@ import { AdReelCard } from "@/components/AdReelCard";
 import { Sparkline } from "@/components/Sparkline";
 import { HeroCapture } from "./HeroCapture";
 
+// Reads the signed-in user's data — render per request, never at build time.
+export const dynamic = "force-dynamic";
+
 async function loadAds() {
   if (!hasDb) return fixtureAds as unknown as AdRow[];
   const userId = await getCurrentUserId();

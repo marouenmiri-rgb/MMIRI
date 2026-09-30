@@ -1,6 +1,7 @@
 import { db } from "@/lib/db";
 import { env } from "@/lib/env";
 import { publishTo } from "./registry";
+import type { SocialPlatform } from "./types";
 
 /**
  * Core publisher. Picks up a single SocialPost row, calls the platform
@@ -37,7 +38,7 @@ export async function publishOne(postId: string): Promise<
   const thumb = post.ad.thumbnailUrl ? toAbsolute(post.ad.thumbnailUrl) : null;
 
   try {
-    const res = await publishTo(post.platform, {
+    const res = await publishTo(post.platform as SocialPlatform, {
       videoUrl,
       thumbnailUrl: thumb,
       caption: post.caption,

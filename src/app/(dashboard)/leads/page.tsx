@@ -5,6 +5,9 @@ import { getCurrentUserId } from "@/lib/auth";
 import { fixtureLeads } from "@/lib/fixtures";
 import { DiscoverButton } from "./DiscoverButton";
 
+// Reads the signed-in user's data — render per request, never at build time.
+export const dynamic = "force-dynamic";
+
 type LeadRow = {
   id: string;
   storeName: string;

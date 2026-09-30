@@ -39,8 +39,10 @@ model Ad {
   id            String   @id @default(cuid())
   userId        String
   user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  format        String   @default("PRODUCT")
   productUrl    String
   productTitle  String?
+  topic         String?
   status        String   @default("QUEUED")
   scriptJson    Json?
   scenesJson    Json?

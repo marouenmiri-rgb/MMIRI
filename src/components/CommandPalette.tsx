@@ -13,6 +13,7 @@ type Cmd = {
 const STATIC: Cmd[] = [
   { id: "nav-dashboard", label: "Go to dashboard", hint: "Overview · recent ads", run: (r) => r.push("/dashboard") },
   { id: "nav-generator", label: "Open the ad generator", hint: "Paste a product URL", run: (r) => r.push("/generator") },
+  { id: "nav-cartoons", label: "Open Cartoon studio", hint: "Funny AI cartoons · post to your channels", run: (r) => r.push("/cartoons") },
   { id: "nav-radar", label: "Open Hook Radar", hint: "Trending hook patterns · one-click into generator", run: (r) => r.push("/radar") },
   { id: "nav-autopilot", label: "Open Auto-pilot", hint: "Hands-off rules · ship ads on a schedule", run: (r) => r.push("/autopilot") },
   { id: "nav-channels", label: "Open Channels", hint: "Connect TikTok · IG · YouTube · X", run: (r) => r.push("/distribution") },

@@ -31,13 +31,15 @@ That's it. Open http://localhost:3000.
 Everything that doesn't require a third-party API key runs on fixtures
 or demo-mode:
 
-- Landing · Dashboard · Generator · Autopilot · Revenue · Pricing · Settings
+- Landing · Dashboard · Generator · Cartoons · Autopilot · Revenue · Pricing · Settings
 - Scraper (HTTP-based; any public product page)
 - Shopify finder (DuckDuckGo search; no key)
 - Social connections (demo mode; "Connect" flips a flag)
 - Social publish (demo mode; returns `?demo=1` URLs)
 - Revenue Pulse (seeded conversions)
 - Variant Lab (needs Claude to generate; see below)
+- Cartoon studio rendering — ffmpeg ships via the `ffmpeg-static` npm package
+  (writing a new cartoon needs Claude; see below)
 - Pricing + upgrade flow (demo mode flips your subscription directly)
 
 ## Unlocking the real stack
@@ -53,8 +55,9 @@ cp .env.example .env
 | Feature           | Env var(s)                                                                                   |
 | ----------------- | -------------------------------------------------------------------------------------------- |
 | AI agents         | `ANTHROPIC_API_KEY`                                                                          |
-| Voiceover         | `ELEVENLABS_API_KEY`                                                                         |
-| Video (MP4)       | `ffmpeg` on PATH (system install — `brew install ffmpeg` / `apt-get install ffmpeg`)         |
+| Voiceover         | `ELEVENLABS_API_KEY` (cartoons get one voice per character and shared videos get transcribed; without it they babble)          |
+| Video links       | `yt-dlp` on PATH (`pip install yt-dlp` / `brew install yt-dlp`) or `YTDLP_PATH`; without it, links give title + thumbnail only. Instagram needs `YTDLP_COOKIES` (a browser cookies.txt) |
+| Video (MP4)       | bundled via `ffmpeg-static`; set `FFMPEG_PATH` to use a different binary                     |
 | Outreach delivery | `RESEND_API_KEY`                                                                             |
 | Real billing      | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_STARTER` …                       |
 | Real TikTok       | `TIKTOK_CLIENT_KEY`, `TIKTOK_CLIENT_SECRET`                                                  |

@@ -1,7 +1,7 @@
-import { spawn } from "node:child_process";
 import { promises as fs } from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { ffmpegAvailable, runFfmpeg } from "@/lib/ffmpeg";
 import type { ProductFacts, SceneBreakdown } from "./types";
 
 /**
@@ -11,7 +11,8 @@ import type { ProductFacts, SceneBreakdown } from "./types";
  * per scene, held for `durationSec`, with its line of dialogue burned in as
  * a subtitle. Voiceover is muxed in if provided.
  *
- * Returns { videoUrl: null, ... } when ffmpeg isn't available on PATH, so
+ * Returns { videoUrl: null, ... } when ffmpeg isn't available (neither the
+ * bundled ffmpeg-static binary nor one on PATH), so
  * the pipeline keeps working on machines without it (Phase 2 runs this in
  * a dedicated Fly/Railway worker with ffmpeg baked into the image).
  */
@@ -69,7 +70,7 @@ export async function renderSlideshow(args: {
     ? ["-map", "0:v", "-map", "1:a", "-shortest", "-c:a", "aac", "-b:a", "160k"]
     : ["-an"];
 
-  await run("ffmpeg", [
+  await runFfmpeg([
     ...commonIn,
     ...audioIn,
     "-vf",
@@ -87,7 +88,7 @@ export async function renderSlideshow(args: {
   ]);
 
   // Thumbnail from the first frame of the rendered video.
-  await run("ffmpeg", [
+  await runFfmpeg([
     "-y",
     "-i",
     videoPath,
@@ -144,34 +145,4 @@ async function downloadImage(url: string, dest: string): Promise<boolean> {
   } catch {
     return false;
   }
-}
-
-async function ffmpegAvailable(): Promise<boolean> {
-  try {
-    await run("ffmpeg", ["-version"], { silent: true });
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-function run(
-  cmd: string,
-  args: string[],
-  opts: { silent?: boolean } = {},
-): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const child = spawn(cmd, args, {
-      stdio: opts.silent ? "ignore" : ["ignore", "pipe", "pipe"],
-    });
-    let stderr = "";
-    child.stderr?.on("data", (d) => {
-      stderr += d.toString();
-    });
-    child.on("error", reject);
-    child.on("close", (code) => {
-      if (code === 0) resolve();
-      else reject(new Error(`${cmd} exited ${code}: ${stderr.slice(-400)}`));
-    });
-  });
 }
