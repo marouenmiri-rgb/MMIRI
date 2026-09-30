@@ -24,12 +24,30 @@ export function claude(): Anthropic {
  *   system block). Invariant: system text must be byte-stable per agent —
  *   no timestamps, per-user context, or JSON.stringify of unsorted objects.
  */
+export type ImageInput = {
+  mediaType: "image/jpeg" | "image/png";
+  /** Base64 without a data: prefix or newlines. */
+  data: string;
+};
+
 export async function askJSON<T>(opts: {
   system: string;
   user: string;
   schema: unknown;
   maxTokens?: number;
+  /** Optional images (e.g. video frames), sent before the text. */
+  images?: ImageInput[];
 }): Promise<T> {
+  const content = opts.images?.length
+    ? [
+        ...opts.images.map((img) => ({
+          type: "image" as const,
+          source: { type: "base64" as const, media_type: img.mediaType, data: img.data },
+        })),
+        { type: "text" as const, text: opts.user },
+      ]
+    : opts.user;
+
   const params = {
     model: CLAUDE_MODEL,
     max_tokens: opts.maxTokens ?? 4096,
@@ -45,7 +63,7 @@ export async function askJSON<T>(opts: {
         cache_control: { type: "ephemeral" as const },
       },
     ],
-    messages: [{ role: "user" as const, content: opts.user }],
+    messages: [{ role: "user" as const, content }],
   };
 
   const resp = await claude().messages.create(

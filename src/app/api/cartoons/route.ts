@@ -4,6 +4,8 @@ import { getCurrentUserId } from "@/lib/auth";
 import { hasDb } from "@/lib/env";
 
 export const runtime = "nodejs";
+// Per-user DB read — never prerender at build time.
+export const dynamic = "force-dynamic";
 
 /** The user's most recent cartoons, newest first. */
 export async function GET() {

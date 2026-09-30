@@ -147,3 +147,39 @@ describe("sketchToScript", () => {
     expect(s.fullScript.split("\n")[1]).toMatch(/^Mimi: /);
   });
 });
+
+describe("reference videos", () => {
+  it("samples 4–10 frames spread across the clip", async () => {
+    const { frameCount, frameTimes } = await import("@/cartoon/reference");
+    expect(frameCount(null)).toBe(6);
+    expect(frameCount(5)).toBe(4);
+    expect(frameCount(30)).toBe(8);
+    expect(frameCount(600)).toBe(10);
+    const t = frameTimes(20, 4);
+    expect(t).toEqual([2.5, 7.5, 12.5, 17.5]);
+  });
+
+  it("extracts frames from a real video (no transcript without a key)", async () => {
+    const { runFfmpeg } = await import("@/lib/ffmpeg");
+    const { studyVideo } = await import("@/cartoon/reference");
+    const os = await import("node:os");
+    const path = await import("node:path");
+    const fs = await import("node:fs/promises");
+    const file = path.join(os.tmpdir(), `adgen-test-${Date.now()}.mp4`);
+    await runFfmpeg([
+      "-y", "-f", "lavfi", "-i", "testsrc=size=320x568:rate=15:duration=6",
+      "-f", "lavfi", "-i", "sine=frequency=440:duration=6",
+      "-c:v", "libx264", "-pix_fmt", "yuv420p", "-c:a", "aac", "-shortest", file,
+    ]);
+    try {
+      const study = await studyVideo(file);
+      expect(study.durationSec).toBeCloseTo(6, 0);
+      expect(study.frames).toHaveLength(4);
+      expect(study.frames[0].mediaType).toBe("image/jpeg");
+      expect(Buffer.from(study.frames[0].data, "base64").subarray(0, 2).toString("hex")).toBe("ffd8");
+      expect(study.transcript).toBeNull();
+    } finally {
+      await fs.rm(file, { force: true });
+    }
+  }, 30_000);
+});

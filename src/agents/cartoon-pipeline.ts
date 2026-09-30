@@ -1,14 +1,25 @@
+import { promises as fs } from "node:fs";
 import path from "node:path";
 import { db } from "@/lib/db";
 import { renderCartoon } from "@/cartoon/renderer";
-import type { CartoonSketch, CartoonStyle } from "@/cartoon/types";
-import { writeCartoon } from "./cartoonist";
+import { studyVideo } from "@/cartoon/reference";
+import type { CartoonSketch, CartoonStyle, InspiredBy, ReferenceMode } from "@/cartoon/types";
+import { writeCartoon, type CartoonReference } from "./cartoonist";
 import { loadBrandVoice } from "./orchestrator";
 import { scrapeProduct } from "./scraper";
 import type { AdScript, ProductFacts } from "./types";
 
 /** What a CARTOON-format Ad stores in `scenesJson`. */
-export type CartoonScenes = { style: CartoonStyle; cartoon: CartoonSketch };
+export type CartoonScenes = {
+  style: CartoonStyle;
+  cartoon: CartoonSketch;
+  inspiredBy?: InspiredBy;
+};
+
+/** A shared script (text) or uploaded video (temp file path) to base it on. */
+export type ReferenceInput =
+  | { kind: "script"; mode: ReferenceMode; text: string }
+  | { kind: "video"; mode: ReferenceMode; videoPath: string; name?: string };
 
 /**
  * Topic (+ optional product URL) → funny animated cartoon MP4.
@@ -17,7 +28,10 @@ export type CartoonScenes = { style: CartoonStyle; cartoon: CartoonSketch };
  * dashboard, ship through the same Ship panel / scheduler / tracking links,
  * and count against the same plan quota as product ads:
  *
- *   SCRAPING (only with a product) → WRITING → DIRECTING → RENDERING → READY
+ *   SCRAPING (studying a product and/or shared video) → WRITING →
+ *   DIRECTING → RENDERING → READY
+ *
+ * An uploaded reference video is deleted as soon as it has been studied.
  */
 export async function runCartoonPipeline(args: {
   adId: string;
@@ -25,22 +39,44 @@ export async function runCartoonPipeline(args: {
   style: CartoonStyle;
   productUrl?: string;
   userId?: string;
+  reference?: ReferenceInput;
 }): Promise<void> {
   const { adId, topic, style, productUrl, userId } = args;
   const brandVoice = userId ? await loadBrandVoice(userId) : null;
 
+  let reference: CartoonReference | null = null;
+  let inspiredBy: InspiredBy | undefined;
   let product: ProductFacts | null = null;
-  if (productUrl) {
+  if (productUrl || args.reference?.kind === "video") {
     await setStatus(adId, "SCRAPING");
-    product = await scrapeProduct(productUrl);
   }
+  if (args.reference?.kind === "video") {
+    const { videoPath, mode, name } = args.reference;
+    try {
+      const study = await studyVideo(videoPath);
+      reference = { mode, kind: "video", text: study.transcript, frames: study.frames, durationSec: study.durationSec };
+      inspiredBy = {
+        kind: "video",
+        mode,
+        name,
+        excerpt: study.transcript?.slice(0, 280) ?? `${study.frames.length} frames studied (no transcript)`,
+      };
+    } finally {
+      await fs.rm(videoPath, { force: true }).catch(() => {});
+    }
+  } else if (args.reference?.kind === "script") {
+    const { text, mode } = args.reference;
+    reference = { mode, kind: "script", text };
+    inspiredBy = { kind: "script", mode, excerpt: text.slice(0, 280) };
+  }
+  if (productUrl) product = await scrapeProduct(productUrl);
 
   await setStatus(adId, "WRITING");
-  const sketch = await writeCartoon({ topic, style, product, brandVoice });
+  const sketch = await writeCartoon({ topic, style, product, brandVoice, reference });
 
   // "Directing" = the sketch is locked and the storyboard is visible in
   // the UI while the render spins up.
-  const scenes: CartoonScenes = { style, cartoon: sketch };
+  const scenes: CartoonScenes = { style, cartoon: sketch, ...(inspiredBy ? { inspiredBy } : {}) };
   await db.ad.update({
     where: { id: adId },
     data: {

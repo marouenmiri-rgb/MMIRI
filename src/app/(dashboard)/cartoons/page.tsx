@@ -5,7 +5,7 @@ import clsx from "clsx";
 import { TopBar } from "@/components/TopBar";
 import { StatusPill } from "@/components/StatusPill";
 import { ShipPanel } from "../generator/ShipPanel";
-import type { CartoonSketch, CartoonStyle } from "@/cartoon/types";
+import type { CartoonSketch, CartoonStyle, InspiredBy, ReferenceMode } from "@/cartoon/types";
 
 type CartoonAd = {
   id: string;
@@ -13,7 +13,7 @@ type CartoonAd = {
   productUrl?: string;
   topic?: string | null;
   status: string;
-  scenesJson?: { style: CartoonStyle; cartoon: CartoonSketch } | null;
+  scenesJson?: { style: CartoonStyle; cartoon: CartoonSketch; inspiredBy?: InspiredBy } | null;
   videoUrl?: string | null;
   thumbnailUrl?: string | null;
   error?: string | null;
@@ -43,8 +43,23 @@ const IDEAS = [
   "A dog's dramatic reaction to the mail carrier",
 ];
 
+type Source = "idea" | "script" | "video";
+
+const SOURCES: { value: Source; label: string; hint: string }[] = [
+  { value: "idea", label: "An idea", hint: "Type a joke or premise" },
+  { value: "script", label: "A script", hint: "Paste one you like or wrote" },
+  { value: "video", label: "A video", hint: "Upload a clip you like or made" },
+];
+
+const MODES: { value: ReferenceMode; label: string; hint: string }[] = [
+  { value: "remix", label: "Make something similar", hint: "Same format & vibe, brand-new jokes" },
+  { value: "adapt", label: "Turn it into a cartoon", hint: "Keep the story and lines — it's mine" },
+];
+
+const MAX_VIDEO_MB = 150;
+
 const STEPS = [
-  { label: "Write", agent: "Head writer", keys: ["QUEUED", "SCRAPING", "WRITING"] },
+  { label: "Study & write", agent: "Head writer", keys: ["QUEUED", "SCRAPING", "WRITING"] },
   { label: "Storyboard", agent: "Director", keys: ["DIRECTING"] },
   { label: "Animate", agent: "Animator", keys: ["RENDERING"] },
   { label: "Ready", agent: "Ship", keys: ["READY"] },
@@ -54,6 +69,10 @@ export default function CartoonStudioPage() {
   const [topic, setTopic] = useState("");
   const [style, setStyle] = useState<CartoonStyle>("slapstick");
   const [productUrl, setProductUrl] = useState("");
+  const [source, setSource] = useState<Source>("idea");
+  const [mode, setMode] = useState<ReferenceMode>("remix");
+  const [script, setScript] = useState("");
+  const [video, setVideo] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [ad, setAd] = useState<CartoonAd | null>(null);
@@ -79,11 +98,27 @@ export default function CartoonStudioPage() {
     setErr(null);
     setAd(null);
     try {
-      const r = await fetch("/api/cartoons/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ topic, style, productUrl: productUrl.trim() }),
-      });
+      const fields = {
+        topic,
+        style,
+        productUrl: productUrl.trim(),
+        ...(source !== "idea" ? { mode } : {}),
+        ...(source === "script" ? { script } : {}),
+      };
+      let init: RequestInit;
+      if (source === "video" && video) {
+        const form = new FormData();
+        for (const [k, v] of Object.entries(fields)) form.append(k, v);
+        form.append("video", video);
+        init = { method: "POST", body: form };
+      } else {
+        init = {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(fields),
+        };
+      }
+      const r = await fetch("/api/cartoons/generate", init);
       const body = await r.json().catch(() => ({}));
       if (!r.ok) throw new Error(body.message ?? body.detail ?? body.error ?? `HTTP ${r.status}`);
       window.history.replaceState(null, "", `/cartoons?id=${body.id}`);
@@ -114,6 +149,22 @@ export default function CartoonStudioPage() {
     setErr("Timed out waiting for the cartoon to finish");
   }
 
+  const canSubmit =
+    source === "idea"
+      ? topic.trim().length >= 3
+      : source === "script"
+        ? script.trim().length > 0
+        : Boolean(video);
+
+  function pickVideo(f: File) {
+    if (f.size > MAX_VIDEO_MB * 1024 * 1024) {
+      setErr(`That video is ${(f.size / 1024 / 1024).toFixed(0)} MB — the limit is ${MAX_VIDEO_MB} MB.`);
+      return;
+    }
+    setErr(null);
+    setVideo(f);
+  }
+
   function reset() {
     setAd(null);
     setErr(null);
@@ -130,7 +181,7 @@ export default function CartoonStudioPage() {
         subtitle={
           ad
             ? sketch?.logline ?? ad.topic ?? "The writers' room is working on it."
-            : "Type a joke idea. Claude writes it, animates it with voices and sound effects, and you post it to your channels."
+            : "Type a joke idea — or share a script or video you like and get something similar. Claude writes it, animates it with voices and sound effects, and you post it to your channels."
         }
         action={
           ad ? (
@@ -150,17 +201,134 @@ export default function CartoonStudioPage() {
         {!ad && (
           <form onSubmit={submit} className="surface-elevated space-y-6 p-6">
             <div>
+              <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-volt">
+                Start from
+              </div>
+              <div className="mt-3 grid grid-cols-3 gap-3">
+                {SOURCES.map((s) => (
+                  <ChoiceCard
+                    key={s.value}
+                    active={source === s.value}
+                    onClick={() => setSource(s.value)}
+                    label={s.label}
+                    hint={s.hint}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {source === "script" && (
+              <div>
+                <label className="font-mono text-[11px] uppercase tracking-[0.22em] text-volt">
+                  Paste the script
+                </label>
+                <textarea
+                  className="input mt-3 min-h-[180px] w-full resize-y py-3 font-mono text-[13px]"
+                  placeholder={"GUY: Did you eat my sandwich?\nDOG: *looks away slowly*\n…"}
+                  value={script}
+                  onChange={(e) => setScript(e.target.value)}
+                  maxLength={8000}
+                  required
+                />
+                <div className="mt-1 text-right font-mono text-[10px] text-ink-dim">
+                  {script.length}/8000
+                </div>
+              </div>
+            )}
+
+            {source === "video" && (
+              <div>
+                <label className="font-mono text-[11px] uppercase tracking-[0.22em] text-volt">
+                  Upload the video
+                </label>
+                <label
+                  className={clsx(
+                    "mt-3 flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl2 border border-dashed p-8 text-center transition",
+                    video ? "border-volt/50 bg-base-2" : "border-line-3 bg-base-1 hover:border-volt/40",
+                  )}
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    const f = e.dataTransfer.files?.[0];
+                    if (f) pickVideo(f);
+                  }}
+                >
+                  <input
+                    type="file"
+                    accept="video/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const f = e.target.files?.[0];
+                      if (f) pickVideo(f);
+                    }}
+                  />
+                  {video ? (
+                    <>
+                      <div className="text-sm font-medium text-ink-hi">{video.name}</div>
+                      <div className="font-mono text-[10px] text-ink-mid">
+                        {(video.size / 1024 / 1024).toFixed(1)} MB · click to change
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="text-sm text-ink-hi">Drop a video here or click to choose</div>
+                      <div className="font-mono text-[10px] text-ink-dim">
+                        MP4 · MOV · WebM · up to {MAX_VIDEO_MB} MB. Save TikTok/Reels clips to your device first.
+                      </div>
+                    </>
+                  )}
+                </label>
+                <p className="mt-2 text-[11px] text-ink-dim">
+                  Claude watches sampled frames; with an ElevenLabs key it also hears the dialogue.
+                  The upload is deleted right after it&apos;s studied.
+                </p>
+              </div>
+            )}
+
+            {source !== "idea" && (
+              <div>
+                <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-volt">
+                  What should we do with it?
+                </div>
+                <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2">
+                  {MODES.map((m) => (
+                    <ChoiceCard
+                      key={m.value}
+                      active={mode === m.value}
+                      onClick={() => setMode(m.value)}
+                      label={m.label}
+                      hint={m.hint}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div>
               <label className="font-mono text-[11px] uppercase tracking-[0.22em] text-volt">
-                What&apos;s the joke?
+                {source === "idea" ? (
+                  <>What&apos;s the joke?</>
+                ) : (
+                  <>
+                    Twist or topic <span className="text-ink-dim">· optional</span>
+                  </>
+                )}
               </label>
               <textarea
                 className="input-hero mt-3 min-h-[96px] w-full resize-y py-4"
-                placeholder="A cat convinced the vacuum cleaner is a dragon…"
+                placeholder={
+                  source === "idea"
+                    ? "A cat convinced the vacuum cleaner is a dragon…"
+                    : mode === "remix"
+                      ? "Same format, but about… (leave empty and Claude picks)"
+                      : "Anything to change? (leave empty to keep it as-is)"
+                }
                 value={topic}
                 onChange={(e) => setTopic(e.target.value)}
                 maxLength={400}
-                required
+                required={source === "idea"}
               />
+              {source === "idea" && (
               <div className="mt-3 flex flex-wrap gap-2">
                 {IDEAS.map((idea) => (
                   <button
@@ -173,6 +341,7 @@ export default function CartoonStudioPage() {
                   </button>
                 ))}
               </div>
+              )}
             </div>
 
             <div>
@@ -220,7 +389,7 @@ export default function CartoonStudioPage() {
                   15–30s vertical cartoon · voices with ElevenLabs, cartoon babble without it.
                 </p>
               )}
-              <button className="btn-primary" disabled={busy || topic.trim().length < 3}>
+              <button className="btn-primary" disabled={busy || !canSubmit}>
                 {busy ? "Starting…" : "Make cartoon"}
               </button>
             </div>
@@ -238,6 +407,9 @@ export default function CartoonStudioPage() {
             <div className="space-y-6">
               {sketch ? (
                 <>
+                  {ad.scenesJson?.inspiredBy && (
+                    <InspiredCard ref_={ad.scenesJson.inspiredBy} />
+                  )}
                   <section className="card p-6">
                     <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-volt">
                       Cast
@@ -459,5 +631,46 @@ function StudioProgress({ status }: { status: string }) {
         );
       })}
     </div>
+  );
+}
+
+function ChoiceCard({
+  active,
+  onClick,
+  label,
+  hint,
+}: {
+  active: boolean;
+  onClick: () => void;
+  label: string;
+  hint: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={clsx(
+        "rounded-xl2 border p-3 text-left transition",
+        active ? "border-volt/50 bg-base-2 shadow-glow" : "border-line-2 bg-base-2 hover:border-line-3",
+      )}
+    >
+      <div className="text-[13px] font-medium text-ink-hi">{label}</div>
+      <div className="mt-1 text-[11px] text-ink-mid">{hint}</div>
+    </button>
+  );
+}
+
+function InspiredCard({ ref_ }: { ref_: InspiredBy }) {
+  const verb = ref_.mode === "remix" ? "Inspired by" : "Adapted from";
+  return (
+    <section className="card p-6">
+      <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-volt">
+        {verb} your {ref_.kind}
+        {ref_.name ? <span className="text-ink-dim"> · {ref_.name}</span> : null}
+      </div>
+      <p className="mt-3 line-clamp-3 whitespace-pre-line text-sm italic text-ink-mid">
+        “{ref_.excerpt}”
+      </p>
+    </section>
   );
 }

@@ -118,3 +118,19 @@ export const CARTOON_STYLES = [
   "parody",
 ] as const;
 export type CartoonStyle = (typeof CARTOON_STYLES)[number];
+
+/**
+ * remix = study a shared script/video and write an ORIGINAL sketch in the
+ *         same format ("make something similar").
+ * adapt = the user's own script/video, turned into a cartoon as written.
+ */
+export const REFERENCE_MODES = ["remix", "adapt"] as const;
+export type ReferenceMode = (typeof REFERENCE_MODES)[number];
+
+/** Shown on the studio page so you can see what a cartoon was based on. */
+export type InspiredBy = {
+  kind: "script" | "video";
+  mode: ReferenceMode;
+  name?: string;
+  excerpt: string;
+};

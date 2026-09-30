@@ -99,6 +99,16 @@ POST /api/cartoons/generate { topic, style, productUrl? }
                          per character) or synthesized babble + SFX
 ```
 
+**Start from a script or video.** The request can also carry a pasted
+`script`, or be `multipart/form-data` with a `video` file (≤150 MB), plus a
+`mode`: `remix` studies the reference's comedic engine (hook, escalation,
+payoff, pacing) and writes an *original* sketch in the same format;
+`adapt` turns the user's own material into a cartoon, keeping its beats and
+lines. Videos are studied by sampling 4–10 frames with ffmpeg (sent to
+Claude as images) plus an ElevenLabs Scribe transcript when
+`ELEVENLABS_API_KEY` is set; the upload is deleted right after
+(`src/cartoon/reference.ts`).
+
 A cartoon is an `Ad` row with `format = "CARTOON"` (the sketch lives in
 `scenesJson`, a caption-friendly script in `scriptJson`), so it ships through
 the same Ship panel, scheduler and autopilot captioner as product ads. Cartoons

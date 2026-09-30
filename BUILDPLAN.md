@@ -55,7 +55,7 @@ cp .env.example .env
 | Feature           | Env var(s)                                                                                   |
 | ----------------- | -------------------------------------------------------------------------------------------- |
 | AI agents         | `ANTHROPIC_API_KEY`                                                                          |
-| Voiceover         | `ELEVENLABS_API_KEY` (cartoons get one voice per character; without it they babble)          |
+| Voiceover         | `ELEVENLABS_API_KEY` (cartoons get one voice per character and shared videos get transcribed; without it they babble)          |
 | Video (MP4)       | bundled via `ffmpeg-static`; set `FFMPEG_PATH` to use a different binary                     |
 | Outreach delivery | `RESEND_API_KEY`                                                                             |
 | Real billing      | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_STARTER` …                       |
